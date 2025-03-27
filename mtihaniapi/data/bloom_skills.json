@@ -1,0 +1,54 @@
+{
+    "skills": [
+        {
+            "name": "Remembering",
+            "description": "Recalling facts and basic concepts",
+            "examples": [
+                "List the parts of a plant cell.",
+                "State the three types of mixtures.",
+                "Name the common lab apparatus used to measure liquids."
+            ]
+        },
+        {
+            "name": "Understanding",
+            "description": "Explaining ideas or concepts",
+            "examples": [
+                "Explain why rusting is considered a chemical change.",
+                "Describe the function of the human excretory system.",
+                "Differentiate between homogeneous and heterogeneous mixtures."
+            ]
+        },
+        {
+            "name": "Applying",
+            "description": "Using information in new situations",
+            "examples": [
+                "Apply the knowledge of separation to suggest how to purify muddy water.",
+                "Demonstrate safe handling of a Bunsen burner in a lab setting."
+            ]
+        },
+        {
+            "name": "Analyzing",
+            "description": "Drawing connections among ideas",
+            "examples": [
+                "Analyze how changes in pressure affect fluid systems.",
+                "Identify similarities between plant and animal cells based on structure."
+            ]
+        },
+        {
+            "name": "Evaluating",
+            "description": "Justifying a decision or course of action",
+            "examples": [
+                "Evaluate the effectiveness of different water purification methods.",
+                "Justify the use of solar energy over charcoal for cooking.",
+                "Assess the impact of poor waste disposal on the environment."
+            ]
+        },
+        {
+            "name": "Creating",
+            "description": "Producing new or original work",
+            "examples": [
+                "Describe an experiment to test solubility of different substances."
+            ]
+        }
+    ]
+}

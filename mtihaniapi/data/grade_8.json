@@ -1,0 +1,487 @@
+{
+    "grade": 8,
+    "strands": [
+        {
+            "name": "Mixtures, Elements and Compounds",
+            "number": 1.0,
+            "sub_strands": [
+                {
+                    "name": "Elements and Compounds",
+                    "number": 1.1,
+                    "lesson_count": 14,
+                    "descriptions": [
+                        "Physical and chemical properties of elements and compounds",
+                        "Differences between elements and compounds",
+                        "Uses of common elements and compounds in everyday life"
+                    ],
+                    "learning_outcomes": [
+                        "Describe properties of elements and compounds",
+                        "Distinguish between elements and compounds",
+                        "Appreciate the importance of elements and compounds in real life"
+                    ],
+                    "learning_experiences": [
+                        "Group discussion on types and properties of elements and compounds",
+                        "Carry out activities to observe properties of elements and compounds",
+                        "Differentiate elements and compounds based on physical and chemical changes",
+                        "Use digital or print media to research applications of common elements and compounds"
+                    ],
+                    "key_inquiries": [
+                        "How are elements and compounds different?",
+                        "Why are elements and compounds important in our lives?"
+                    ],
+                    "core_competencies": [
+                        "Critical thinking and problem solving",
+                        "Self-efficacy"
+                    ],
+                    "values": [
+                        "Responsibility",
+                        "Respect"
+                    ],
+                    "pertinent_issues": [
+                        "Environmental conservation"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Agriculture and Nutrition"
+                    ],
+                    "learning_materials": [
+                        "Charts",
+                        "Elements and compounds samples",
+                        "SEPU kit"
+                    ],
+                    "non_formal_activities": [
+                        "Interviews with professionals on element/compound usage"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to differentiate between elements and compounds",
+                            "rubrics": {
+                                "Exceeds": "Clearly and consistently differentiates between elements and compounds with examples",
+                                "Meets": "Correctly differentiates between elements and compounds",
+                                "Approaches": "Partially differentiates between elements and compounds",
+                                "Below": "Attempts to differentiate with prompts"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Physical and Chemical Changes",
+                    "number": 1.2,
+                    "lesson_count": 12,
+                    "descriptions": [
+                        "Characteristics of physical and chemical changes",
+                        "Differences between physical and chemical changes"
+                    ],
+                    "learning_outcomes": [
+                        "Describe characteristics of physical and chemical changes",
+                        "Differentiate between physical and chemical changes",
+                        "Appreciate importance of physical and chemical changes in everyday life"
+                    ],
+                    "learning_experiences": [
+                        "Conduct experiments demonstrating both types of changes",
+                        "Observe and record results from burning, dissolving, mixing",
+                        "Discuss applications of both types of changes in real life"
+                    ],
+                    "key_inquiries": [
+                        "How are physical and chemical changes different?",
+                        "Why are they important in everyday life?"
+                    ],
+                    "core_competencies": [
+                        "Learning to learn",
+                        "Communication and collaboration"
+                    ],
+                    "values": [
+                        "Integrity",
+                        "Responsibility"
+                    ],
+                    "pertinent_issues": [
+                        "Environmental safety in chemical handling"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Pre-technical Studies"
+                    ],
+                    "learning_materials": [
+                        "Beakers",
+                        "Chemicals",
+                        "Charts",
+                        "SEPU kit"
+                    ],
+                    "non_formal_activities": [
+                        "Demonstrations by science club members"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to distinguish between physical and chemical changes",
+                            "rubrics": {
+                                "Exceeds": "Clearly distinguishes and provides real life examples of each",
+                                "Meets": "Correctly distinguishes physical from chemical changes",
+                                "Approaches": "Partially distinguishes with some examples",
+                                "Below": "Attempts to distinguish with prompts"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Classes of Fire",
+                    "number": 1.3,
+                    "lesson_count": 10,
+                    "descriptions": [
+                        "Types and classes of fire",
+                        "Fire extinguishers and fire control measures"
+                    ],
+                    "learning_outcomes": [
+                        "Identify classes of fire",
+                        "Describe appropriate fire extinguishers and methods",
+                        "Appreciate the importance of fire safety"
+                    ],
+                    "learning_experiences": [
+                        "Observe and classify fire samples (controlled)",
+                        "Match fire types to extinguishers",
+                        "Simulate fire response drills",
+                        "Visit to fire department or virtual tour"
+                    ],
+                    "key_inquiries": [
+                        "What are the different classes of fire?",
+                        "Which extinguisher is used for each?"
+                    ],
+                    "core_competencies": [
+                        "Citizenship",
+                        "Self-efficacy"
+                    ],
+                    "values": [
+                        "Responsibility",
+                        "Courage"
+                    ],
+                    "pertinent_issues": [
+                        "Safety and disaster preparedness"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Social Studies and Life Skills"
+                    ],
+                    "learning_materials": [
+                        "Fire extinguisher samples",
+                        "Videos",
+                        "Charts"
+                    ],
+                    "non_formal_activities": [
+                        "Fire safety campaigns or poster competitions"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to identify fire classes and use appropriate extinguishing methods",
+                            "rubrics": {
+                                "Exceeds": "Identifies all fire classes and matches correct extinguishers confidently",
+                                "Meets": "Identifies most fire classes with correct extinguishers",
+                                "Approaches": "Identifies some fire classes with guidance",
+                                "Below": "Identifies fire classes with prompts and limited accuracy"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Living Things and the Environment",
+            "number": 2.0,
+            "sub_strands": [
+                {
+                    "name": "The Cell",
+                    "number": 2.1,
+                    "lesson_count": 12,
+                    "descriptions": [
+                        "Structure of plant and animal cells",
+                        "Functions of cell parts",
+                        "Comparison of plant and animal cells"
+                    ],
+                    "learning_outcomes": [
+                        "Describe the structure and functions of parts of plant and animal cells",
+                        "Differentiate between plant and animal cells",
+                        "Appreciate the role of cells in living organisms"
+                    ],
+                    "learning_experiences": [
+                        "Use microscopes to observe prepared slides of cells",
+                        "Label diagrams of plant and animal cells",
+                        "Create models of cells",
+                        "Discuss similarities and differences"
+                    ],
+                    "key_inquiries": [
+                        "What are the parts and functions of plant and animal cells?",
+                        "How are plant and animal cells similar and different?"
+                    ],
+                    "core_competencies": [
+                        "Critical thinking and problem solving",
+                        "Learning to learn"
+                    ],
+                    "values": [
+                        "Responsibility",
+                        "Respect"
+                    ],
+                    "pertinent_issues": [
+                        "Environmental awareness through cellular roles"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Agriculture and Nutrition"
+                    ],
+                    "learning_materials": [
+                        "Microscope",
+                        "Charts",
+                        "Prepared slides",
+                        "Models"
+                    ],
+                    "non_formal_activities": [
+                        "School science club exhibitions on cell models"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to identify and describe parts of plant and animal cells",
+                            "rubrics": {
+                                "Exceeds": "Clearly identifies and describes parts of plant and animal cells using appropriate vocabulary",
+                                "Meets": "Identifies and describes parts of plant and animal cells",
+                                "Approaches": "Identifies some parts of cells with partial descriptions",
+                                "Below": "Identifies parts with prompts and incomplete descriptions"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Movement of Materials In and Out of the Cell",
+                    "number": 2.2,
+                    "lesson_count": 10,
+                    "descriptions": [
+                        "Processes of diffusion and osmosis",
+                        "Importance of material movement in cells"
+                    ],
+                    "learning_outcomes": [
+                        "Describe diffusion and osmosis",
+                        "Demonstrate diffusion and osmosis using simple experiments",
+                        "Appreciate the importance of these processes in living organisms"
+                    ],
+                    "learning_experiences": [
+                        "Perform simple experiments with food coloring, potatoes, salt water",
+                        "Observe and describe diffusion/osmosis in action",
+                        "Relate to cell function"
+                    ],
+                    "key_inquiries": [
+                        "What are diffusion and osmosis?",
+                        "Why are these processes important to cells?"
+                    ],
+                    "core_competencies": [
+                        "Communication and collaboration",
+                        "Self-efficacy"
+                    ],
+                    "values": [
+                        "Integrity",
+                        "Responsibility"
+                    ],
+                    "pertinent_issues": [
+                        "Health and nutrition – importance of osmosis in body systems"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Home Science and Nutrition"
+                    ],
+                    "learning_materials": [
+                        "Beakers",
+                        "Salt",
+                        "Potatoes",
+                        "Food coloring",
+                        "Water"
+                    ],
+                    "non_formal_activities": [
+                        "Project: Document osmosis in different food items"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to demonstrate and explain diffusion and osmosis",
+                            "rubrics": {
+                                "Exceeds": "Clearly demonstrates and explains diffusion and osmosis using real-life examples",
+                                "Meets": "Demonstrates and explains diffusion and osmosis",
+                                "Approaches": "Demonstrates with some explanation",
+                                "Below": "Attempts demonstration with minimal explanation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Reproduction in Human Beings",
+                    "number": 2.3,
+                    "lesson_count": 14,
+                    "descriptions": [
+                        "Human reproductive system and its parts",
+                        "Fertilization and development",
+                        "Hygiene and care during puberty"
+                    ],
+                    "learning_outcomes": [
+                        "Describe the human reproductive system",
+                        "Explain fertilization and development",
+                        "Practice proper hygiene and care during puberty",
+                        "Value human sexuality and personal responsibility"
+                    ],
+                    "learning_experiences": [
+                        "Use models to label reproductive organs",
+                        "Watch animations on fertilization",
+                        "Role-play proper hygiene practices",
+                        "Hold discussions with healthcare professionals"
+                    ],
+                    "key_inquiries": [
+                        "What are the functions of reproductive parts?",
+                        "How can adolescents care for themselves during puberty?"
+                    ],
+                    "core_competencies": [
+                        "Self-efficacy",
+                        "Learning to learn"
+                    ],
+                    "values": [
+                        "Integrity",
+                        "Respect"
+                    ],
+                    "pertinent_issues": [
+                        "Sexual and reproductive health education"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Life Skills and Home Science"
+                    ],
+                    "learning_materials": [
+                        "Models",
+                        "Charts",
+                        "Videos"
+                    ],
+                    "non_formal_activities": [
+                        "Talks from health experts or peer mentors"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to describe parts of the reproductive system and their functions",
+                            "rubrics": {
+                                "Exceeds": "Describes parts and functions accurately with confidence",
+                                "Meets": "Describes most parts and functions of the reproductive system",
+                                "Approaches": "Describes some parts and functions",
+                                "Below": "Describes few parts with prompts"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Force and Energy",
+            "number": 3.0,
+            "sub_strands": [
+                {
+                    "name": "Transformation of Energy",
+                    "number": 3.1,
+                    "lesson_count": 12,
+                    "descriptions": [
+                        "Types of energy (heat, light, sound, electrical, chemical, mechanical)",
+                        "Transformation of one form of energy to another",
+                        "Applications of energy transformation"
+                    ],
+                    "learning_outcomes": [
+                        "Identify different forms of energy",
+                        "Describe how energy is transformed",
+                        "Relate energy transformation to real life situations"
+                    ],
+                    "learning_experiences": [
+                        "Conduct experiments showing energy changes (e.g. battery to light)",
+                        "Explore devices like generators, solar panels, motors",
+                        "Discuss how energy transformation powers real world tools"
+                    ],
+                    "key_inquiries": [
+                        "How is energy transformed from one form to another?",
+                        "How is this transformation useful in real life?"
+                    ],
+                    "core_competencies": [
+                        "Learning to learn",
+                        "Critical thinking and problem solving"
+                    ],
+                    "values": [
+                        "Responsibility",
+                        "Innovation"
+                    ],
+                    "pertinent_issues": [
+                        "Environmental sustainability – clean energy sources"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Pre-technical and Business Studies"
+                    ],
+                    "learning_materials": [
+                        "Batteries",
+                        "Motors",
+                        "Solar panels",
+                        "Charts"
+                    ],
+                    "non_formal_activities": [
+                        "Project: build a simple energy transformation device"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to describe transformation of energy and its application",
+                            "rubrics": {
+                                "Exceeds": "Clearly describes multiple energy transformations and applies them to real world tools",
+                                "Meets": "Describes most energy transformations with real life examples",
+                                "Approaches": "Describes some transformations with limited examples",
+                                "Below": "Describes few or no transformations with assistance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Pressure",
+                    "number": 3.2,
+                    "lesson_count": 14,
+                    "descriptions": [
+                        "Concept of pressure in solids, liquids, and gases",
+                        "Factors affecting pressure",
+                        "Applications of pressure in daily life"
+                    ],
+                    "learning_outcomes": [
+                        "Define and explain pressure in various states of matter",
+                        "Identify factors that affect pressure",
+                        "Apply understanding of pressure to real life scenarios"
+                    ],
+                    "learning_experiences": [
+                        "Perform experiments with syringes, balloons, and weights",
+                        "Measure pressure in solids, liquids and gases",
+                        "Explore uses of pressure in hydraulic and pneumatic systems"
+                    ],
+                    "key_inquiries": [
+                        "What is pressure?",
+                        "How does pressure help in real life?"
+                    ],
+                    "core_competencies": [
+                        "Communication and collaboration",
+                        "Self-efficacy"
+                    ],
+                    "values": [
+                        "Respect",
+                        "Responsibility"
+                    ],
+                    "pertinent_issues": [
+                        "Application of physics in sustainable engineering"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Mathematics and Pre-technical Studies"
+                    ],
+                    "learning_materials": [
+                        "Syringes",
+                        "Weights",
+                        "Beakers",
+                        "Charts"
+                    ],
+                    "non_formal_activities": [
+                        "Visit to local mechanic or hydraulic workshop"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to explain pressure and its application in real life",
+                            "rubrics": {
+                                "Exceeds": "Explains pressure clearly and links it to accurate real-life applications",
+                                "Meets": "Explains pressure and identifies relevant applications",
+                                "Approaches": "Explains pressure with some clarity and limited examples",
+                                "Below": "Struggles to explain pressure or provide examples"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

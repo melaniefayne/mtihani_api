@@ -1,0 +1,515 @@
+{
+    "grade": 9,
+    "strands": [
+        {
+            "name": "Mixtures, Elements and Compounds",
+            "number": 1.0,
+            "sub_strands": [
+                {
+                    "name": "Structure of the Atom",
+                    "number": 1.1,
+                    "lesson_count": 14,
+                    "descriptions": [
+                        "Structure of the atom (protons, electrons, neutrons)",
+                        "Atomic number and mass number",
+                        "Electron arrangement using dot/cross diagrams",
+                        "Metals and non-metals"
+                    ],
+                    "learning_outcomes": [
+                        "Describe the structure of the atom",
+                        "Determine mass number of elements",
+                        "Draw electron arrangements",
+                        "Classify elements into metals and non-metals",
+                        "Show interest in classifying elements"
+                    ],
+                    "learning_experiences": [
+                        "Use atomic models or simulations to represent atoms and their subatomic particles",
+                        "Group discussions and drawing electron arrangements using dot and cross diagrams",
+                        "Classification activities of elements into metals and non-metals using a periodic table",
+                        "Research and present characteristics of subatomic particles"
+                    ],
+                    "key_inquiries": [
+                        "What is the structure of an atom?",
+                        "How are electrons arranged in an atom?",
+                        "Why is classification into metals and non-metals important?"
+                    ],
+                    "core_competencies": [
+                        "Critical thinking and problem solving",
+                        "Communication and collaboration"
+                    ],
+                    "values": [
+                        "Integrity",
+                        "Responsibility"
+                    ],
+                    "pertinent_issues": [
+                        "Health and safety – handling of radioactive elements"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Mathematics and Agriculture & Nutrition"
+                    ],
+                    "learning_materials": [
+                        "Periodic table chart",
+                        "Atomic models",
+                        "Simulations"
+                    ],
+                    "non_formal_activities": [
+                        "Science club presentations on atoms and elements"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to describe the structure of the atom",
+                            "rubrics": {
+                                "Exceeds": "Describes the structure of the atom comprehensively",
+                                "Meets": "Describes the structure of the atom sufficiently",
+                                "Approaches": "Describes the structure of the atom partially",
+                                "Below": "Describes the structure of the atom superficially"
+                            }
+                        },
+                        {
+                            "skill": "Ability to classify elements into metals and non-metals",
+                            "rubrics": {
+                                "Exceeds": "Classifies all elements into metals and nonmetals",
+                                "Meets": "Classifies most elements into metals and nonmetals",
+                                "Approaches": "Classifies some elements into metals and nonmetals",
+                                "Below": "Classifies a few elements into metals and nonmetals with prompts"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Metals and Alloys",
+                    "number": 1.2,
+                    "lesson_count": 16,
+                    "descriptions": [
+                        "Physical properties of metals",
+                        "Composition of alloys (steel, brass, bronze, etc.)",
+                        "Uses of metals and alloys",
+                        "Rusting: causes, effects, prevention"
+                    ],
+                    "learning_outcomes": [
+                        "Describe physical properties of metals",
+                        "Describe alloy compositions",
+                        "Identify uses of metals and alloys",
+                        "Explain rusting and prevention",
+                        "Appreciate importance of alloys"
+                    ],
+                    "learning_experiences": [
+                        "Observe samples of metals and alloys to compare their physical properties",
+                        "Investigate rusting and its effects on metals through experiments",
+                        "Explore prevention methods for rusting (painting, oiling, galvanizing)",
+                        "Discuss real-life uses of common alloys (steel, brass, bronze)"
+                    ],
+                    "key_inquiries": [
+                        "What are the properties of metals and alloys?",
+                        "How can rusting be prevented?",
+                        "What are the uses of common alloys?"
+                    ],
+                    "core_competencies": [
+                        "Self-efficacy",
+                        "Critical thinking and problem solving"
+                    ],
+                    "values": [
+                        "Responsibility",
+                        "Patriotism"
+                    ],
+                    "pertinent_issues": [
+                        "Sustainable use of metals and recycling"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Pre-technical and Business Studies"
+                    ],
+                    "learning_materials": [
+                        "Samples of metals and alloys",
+                        "Rusting demonstration setup",
+                        "Charts and posters"
+                    ],
+                    "non_formal_activities": [
+                        "Prepare a campaign on rust prevention methods"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to outline uses of metals and alloys",
+                            "rubrics": {
+                                "Exceeds": "Outlines uses of all metals and alloys correctly",
+                                "Meets": "Outlines uses of most metals and alloys correctly",
+                                "Approaches": "Outlines uses of some metals and alloys correctly",
+                                "Below": "Outlines uses of a few metals and alloys correctly with prompts"
+                            }
+                        },
+                        {
+                            "skill": "Ability to explain the effect of rusting on metals",
+                            "rubrics": {
+                                "Exceeds": "Explains the effect of rusting on metals in detail comprehensively",
+                                "Meets": "Explains the effect of rusting on metals sufficiently",
+                                "Approaches": "Explains the effect of rusting on metals partially",
+                                "Below": "Explains the effect of rusting on metals superficially"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Water Hardness",
+                    "number": 1.3,
+                    "lesson_count": 14,
+                    "descriptions": [
+                        "Physical properties of water",
+                        "Hard and soft water",
+                        "Methods of softening hard water",
+                        "Advantages and disadvantages of both types"
+                    ],
+                    "learning_outcomes": [
+                        "Describe physical properties of water",
+                        "Distinguish hard and soft water",
+                        "Apply softening methods",
+                        "Outline pros/cons of water types",
+                        "Appreciate use of hard/soft water"
+                    ],
+                    "learning_experiences": [
+                        "Compare hard and soft water using soap lathering test",
+                        "Investigate temporary hardness removal by boiling",
+                        "Practice softening methods using chemicals (e.g., washing soda)",
+                        "Group presentations on advantages/disadvantages of hard and soft water"
+                    ],
+                    "key_inquiries": [
+                        "What causes water hardness?",
+                        "How can it be softened?",
+                        "What are the uses and drawbacks of hard vs soft water?"
+                    ],
+                    "core_competencies": [
+                        "Critical thinking and problem solving",
+                        "Self-efficacy"
+                    ],
+                    "values": [
+                        "Responsibility",
+                        "Respect"
+                    ],
+                    "pertinent_issues": [
+                        "Water safety and conservation"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Home Science and Life Skills"
+                    ],
+                    "learning_materials": [
+                        "Samples of water",
+                        "Soap",
+                        "Boiling setup",
+                        "Washing soda"
+                    ],
+                    "non_formal_activities": [
+                        "Organize a demonstration on water softening methods"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to apply different methods to soften temporary hard water",
+                            "rubrics": {
+                                "Exceeds": "Applies all appropriate methods to soften temporary hard water",
+                                "Meets": "Applies appropriate methods to soften temporary hard water",
+                                "Approaches": "Applies one appropriate method",
+                                "Below": "Applies an inappropriate method"
+                            }
+                        },
+                        {
+                            "skill": "Ability to outline advantages and disadvantages of hard and soft water",
+                            "rubrics": {
+                                "Exceeds": "Outlines advantages and disadvantages in detail",
+                                "Meets": "Outlines advantages and disadvantages",
+                                "Approaches": "Outlines them partially",
+                                "Below": "Outlines them superficially"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Living Things and Their Environment",
+            "number": 2.0,
+            "sub_strands": [
+                {
+                    "name": "Pollution",
+                    "number": 2.1,
+                    "lesson_count": 14,
+                    "descriptions": [
+                        "Types of pollution: air, water, soil, noise, radioactive",
+                        "Causes and effects of pollution",
+                        "Control and prevention measures"
+                    ],
+                    "learning_outcomes": [
+                        "Describe types and causes of pollution",
+                        "Outline effects of pollution on environment and health",
+                        "Propose control and prevention measures",
+                        "Show concern for pollution in the environment"
+                    ],
+                    "learning_experiences": [
+                        "Carry out a field survey to identify types and sources of pollution in the community",
+                        "Create posters or presentations on pollution control measures",
+                        "Debate on individual vs collective responsibility in pollution prevention",
+                        "Research and share impacts of pollution on ecosystems and health"
+                    ],
+                    "key_inquiries": [
+                        "What are the types and causes of pollution?",
+                        "What are the effects of pollution on health and the environment?",
+                        "How can pollution be prevented or controlled?"
+                    ],
+                    "core_competencies": [
+                        "Communication and collaboration",
+                        "Critical thinking and problem solving"
+                    ],
+                    "values": [
+                        "Responsibility",
+                        "Respect"
+                    ],
+                    "pertinent_issues": [
+                        "Environmental education and public health"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Social Studies and Agriculture & Nutrition"
+                    ],
+                    "learning_materials": [
+                        "Charts",
+                        "Digital media",
+                        "Pollution samples or images"
+                    ],
+                    "non_formal_activities": [
+                        "Participate in a local clean-up or awareness campaign"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to describe different types of pollution and their causes",
+                            "rubrics": {
+                                "Exceeds": "Describes types and causes of pollution accurately and comprehensively",
+                                "Meets": "Describes most types and causes of pollution correctly",
+                                "Approaches": "Describes some types and causes of pollution",
+                                "Below": "Describes a few types and causes of pollution with prompts"
+                            }
+                        },
+                        {
+                            "skill": "Ability to explain the effects of pollution on human health and the environment",
+                            "rubrics": {
+                                "Exceeds": "Explains the effects of pollution on human health and the environment in detail",
+                                "Meets": "Explains the effects sufficiently",
+                                "Approaches": "Explains the effects partially",
+                                "Below": "Explains the effects with prompts"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Conservation of the Environment",
+                    "number": 2.2,
+                    "lesson_count": 16,
+                    "descriptions": [
+                        "Importance of conserving natural resources",
+                        "Conservation methods (afforestation, recycling, eco-friendly practices)",
+                        "Roles of individuals and communities in conservation"
+                    ],
+                    "learning_outcomes": [
+                        "Explain the importance of environmental conservation",
+                        "Describe methods of conserving the environment",
+                        "Participate in conservation initiatives",
+                        "Demonstrate responsibility in environmental matters"
+                    ],
+                    "learning_experiences": [
+                        "Engage in a school-based tree planting or recycling project",
+                        "Role-play environmental awareness campaigns",
+                        "Design eco-friendly practices for home or school use",
+                        "Research conservation organizations and their impact"
+                    ],
+                    "key_inquiries": [
+                        "Why is environmental conservation important?",
+                        "What are the methods of conserving natural resources?",
+                        "How can individuals and communities take part in conservation?"
+                    ],
+                    "core_competencies": [
+                        "Self-efficacy",
+                        "Citizenship"
+                    ],
+                    "values": [
+                        "Patriotism",
+                        "Responsibility"
+                    ],
+                    "pertinent_issues": [
+                        "Sustainable development and environmental protection"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Life Skills and Social Studies"
+                    ],
+                    "learning_materials": [
+                        "Seedlings and planting tools",
+                        "Recyclable materials",
+                        "Eco-poster templates"
+                    ],
+                    "non_formal_activities": [
+                        "Organize a conservation-themed exhibition or school-wide challenge"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to describe the importance of conserving the environment",
+                            "rubrics": {
+                                "Exceeds": "Describes importance of conserving the environment with multiple examples and clarity",
+                                "Meets": "Describes importance of conserving the environment",
+                                "Approaches": "Describes the importance partially",
+                                "Below": "Describes the importance superficially with prompts"
+                            }
+                        },
+                        {
+                            "skill": "Ability to apply environmental conservation practices",
+                            "rubrics": {
+                                "Exceeds": "Applies multiple conservation practices independently and consistently",
+                                "Meets": "Applies appropriate practices with some supervision",
+                                "Approaches": "Applies one or two practices with help",
+                                "Below": "Applies practices with guidance and prompting"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Force and Energy",
+            "number": 3.0,
+            "sub_strands": [
+                {
+                    "name": "Friction",
+                    "number": 3.1,
+                    "lesson_count": 12,
+                    "descriptions": [
+                        "Meaning and causes of friction",
+                        "Advantages and disadvantages of friction",
+                        "Ways to reduce or increase friction"
+                    ],
+                    "learning_outcomes": [
+                        "Explain the concept and causes of friction",
+                        "Identify the advantages and disadvantages of friction",
+                        "Suggest ways to control friction",
+                        "Appreciate the role of friction in everyday life"
+                    ],
+                    "learning_experiences": [
+                        "Experiment with surfaces to observe effects of friction",
+                        "Demonstrate how friction can be reduced or increased",
+                        "Use real-life tools (sandpaper, oil, etc.) to simulate friction control",
+                        "Discuss pros and cons of friction in daily situations"
+                    ],
+                    "key_inquiries": [
+                        "What causes friction?",
+                        "How is friction useful and how can it be a disadvantage?",
+                        "How can friction be increased or reduced?"
+                    ],
+                    "core_competencies": [
+                        "Critical thinking and problem solving",
+                        "Self-efficacy"
+                    ],
+                    "values": [
+                        "Responsibility",
+                        "Integrity"
+                    ],
+                    "pertinent_issues": [
+                        "Health and safety in daily operations (machinery, tools, etc.)"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Pre-technical and Business Studies"
+                    ],
+                    "learning_materials": [
+                        "Rough and smooth surfaces",
+                        "Weights",
+                        "Spring balances",
+                        "Lubricants"
+                    ],
+                    "non_formal_activities": [
+                        "Investigate and document friction-reducing practices at home or in the community"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to describe the concept of friction and its effects",
+                            "rubrics": {
+                                "Exceeds": "Clearly describes the concept and gives real-life applications with accuracy",
+                                "Meets": "Describes the concept of friction and gives examples",
+                                "Approaches": "Describes friction with limited examples",
+                                "Below": "Describes friction with prompts or unclear examples"
+                            }
+                        },
+                        {
+                            "skill": "Ability to identify ways of reducing or increasing friction",
+                            "rubrics": {
+                                "Exceeds": "Identifies and justifies multiple ways to increase or reduce friction",
+                                "Meets": "Identifies correct methods to increase or reduce friction",
+                                "Approaches": "Identifies some ways with limited accuracy",
+                                "Below": "Identifies few or incorrect ways with prompting"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Machines",
+                    "number": 3.2,
+                    "lesson_count": 16,
+                    "descriptions": [
+                        "Simple machines: levers, pulleys, inclined planes, gears, etc.",
+                        "Functions of machines in work and daily life",
+                        "Mechanical advantage, load, effort, and efficiency"
+                    ],
+                    "learning_outcomes": [
+                        "Identify types of simple machines",
+                        "Explain their working principles and uses",
+                        "Calculate mechanical advantage and efficiency",
+                        "Appreciate the role of machines in improving life"
+                    ],
+                    "learning_experiences": [
+                        "Use models to demonstrate types of simple machines",
+                        "Experiment with pulleys and levers to calculate force",
+                        "Explore tools and equipment in home/work settings",
+                        "Work in groups to design a simple machine for a given task"
+                    ],
+                    "key_inquiries": [
+                        "What are simple machines and how do they work?",
+                        "How do machines make work easier?",
+                        "What is mechanical advantage and efficiency?"
+                    ],
+                    "core_competencies": [
+                        "Communication and collaboration",
+                        "Learning to learn"
+                    ],
+                    "values": [
+                        "Innovation",
+                        "Responsibility"
+                    ],
+                    "pertinent_issues": [
+                        "Energy efficiency and sustainable technology"
+                    ],
+                    "other_learning_areas": [
+                        "Linked to Mathematics and Pre-technical Studies"
+                    ],
+                    "learning_materials": [
+                        "Models of machines (pulleys, levers, etc.)",
+                        "Weights",
+                        "Spring balances",
+                        "Charts and calculators"
+                    ],
+                    "non_formal_activities": [
+                        "Participate in a simple machine design contest or demonstration day"
+                    ],
+                    "skills": [
+                        {
+                            "skill": "Ability to identify and explain functions of simple machines",
+                            "rubrics": {
+                                "Exceeds": "Identifies all simple machines and explains their functions clearly with real-life examples",
+                                "Meets": "Identifies most machines and explains functions accurately",
+                                "Approaches": "Identifies some machines and gives limited function explanation",
+                                "Below": "Identifies few machines and gives unclear or prompted explanation"
+                            }
+                        },
+                        {
+                            "skill": "Ability to calculate mechanical advantage and efficiency",
+                            "rubrics": {
+                                "Exceeds": "Accurately calculates mechanical advantage and efficiency with correct units and formulas",
+                                "Meets": "Calculates mechanical advantage and efficiency correctly",
+                                "Approaches": "Attempts calculation with partial accuracy",
+                                "Below": "Makes incorrect or incomplete calculations"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
