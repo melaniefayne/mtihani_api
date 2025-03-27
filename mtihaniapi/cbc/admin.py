@@ -6,7 +6,7 @@ class StrandAdmin(admin.ModelAdmin):
     list_display = ("number", "name", "grade")
     search_fields = ("name",)
     list_filter = ("grade",)
-    ordering = ("number",)
+    ordering = ("grade", "number",)
 
 
 @admin.register(SubStrand)
