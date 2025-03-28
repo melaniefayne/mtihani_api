@@ -1,12 +1,12 @@
 from django.http import JsonResponse
-import json
+from permissions import IsAdmin
 from .models import BloomSkill, Strand, SubStrand, Skill, AssessmentRubric
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdmin])
 def upload_curriculum(request):
     data = request.data
 
@@ -58,7 +58,7 @@ def upload_curriculum(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdmin])
 def upload_bloom_skills(request):
     data = request.data
     bloom_skills = data.get("bloom_skills", [])
@@ -74,3 +74,11 @@ def upload_bloom_skills(request):
 
 
     return JsonResponse({"status": "success"}, status=201)
+
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated, CanViewCBC])
+# def get_strands(request):
+#     strands = Strand.objects.all()
+#     serializer = StrandSerializer(strands, many=True)
+#     return Response(serializer.data)
