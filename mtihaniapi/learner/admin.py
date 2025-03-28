@@ -3,14 +3,14 @@ from .models import Teacher, Class, Student, TermScore, LessonTime
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ("user", "phone_no", "created_at", "updated_at")
+    list_display = ("id", "user", "phone_no", "created_at", "updated_at")
     search_fields = ("user__email", "user__first_name", "phone_no")
     ordering = ("-created_at",)
 
 
 @admin.register(Class)
 class ClassAdmin(admin.ModelAdmin):
-    list_display = ("name", "grade", "school_name", "code", "teacher")
+    list_display = ("id", "name", "grade", "school_name", "code", "teacher")
     search_fields = ("name", "school_name", "teacher__user__email")
     list_filter = ("grade", "school_name")
     ordering = ("grade", "name")
@@ -18,7 +18,7 @@ class ClassAdmin(admin.ModelAdmin):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ("name", "code", "classroom", "user")
+    list_display = ("id", "name", "code", "classroom", "user")
     search_fields = ("name", "code", "classroom__name", "user__email")
     list_filter = ("classroom__grade",)
     ordering = ("name",)

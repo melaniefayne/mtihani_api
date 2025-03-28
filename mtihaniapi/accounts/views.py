@@ -1,9 +1,9 @@
 from django.contrib.auth import authenticate
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import Group
 
 from learner.models import Teacher, Student
@@ -108,3 +108,38 @@ def login_user(request):
         "role": role,
         "profile": profile_data
     }, status=200)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_user(request):
+    user = request.user
+    email = request.data.get("email")
+    name = request.data.get("first_name") + ' ' + request.data.get("last_name")
+
+    if email:
+        if User.objects.exclude(id=user.id).filter(email=email).exists():
+            return Response({"error": "Email already in use."}, status=400)
+        user.email = email
+        user.username = email
+
+    if name:
+        user.first_name = name
+
+    user.save()
+    return Response({"status": "User updated"})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = request.user
+    current = request.data.get("current_password")
+    new = request.data.get("new_password")
+
+    if not user.check_password(current):
+        return Response({"error": "Current password is incorrect."}, status=400)
+
+    user.set_password(new)
+    user.save()
+    return Response({"status": "Password changed successfully"})

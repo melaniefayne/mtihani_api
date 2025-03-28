@@ -72,7 +72,12 @@ class TermScore(models.Model):
             MaxValueValidator(9)
         ]
     )
-    term = models.IntegerField()
+    term = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(3)
+        ]
+    )
     score = models.FloatField()
 
     class Meta:
