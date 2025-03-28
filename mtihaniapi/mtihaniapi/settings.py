@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'cbc',
+    'learner',
+    'accounts',
 
     'corsheaders',
     'rest_framework'

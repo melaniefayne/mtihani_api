@@ -6,15 +6,15 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth.models import Group
 
-from mtihaniapi.learner.models import Teacher, Student
-from mtihaniapi.learner.serializers import TeacherSerializer
+from learner.models import Teacher, Student
+from learner.serializers import TeacherSerializer
 
 
 @api_view(['POST'])
 def register_user(request):
     email = request.data.get("email")
     password = request.data.get("password")
-    name = request.data.get("name")
+    name = request.data.get("first_name") + ' ' + request.data.get("last_name")
     role = request.data.get("role")
     student_code = request.data.get("student_code")
 

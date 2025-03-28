@@ -1,10 +1,15 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Strand(models.Model):
     name = models.CharField(max_length=255)
     number = models.FloatField()
-    grade = models.IntegerField()
+    grade = models.IntegerField(
+        validators=[
+            MinValueValidator(7),
+            MaxValueValidator(9)
+        ]
+    )
 
     class Meta:
         unique_together = ("grade", "number")

@@ -17,7 +17,7 @@ from utils import generate_unique_code
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsTeacher])
 def create_class(request):
     try:
         teacher = Teacher.objects.get(user=request.user)
@@ -45,7 +45,7 @@ def create_class(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsTeacher])
 def create_teacher(request):
     if Teacher.objects.filter(user=request.user).exists():
         return Response({"error": "Teacher profile already exists."}, status=400)
@@ -70,23 +70,32 @@ def create_teacher(request):
 @parser_classes([MultiPartParser])
 def upload_students_csv(request):
     csv_file = request.FILES.get('file')
+    class_id = request.POST.get("class_id")
+
     if not csv_file:
         return Response({"error": "No file uploaded."}, status=400)
 
     if not csv_file.name.endswith('.csv'):
         return Response({"error": "Only CSV files are supported."}, status=400)
 
+    if not class_id:
+        return Response({"error": "Missing class_id in request."}, status=400)
+
+    # Get teacher and class
     try:
         teacher = Teacher.objects.get(user=request.user)
-        classroom = Class.objects.filter(teacher=teacher).first()
-        if not classroom:
-            return Response({"error": "No class found for this teacher."}, status=400)
+        classroom = Class.objects.get(id=class_id, teacher=teacher)
     except Teacher.DoesNotExist:
         return Response({"error": "Teacher profile not found."}, status=400)
+    except Class.DoesNotExist:
+        return Response({"error": "Class not found or not assigned to you."}, status=404)
 
-    data_set = csv_file.read().decode('UTF-8')
-    io_string = io.StringIO(data_set)
-    reader = csv.DictReader(io_string)
+    try:
+        data_set = csv_file.read().decode('UTF-8')
+        io_string = io.StringIO(data_set)
+        reader = csv.DictReader(io_string)
+    except Exception as e:
+        return Response({"error": f"Failed to parse CSV: {str(e)}"}, status=400)
 
     created_students = []
 
@@ -95,30 +104,35 @@ def upload_students_csv(request):
         if not name:
             continue
 
-        student = Student.objects.create(
+        student, _ = Student.objects.get_or_create(
             name=name,
-            code=generate_unique_code(),
-            classroom=classroom
+            classroom=classroom,
+            defaults={"code": generate_unique_code()}
         )
         created_students.append(student.name)
 
         for col, value in row.items():
+            if not col:
+                continue
+
             match = re.match(r"Grade(\d+)Term(\d+)Score", col)
-            if match and value.strip():
-                grade = int(match.group(1))
-                term = int(match.group(2))
+            if match and value and value.strip():
                 try:
+                    grade = int(match.group(1))
+                    term = int(match.group(2))
                     score = float(value.strip())
-                    TermScore.objects.create(
+                    TermScore.objects.update_or_create(
                         student=student,
                         grade=grade,
                         term=term,
-                        score=score
+                        defaults={"score": score}
                     )
-                except ValueError:
+                except (ValueError, TypeError):
                     continue
 
     return Response({
         "status": "success",
-        "created_students": created_students
+        "created_students": created_students,
+        "class": classroom.name,
+        "grade": classroom.grade
     }, status=201)
