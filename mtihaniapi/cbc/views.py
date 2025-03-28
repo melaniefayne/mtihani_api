@@ -3,6 +3,9 @@ from permissions import IsAdmin
 from .models import BloomSkill, Strand, SubStrand, Skill, AssessmentRubric
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from learner.models import Student
+from django.db.models import Q
 
 
 @api_view(['POST'])
@@ -76,9 +79,100 @@ def upload_bloom_skills(request):
     return JsonResponse({"status": "success"}, status=201)
 
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated, CanViewCBC])
-# def get_strands(request):
-#     strands = Strand.objects.all()
-#     serializer = StrandSerializer(strands, many=True)
-#     return Response(serializer.data)
+def build_curriculum_queryset(grades=None, search=None):
+    grades = grades or Strand.objects.values_list('grade', flat=True).distinct().order_by('grade')
+    curriculum = []
+
+    for grade in grades:
+        strands = Strand.objects.filter(grade=grade).order_by('number')
+
+        if search:
+            strands = strands.filter(
+                Q(name__icontains=search) |
+                Q(sub_strands__name__icontains=search)
+            ).distinct()
+
+        strand_data = []
+
+        for strand in strands:
+            sub_strands = strand.sub_strands.all().order_by('number')
+
+            if search:
+                sub_strands = sub_strands.filter(name__icontains=search)
+
+            sub_strand_data = []
+
+            for ss in sub_strands:
+                skills = ss.skills.all()
+                skill_data = []
+
+                for skill in skills:
+                    rubrics = skill.rubrics.all().values('expectation', 'description')
+                    skill_data.append({
+                        "id": skill.id,
+                        "skill": skill.skill,
+                        "rubrics": list(rubrics)
+                    })
+
+                sub_strand_data.append({
+                    "id": ss.id,
+                    "name": ss.name,
+                    "number": ss.number,
+                    "lesson_count": ss.lesson_count,
+                    "key_inquiries": ss.key_inquiries,
+                    "learning_outcomes": ss.learning_outcomes,
+                    "learning_experiences": ss.learning_experiences,
+                    "descriptions": ss.descriptions,
+                    "core_competencies": ss.core_competencies,
+                    "values": ss.values,
+                    "pertinent_issues": ss.pertinent_issues,
+                    "other_learning_areas": ss.other_learning_areas,
+                    "learning_materials": ss.learning_materials,
+                    "non_formal_activities": ss.non_formal_activities,
+                    "skills": skill_data
+                })
+
+            if sub_strand_data:
+                strand_data.append({
+                    "id": strand.id,
+                    "name": strand.name,
+                    "number": strand.number,
+                    "sub_strands": sub_strand_data
+                })
+
+        if strand_data:
+            curriculum.append({
+                "grade": grade,
+                "strands": strand_data
+            })
+
+    return curriculum
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def full_curriculum(request):
+    search = request.GET.get('search', '').lower()
+    grade_filter = request.GET.get('grade')
+
+    grade_filter_list = grade_filter.split(',') if grade_filter else None
+    curriculum = build_curriculum_queryset(grades=grade_filter_list, search=search)
+
+    return Response(curriculum, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def cbc_my_grade(request):
+    try:
+        student = Student.objects.select_related('classroom').get(user=request.user)
+    except Student.DoesNotExist:
+        return Response({"error": "Student profile not found."}, status=404)
+
+    current_grade = student.classroom.grade
+    relevant_grades = relevant_grades = list(range(7, current_grade + 1))
+
+    search = request.GET.get('search', '').lower()
+    curriculum = build_curriculum_queryset(grades=relevant_grades, search=search)
+
+    return Response(curriculum, status=200)
