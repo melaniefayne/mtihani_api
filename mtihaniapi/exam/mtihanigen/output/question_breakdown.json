@@ -1,0 +1,172 @@
+[
+    {
+        "question_number": 1,
+        "grade": 7,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Mixtures",
+        "target_bloom_skill": "Knowledge",
+        "learning_outcomes": [
+            "Separate homogeneous mixtures using appropriate methods",
+            "Outline applications of separating homogeneous mixtures in day-to-day life",
+            "Appreciate the use of different methods of separating mixtures in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to separate homogeneous mixtures using appropriate method"
+        ]
+    },
+    {
+        "question_number": 2,
+        "grade": 7,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Acids, Bases and Indicators",
+        "target_bloom_skill": "Knowledge",
+        "learning_outcomes": [
+            "Identify acids and bases using a litmus paper",
+            "Prepare an acid-base indicator from plant extracts",
+            "Describe the physical properties of acids and bases",
+            "Outline applications of acids, bases and indicators in real life",
+            "Appreciate the uses of acids and bases in real life"
+        ],
+        "skills_to_assess": [
+            "Ability to identify acids and bases",
+            "Ability to outline applications of acids and bases in real life"
+        ]
+    },
+    {
+        "question_number": 3,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Electrical Energy",
+        "target_bloom_skill": "Comprehension",
+        "learning_outcomes": [
+            "Identify sources of electricity in the environment",
+            "Demonstrate flow of electric current using simple electric circuits",
+            "Identify common electrical appliances used in day-to-day life",
+            "Identify safety measures observed when handling electrical appliances",
+            "Appreciate the use of electricity in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to identify common electrical appliances used in day-to-day life",
+            "Ability to identify safety measures observed when handling electrical appliances",
+            "Ability to identify sources of electricity in the environment"
+        ]
+    },
+    {
+        "question_number": 4,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Magnetism",
+        "target_bloom_skill": "Comprehension",
+        "learning_outcomes": [
+            "Demonstrate the properties of a magnet",
+            "Classify materials as magnetic or non-magnetic",
+            "Identify the uses of magnets in day-to-day life",
+            "Appreciate the applications of magnets in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to demonstrate the properties of a magnet",
+            "Ability to identify the uses of magnets in day-to-day life"
+        ]
+    },
+    {
+        "question_number": 5,
+        "grade": 8,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Elements and Compounds",
+        "target_bloom_skill": "Application",
+        "learning_outcomes": [
+            "Explain the relationship between an atom, an element, a molecule and a compound",
+            "Assign symbols to selected elements",
+            "Write word equations to represent reactions of selected elements to form compounds",
+            "Outline the applications of common elements in the society",
+            "Appreciate the information on packaging labels of commonly consumed substances"
+        ],
+        "skills_to_assess": [
+            "Ability to differentiate between elements and compounds"
+        ]
+    },
+    {
+        "question_number": 6,
+        "grade": 8,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Physical and Chemical Changes",
+        "target_bloom_skill": "Application",
+        "learning_outcomes": [
+            "Describe characteristics of physical and chemical changes",
+            "Differentiate between physical and chemical changes",
+            "Classify changes as either physical or chemical",
+            "Relate physical and chemical changes to day-to-day life",
+            "Appreciate the relevance of physical and chemical changes in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to distinguish between physical and chemical changes"
+        ]
+    },
+    {
+        "question_number": 7,
+        "grade": 8,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Classes of Fire",
+        "target_bloom_skill": "Analysis",
+        "learning_outcomes": [
+            "Identify the different classes of fire",
+            "Match each class of fire with the appropriate fire extinguisher",
+            "Describe appropriate fire safety measures at home, school and workplace",
+            "Appreciate the importance of fire safety and preparedness"
+        ],
+        "skills_to_assess": [
+            "Ability to identify fire classes and use appropriate extinguishing methods"
+        ]
+    },
+    {
+        "question_number": 8,
+        "grade": 8,
+        "strand": "Force and Energy",
+        "sub_strand": "Transformation of Energy",
+        "target_bloom_skill": "Analysis",
+        "learning_outcomes": [
+            "Identify various forms of energy",
+            "Describe how one form of energy can be transformed into another",
+            "Relate transformation of energy to real-life situations",
+            "Appreciate the importance of energy transformation in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to describe transformation of energy and its application"
+        ]
+    },
+    {
+        "question_number": 9,
+        "grade": 8,
+        "strand": "Force and Energy",
+        "sub_strand": "Pressure",
+        "target_bloom_skill": "Synthesis",
+        "learning_outcomes": [
+            "Define pressure and explain how it acts in solids, liquids and gases",
+            "Identify factors that affect pressure",
+            "Describe how pressure is measured",
+            "Relate pressure to day-to-day applications",
+            "Appreciate the usefulness of pressure in real-life situations"
+        ],
+        "skills_to_assess": [
+            "Ability to explain pressure and its application in real life"
+        ]
+    },
+    {
+        "question_number": 10,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Structure of the Atom",
+        "target_bloom_skill": "Evaluation",
+        "learning_outcomes": [
+            "Describe the structure of the atom",
+            "Determine the mass number of elements",
+            "Draw electron arrangements in atoms using dot or cross diagrams",
+            "Classify elements into metals and non-metals",
+            "Show interest in classifying elements into metals and non-metals"
+        ],
+        "skills_to_assess": [
+            "Ability to classify elements into metals and non-metals",
+            "Ability to describe the structure of the atom"
+        ]
+    }
+]

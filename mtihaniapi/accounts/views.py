@@ -5,9 +5,9 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import Group
-
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from learner.models import Teacher, Student
-from learner.serializers import TeacherSerializer
+from learner.serializers import *
 
 
 @api_view(['POST'])
@@ -24,16 +24,7 @@ def register_user(request):
     if User.objects.filter(username=email).exists():
         return Response({"error": "User already exists"}, status=400)
 
-    user = User.objects.create_user(
-        username=email,
-        email=email,
-        password=password,
-        first_name=name
-    )
-
-    group, _ = Group.objects.get_or_create(name=role)
-    group.user_set.add(user)
-
+    student = Student()
     if role == 'student':
         if not student_code:
             return Response({"error": "Student code is required for student registration."}, status=400)
@@ -46,6 +37,17 @@ def register_user(request):
         if student.user is not None:
             return Response({"error": "This student code has already been used."}, status=400)
 
+    user = User.objects.create_user(
+        username=email,
+        email=email,
+        password=password,
+        first_name=name
+    )
+
+    group, _ = Group.objects.get_or_create(name=role)
+    group.user_set.add(user)
+
+    if role == 'student':
         student.user = user
         student.save()
 
@@ -53,12 +55,10 @@ def register_user(request):
     return Response({
         "refresh": str(refresh),
         "access": str(refresh.access_token),
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "name": user.first_name,
-            "role": role,
-        }
+        "user_id": user.id,
+        "email": user.email,
+        "name": user.first_name,
+        "role": role,
     }, status=201)
 
 
@@ -68,45 +68,60 @@ def login_user(request):
     password = request.data.get("password")
 
     if not email or not password:
-        return Response({"error": "Email and password are required."}, status=400)
+        return Response({"error": "Email and password are required."}, status=HTTP_400_BAD_REQUEST)
 
     user = authenticate(username=email, password=password)
 
     if user is None:
-        return Response({"error": "Invalid credentials."}, status=401)
+        return Response({"error": "Invalid credentials."}, status=HTTP_401_UNAUTHORIZED)
+
+    if user.is_superuser or user.groups.filter(name="admin").exists():
+        return Response({"error": "Invalid role on app login."}, status=HTTP_401_UNAUTHORIZED)
 
     refresh = RefreshToken.for_user(user)
 
-    user_data = {
-        "id": user.id,
-        "email": user.email,
-        "name": user.first_name,
-    }
-
+    # Initialize with defaults
+    student_id = None
+    teacher_id = None
+    phone_no = None
+    created_at = None
+    updated_at = None
     role = "unknown"
-    profile_data = {}
 
     if user.groups.filter(name="teacher").exists():
         role = "teacher"
         try:
             teacher = Teacher.objects.get(user=user)
-            profile_data = TeacherSerializer(teacher).data
+            teacher_id = teacher.id
+            phone_no = teacher.phone_no
+            created_at = teacher.created_at
+            updated_at = teacher.updated_at
         except Teacher.DoesNotExist:
-            profile_data = {"error": "Teacher profile not found."}
+            pass
 
     elif user.groups.filter(name="student").exists():
         role = "student"
-        # Add StudentSerializer logic later
-
-    elif user.is_superuser or user.groups.filter(name="admin").exists():
-        role = "admin"
+        try:
+            student = Student.objects.get(user=user)
+            student_id = student.id
+        except Student.DoesNotExist:
+            pass
 
     return Response({
-        "refresh": str(refresh),
-        "access": str(refresh.access_token),
-        "user": user_data,
-        "role": role,
-        "profile": profile_data
+        "user": {
+            "user_id": user.id,
+            "email": user.email,
+            "name": user.first_name,
+            "role": role,
+            "teacher_id": teacher_id,
+            "student_id": student_id,
+            "phone_no": phone_no,
+            "created_at": created_at,
+            "updated_at": updated_at,
+        },
+        "token": str(refresh.access_token),
+
+
     }, status=200)
 
 

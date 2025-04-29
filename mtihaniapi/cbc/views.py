@@ -135,6 +135,7 @@ def build_curriculum_queryset(grades=None, search=None):
             if sub_strand_data:
                 strand_data.append({
                     "id": strand.id,
+                    "grade": strand.grade,
                     "name": strand.name,
                     "number": strand.number,
                     "sub_strands": sub_strand_data

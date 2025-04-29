@@ -1,6 +1,6 @@
 # learner/serializers.py
 from rest_framework import serializers
-from .models import Class, Teacher, LessonTime
+from .models import *
 
 
 class TeacherSerializer(serializers.ModelSerializer):
@@ -18,4 +18,16 @@ class ClassSerializer(serializers.ModelSerializer):
 class LessonTimeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LessonTime
+        fields = '__all__'
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = '__all__'
+
+
+class TermScoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TermScore
         fields = '__all__'

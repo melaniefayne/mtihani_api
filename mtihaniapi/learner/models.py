@@ -5,6 +5,7 @@ from utils import generate_unique_code
 
 
 class Teacher(models.Model):
+    name = models.CharField(max_length=255)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_no = models.CharField(max_length=15)
     created_at = models.DateTimeField(auto_now_add=True)
