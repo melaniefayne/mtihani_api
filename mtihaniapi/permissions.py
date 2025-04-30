@@ -15,6 +15,10 @@ class IsTeacher(BasePermission):
 class IsStudent(BasePermission):
     def has_permission(self, request, view):
         return request.user and request.user.groups.filter(name=studentRole).exists()
+    
+class IsTeacherOrStudent(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.groups.filter(name__in=[teacherRole, studentRole]).exists()
 
 class CanViewCBC(BasePermission):
     def has_permission(self, request, view):

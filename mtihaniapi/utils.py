@@ -14,19 +14,19 @@ def generate_unique_code():
 
 EXPECTATION_LEVELS = {
     "EXCEEDING": {
-        "label": "Exceeding Expectations",
+        "label": "Exceeding",
         "min_score": 80,
     },
     "MEETING": {
-        "label": "Meeting Expectations",
+        "label": "Meeting",
         "min_score": 60,
     },
     "APPROACHING": {
-        "label": "Approaching Expectations",
+        "label": "Approaching",
         "min_score": 40,
     },
     "BELOW": {
-        "label": "Below Expectations",
+        "label": "Below",
         "min_score": 0,
     }
 }

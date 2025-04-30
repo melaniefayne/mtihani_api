@@ -1,20 +1,10 @@
 from django.db import models
 
-# Create your models here.
-
-class Classroom(models.Model):
-    name = models.CharField(max_length=100)
-    school_name = models.CharField(max_length=255, blank=True, null=True)
-    school_address = models.TextField(blank=True, null=True)
-    subject = models.CharField(max_length=100, blank=True, null=True)
-    grade = models.IntegerField()
-    code = models.CharField(max_length=50, unique=True)
-    teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE, related_name='classes')
-
+from learner.models import Classroom, ClassroomStudent, Teacher
 
 class Exam(models.Model):
     class_obj = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='exams')
-    teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE)
+    teacher =  models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name='exams')
     grade = models.IntegerField()
     code = models.CharField(max_length=50, unique=True)
     status = models.CharField(max_length=50)
@@ -52,13 +42,13 @@ class ExamQuestionAnalysis(models.Model):
 
 
 class StudentExamSession(models.Model):
-    student = models.ForeignKey('Student', on_delete=models.CASCADE)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
     start_date_time = models.DateTimeField()
     end_date_time = models.DateTimeField(null=True, blank=True)
     duration_min = models.IntegerField(null=True, blank=True)
     avg_score = models.FloatField(null=True, blank=True)
     expectation_level = models.CharField(max_length=100, blank=True, null=True)
+    student = models.ForeignKey(ClassroomStudent, on_delete=models.CASCADE, related_name='student_exam_session')
 
 class StudentExamSessionAnswer(models.Model):
     session = models.ForeignKey(StudentExamSession, on_delete=models.CASCADE, related_name='answers')
@@ -70,18 +60,31 @@ class StudentExamSessionAnswer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class StudentExamSessionPerformance(models.Model):
-    session = models.OneToOneField(StudentExamSession, on_delete=models.CASCADE)
+    session = models.OneToOneField(StudentExamSession, on_delete=models.CASCADE, related_name='student_exam_session_performance')
     avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
     bloom_skill_scores = models.JSONField(default=list)  # list of score dicts
     strand_scores = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+    def save(self, *args, **kwargs):
+        from utils import get_expectation_level
+        self.avg_expectation_level = get_expectation_level(self.avg_score)
+        super().save(*args, **kwargs)
+
 class ClassExamPerformance(models.Model):
-    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='class_performance')
     exam = models.OneToOneField(Exam, on_delete=models.CASCADE)
     avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
     bloom_skill_scores = models.JSONField(default=list)
     strand_scores = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='class_exam_performance')
+
+    def save(self, *args, **kwargs):
+        from utils import get_expectation_level
+        self.avg_expectation_level = get_expectation_level(self.avg_score)
+        super().save(*args, **kwargs)

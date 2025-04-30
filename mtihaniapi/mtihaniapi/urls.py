@@ -17,7 +17,6 @@ urlpatterns = [
     path('api/get_token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/refresh_token', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/accounts/', include('accounts.urls')),
-    path('api/cbc/', include('cbc.urls')),
     path('api/accounts/', include('accounts.urls')),
     path('api/learner/', include('learner.urls')),
 ]

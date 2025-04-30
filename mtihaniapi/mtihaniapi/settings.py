@@ -39,9 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'cbc',
     'learner',
-    'accounts',
+    'exam',
 
     'corsheaders',
     'rest_framework'
