@@ -1,40 +1,53 @@
 from django.contrib import admin
-from .models import Teacher, Class, Student, TermScore, LessonTime
+from .models import (
+    Teacher, Classroom, LessonTime,
+    ClassroomStudent, TermScore
+)
+
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "phone_no", "created_at", "updated_at")
-    search_fields = ("user__email", "user__first_name", "phone_no")
-    ordering = ("-created_at",)
+    list_display = ('name', 'phone_no', 'user', 'created_at')
+    search_fields = ('name', 'user__email', 'user__first_name')
 
 
-@admin.register(Class)
-class ClassAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "grade", "school_name", "code", "teacher")
-    search_fields = ("name", "school_name", "teacher__user__email")
-    list_filter = ("grade", "school_name")
-    ordering = ("grade", "name")
+class LessonTimeInline(admin.TabularInline):
+    model = LessonTime
+    extra = 1
 
 
-@admin.register(Student)
-class StudentAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "code", "classroom", "user")
-    search_fields = ("name", "code", "classroom__name", "user__email")
-    list_filter = ("classroom__grade",)
-    ordering = ("name",)
+@admin.register(Classroom)
+class ClassroomAdmin(admin.ModelAdmin):
+    list_display = ('name', 'grade', 'subject', 'school_name', 'teacher', 'updated_at')
+    list_filter = ('grade', 'teacher', 'subject')
+    search_fields = ('name', 'school_name', 'teacher__name')
+    inlines = [LessonTimeInline]
+
+
+class TermScoreInline(admin.TabularInline):
+    model = TermScore
+    extra = 1
+    readonly_fields = ('expectation_level',)
+
+
+@admin.register(ClassroomStudent)
+class ClassroomStudentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'user_linked', 'classrooms_list')
+    search_fields = ('name', 'code', 'user__email')
+    inlines = [TermScoreInline]
+
+    def user_linked(self, obj):
+        return obj.user.email if obj.user else '—'
+    user_linked.short_description = 'User'
+
+    def classrooms_list(self, obj):
+        return ", ".join([c.name for c in obj.classroom.all()])
+    classrooms_list.short_description = 'Classrooms'
 
 
 @admin.register(TermScore)
 class TermScoreAdmin(admin.ModelAdmin):
-    list_display = ("student", "grade", "term", "score")
-    search_fields = ("student__name", "student__code")
-    list_filter = ("grade", "term")
-    ordering = ("student", "grade", "term")
-
-
-@admin.register(LessonTime)
-class LessonTimeAdmin(admin.ModelAdmin):
-    list_display = ("class_ref", "day", "time")
-    list_filter = ("day",)
-    search_fields = ("class_ref__name",)
-    ordering = ("class_ref", "day", "time")
+    list_display = ('classroom_student', 'grade', 'term', 'score', 'expectation_level')
+    list_filter = ('grade', 'term', 'expectation_level')
+    search_fields = ('classroom_student__name',)
+    readonly_fields = ('expectation_level',)
