@@ -38,7 +38,7 @@ class LessonTimeSerializer(serializers.Serializer):
         return data
 
 
-class ClassroomSerializer(serializers.ModelSerializer):
+class ClassroomInputSerializer(serializers.ModelSerializer):
     lesson_times = LessonTimeSerializer(many=True, write_only=True)
     uploaded_students = UploadedStudentSerializer(
         many=True, required=False, write_only=True)
@@ -126,6 +126,35 @@ class ClassroomDetailSerializer(serializers.Serializer):
 
 
 class ClassroomStudentSerializer(serializers.ModelSerializer):
+    classroom_id = serializers.SerializerMethodField()
+    classroom_name = serializers.SerializerMethodField()
+    term_scores = serializers.SerializerMethodField()
     class Meta:
         model = ClassroomStudent
-        fields = ['id', 'name', 'status', 'avg_score', 'avg_expectation_level']
+        fields = [
+            'id', 'name', 'code', 'status',
+            'avg_score', 'avg_expectation_level',
+            'classroom_id', 'classroom_name',
+            'term_scores'
+        ]
+
+    def get_classroom_id(self, obj):
+        classroom = self.context.get('classroom')
+        return classroom.id if classroom else None
+
+    def get_classroom_name(self, obj):
+        classroom = self.context.get('classroom')
+        return classroom.name if classroom else None
+    
+    def get_term_scores(self, obj):
+        classroom = self.context.get('classroom')
+        if not classroom:
+            return []
+
+        classroom = self.context.get('classroom')
+        if classroom:
+            scores = obj.term_scores.filter(classroom_student=obj, classroom_student__classroom=classroom)
+        else:
+            scores = obj.term_scores.all()
+        return TermScoreSerializer(scores, many=True).data
+        

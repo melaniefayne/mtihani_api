@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import *
-from learner.serializers import ClassroomDetailSerializer, ClassroomSerializer, ClassroomStudentSerializer
+from learner.serializers import ClassroomDetailSerializer, ClassroomInputSerializer, ClassroomStudentSerializer
 from permissions import IsTeacher, IsTeacherOrStudent
 from utils import GlobalPagination, get_expectation_level
 from learner.models import (
@@ -30,7 +30,7 @@ def create_classroom(request) -> Response:
                 "message": f"A classroom named '{name}' for grade {grade} already exists."
             }, status=HTTP_400_BAD_REQUEST)
 
-        serializer = ClassroomSerializer(
+        serializer = ClassroomInputSerializer(
             data=request.data, context={"request": request})
         if serializer.is_valid():
             classroom = serializer.save()
@@ -133,7 +133,7 @@ def _get_teacher_classrooms(classroom_with_details: List[Dict[str, Any]]) -> Lis
         classroom_data["avg_term_score"] = avg_score
         classroom_data["avg_term_expectation_level"] = get_expectation_level(
             avg_score)
-        
+
         # Avg mtihani score from ClassExamPerformance
         result = ClassExamPerformance.objects.filter(
             classroom_id=classroom_id
@@ -252,7 +252,8 @@ def get_classroom_students(request):
         except Classroom.DoesNotExist:
             return Response({"message": "Classroom not found."}, status=HTTP_400_BAD_REQUEST)
 
-        students = ClassroomStudent.objects.filter(classroom=classroom)
+        students = ClassroomStudent.objects.filter(
+            classroom=classroom).order_by('name')
 
         # Filtering
         search = request.GET.get("search")
@@ -270,7 +271,8 @@ def get_classroom_students(request):
         # Paginate
         paginator = GlobalPagination()
         paginated_students = paginator.paginate_queryset(students, request)
-        serializer = ClassroomStudentSerializer(paginated_students, many=True)
+        serializer = ClassroomStudentSerializer(
+            paginated_students, many=True, context={'classroom': classroom})
 
         return paginator.get_paginated_response(serializer.data)
 
@@ -293,7 +295,7 @@ def edit_classroom(request, classroom_id) -> Response:
         except Classroom.DoesNotExist:
             return Response({"message": "Classroom not found."}, status=HTTP_404_NOT_FOUND)
 
-        serializer = ClassroomSerializer(
+        serializer = ClassroomInputSerializer(
             classroom, data=request.data, context={"request": request}, partial=True
         )
         if not serializer.is_valid():
@@ -330,7 +332,8 @@ def edit_classroom(request, classroom_id) -> Response:
                     )
                 # Update average score & expectation
                 all_scores = student.term_scores.all()
-                avg = round(sum(s.score for s in all_scores) / len(all_scores), 2)
+                avg = round(sum(s.score for s in all_scores) /
+                            len(all_scores), 2)
                 student.avg_score = avg
                 student.avg_expectation_level = get_expectation_level(avg)
                 student.save()
@@ -338,7 +341,8 @@ def edit_classroom(request, classroom_id) -> Response:
             except ClassroomStudent.DoesNotExist:
                 # New student
                 score_values = [s['score'] for s in scores if 'score' in s]
-                avg_score = round(sum(score_values) / len(score_values), 2) if score_values else 0.0
+                avg_score = round(sum(score_values) /
+                                  len(score_values), 2) if score_values else 0.0
                 avg_expectation = get_expectation_level(avg_score)
 
                 student = ClassroomStudent.objects.create(
@@ -363,4 +367,71 @@ def edit_classroom(request, classroom_id) -> Response:
 
     except Exception as e:
         print(f"Error updating classroom: {e}")
+        return Response({"message": "An unexpected error occurred."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+#  ================================================ edit-classroom-student
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def edit_classroom_student(request, student_id) -> Response:
+    try:
+        try:
+            classroom_student = ClassroomStudent.objects.get(id=student_id)
+        except ClassroomStudent.DoesNotExist:
+            return Response({"message": "Student not found."}, status=HTTP_404_NOT_FOUND)
+
+        name = request.data.get("name")
+        updated_scores = request.data.get("updated_term_scores", [])
+
+        if name:
+            classroom_student.name = name
+
+        score_values = []
+
+        for score_data in updated_scores:
+            score_id = score_data.get("id")
+            grade = score_data.get("grade")
+            term = score_data.get("term")
+            score = score_data.get("score")
+
+            if score_id:  # Update existing
+                try:
+                    term_score = TermScore.objects.get(
+                        id=score_id, classroom_student=classroom_student)
+                    term_score.score = score
+                    term_score.expectation_level = get_expectation_level(score)
+                    term_score.save()
+                    score_values.append(score)
+                except TermScore.DoesNotExist:
+                    continue  # Or optionally log/raise error
+
+            else:  # Create new
+                if TermScore.objects.filter(
+                    classroom_student=classroom_student, grade=grade, term=term
+                ).exists():
+                    continue  # Avoid duplicate entry if somehow already exists
+
+                new_term_score = TermScore.objects.create(
+                    classroom_student=classroom_student,
+                    grade=grade,
+                    term=term,
+                    score=score,
+                    expectation_level=get_expectation_level(score)
+                )
+                score_values.append(score)
+
+        # Update average score and level
+        if score_values:
+            avg_score = round(sum(score_values) / len(score_values), 2)
+            classroom_student.avg_score = avg_score
+            classroom_student.avg_expectation_level = get_expectation_level(
+                avg_score)
+
+        classroom_student.save()
+
+        return Response({"message": "Student updated successfully."}, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error updating classroom student: {e}")
         return Response({"message": "An unexpected error occurred."}, status=HTTP_500_INTERNAL_SERVER_ERROR)

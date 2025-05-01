@@ -7,4 +7,5 @@ urlpatterns = [
     path('get-classroom-term-scores', get_classroom_term_scores),
     path('get-classroom-students', get_classroom_students),
     path('edit-class/<int:classroom_id>', edit_classroom),
+    path('edit-classroom-student/<int:student_id>', edit_classroom_student),
 ]
