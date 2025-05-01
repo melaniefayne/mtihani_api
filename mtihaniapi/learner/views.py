@@ -15,8 +15,6 @@ from exam.models import (
     ClassExamPerformance, StudentExamSessionPerformance)
 
 
-#  ================================================ create-classroom
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])
 def create_classroom(request) -> Response:
@@ -163,7 +161,7 @@ def _get_student_classrooms(classroom_with_details: List[Dict[str, Any]], studen
         # Avg mtihani score
         result = StudentExamSessionPerformance.objects.filter(
             session__student=student,
-            session__exam__classroom_id=classroom_id
+            session__exam__classroom=classroom_id
         ).aggregate(average_score=Avg('avg_score'))
 
         avg_mtihani_score = result['average_score'] or 0.0
@@ -175,7 +173,6 @@ def _get_student_classrooms(classroom_with_details: List[Dict[str, Any]], studen
         classroom_data["term_scores"] = list(
             TermScore.objects.filter(
                 classroom_student=student,
-                classroom_student__classroom__id=classroom_id
             ).order_by('grade', 'term')
             .values('id', 'grade', 'term', 'score', 'expectation_level')
         )
@@ -185,7 +182,7 @@ def _get_student_classrooms(classroom_with_details: List[Dict[str, Any]], studen
     return full_classrooms
 
 
-#  ================================================ get-classroom-term-scores
+#  ================================================================
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -236,9 +233,6 @@ def get_classroom_term_scores(request) -> Response:
         }, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-#  ================================================ get-classroom-students
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_classroom_students(request):
@@ -281,8 +275,6 @@ def get_classroom_students(request):
         return Response({
             "message": "Something went wrong on our side :( Please try again later."
         }, status=HTTP_500_INTERNAL_SERVER_ERROR)
-
-#  ================================================ edit-classroom
 
 
 @api_view(['POST'])
@@ -369,8 +361,6 @@ def edit_classroom(request, classroom_id) -> Response:
         print(f"Error updating classroom: {e}")
         return Response({"message": "An unexpected error occurred."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-#  ================================================ edit-classroom-student
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])

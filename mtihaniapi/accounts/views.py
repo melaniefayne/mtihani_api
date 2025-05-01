@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import Group
 from rest_framework.status import *
 from learner.models import ClassroomStudent, Teacher
+from django.db.models import Q
 
 
 @api_view(['POST'])
@@ -19,32 +20,55 @@ def register_user(request):
         name = f"{first_name} {last_name}".strip()
         role = request.data.get("role")
         phone_no = request.data.get("phone_no")
+        student_code = request.data.get("student_code")
 
         if not role or role not in ['admin', 'teacher', 'student']:
             return Response({"message": "Invalid or missing role."}, status=HTTP_400_BAD_REQUEST)
 
-        if User.objects.filter(username=email).exists():
-            return Response({"message": "User already exists"}, status=HTTP_400_BAD_REQUEST)
+        if User.objects.filter(Q(username=email) | Q(email=email)).exists():
+            return Response({"message": "User email already exists"}, status=HTTP_400_BAD_REQUEST)
 
+        student_id = None
+
+        # Handle student_code check before creating user
+        if role == 'student':
+            if not student_code:
+                return Response({"message": "Missing student_code for student registration."}, status=HTTP_400_BAD_REQUEST)
+
+            try:
+                classroom_student = ClassroomStudent.objects.get(code=student_code)
+                if classroom_student.user is not None:
+                    return Response({"message": "This student code has already been registered."}, status=HTTP_400_BAD_REQUEST)
+            except ClassroomStudent.DoesNotExist:
+                return Response({"message": "Invalid student code. No matching student found."}, status=HTTP_404_NOT_FOUND)
+
+        # Create the user after validation passes
         user = User.objects.create_user(
             username=email,
             email=email,
             password=password,
-            first_name=name
+            first_name=classroom_student.name
         )
 
         group, _ = Group.objects.get_or_create(name=role)
         group.user_set.add(user)
 
         teacher_id = None
+
         if role == 'teacher':
             teacher = Teacher.objects.create(
                 name=name,
                 user=user,
                 phone_no=phone_no
             )
-            teacher.user = user
             teacher_id = teacher.id
+
+        elif role == 'student':
+            classroom_student.user = user
+            classroom_student.email = email
+            classroom_student.status = "Active"
+            classroom_student.save()
+            student_id = classroom_student.id
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -55,14 +79,16 @@ def register_user(request):
                 "name": user.first_name,
                 "role": role,
                 "teacher_id": teacher_id,
+                "student_id": student_id,
                 "phone_no": phone_no,
             },
             "token": str(refresh.access_token),
         }, status=HTTP_201_CREATED)
+
     except Exception as e:
         print(f"Error: {e}")
-        return Response({"message": "Something went wrong on our side :( Please ty again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-
+        return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+    
 
 @api_view(['POST'])
 def login_user(request):

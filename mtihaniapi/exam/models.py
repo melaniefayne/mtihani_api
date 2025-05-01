@@ -3,7 +3,7 @@ from django.db import models
 from learner.models import Classroom, ClassroomStudent, Teacher
 
 class Exam(models.Model):
-    class_obj = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='exams')
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='exams')
     teacher =  models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name='exams')
     grade = models.IntegerField()
     code = models.CharField(max_length=50, unique=True)
