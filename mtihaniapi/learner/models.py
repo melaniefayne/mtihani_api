@@ -51,7 +51,7 @@ class LessonTime(models.Model):
     time = models.TimeField()
     classroom = models.ForeignKey(
         Classroom, on_delete=models.CASCADE, related_name='lesson_times')
-    
+
     class Meta:
         unique_together = ('classroom', 'day', 'time')
 
@@ -60,15 +60,29 @@ class LessonTime(models.Model):
 
 
 class ClassroomStudent(models.Model):
+    STATUSES = [
+        ("Active", "Active"),
+        ("Inactive", "Inactive"),
+        ("Archived", "Archived"),
+    ]
+
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=6, unique=True,
                             default=generate_unique_code)
     user = models.OneToOneField(
         User, on_delete=models.SET_NULL, null=True, blank=True)
     classroom = models.ManyToManyField(Classroom, related_name='students')
+    status = models.CharField(max_length=15, choices=STATUSES, default="Inactive")
+    avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
 
     class Meta:
         unique_together = ('name', 'code')
+
+    def save(self, *args, **kwargs):
+        from utils import get_expectation_level
+        self.expectation_level = get_expectation_level(self.avg_score)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

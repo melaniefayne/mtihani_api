@@ -1,3 +1,4 @@
+from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 from django.db.models import Avg
@@ -5,11 +6,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import *
-from learner.serializers import ClassroomDetailSerializer, ClassroomSerializer
+from learner.serializers import ClassroomDetailSerializer, ClassroomSerializer, ClassroomStudentSerializer
 from permissions import IsTeacher, IsTeacherOrStudent
-from utils import get_expectation_level
+from utils import GlobalPagination, get_expectation_level
 from learner.models import (
-    Teacher, TermScore, Classroom, ClassroomStudent)
+    LessonTime, Teacher, TermScore, Classroom, ClassroomStudent)
 from exam.models import (
     ClassExamPerformance, StudentExamSessionPerformance)
 
@@ -59,7 +60,8 @@ def get_user_classrooms(request) -> Response:
             except Teacher.DoesNotExist:
                 return Response({"message": "Teacher account not found."}, status=HTTP_400_BAD_REQUEST)
 
-            classrooms = teacher.classrooms.all().order_by('-updated_at').prefetch_related('lesson_times')
+            classrooms = teacher.classrooms.all().order_by(
+                '-grade').prefetch_related('lesson_times')
             classrooms_with_details = _get_classroom_with_details(classrooms)
             classrooms_list = _get_teacher_classrooms(classrooms_with_details)
 
@@ -69,9 +71,11 @@ def get_user_classrooms(request) -> Response:
             except ClassroomStudent.DoesNotExist:
                 return Response({"message": "Student account not found."}, status=HTTP_400_BAD_REQUEST)
 
-            classrooms = student.classroom.all().order_by('-updated_at').prefetch_related('lesson_times')
+            classrooms = student.classroom.all().order_by(
+                '-grade').prefetch_related('lesson_times')
             classrooms_with_details = _get_classroom_with_details(classrooms)
-            classrooms_list = _get_student_classrooms(classrooms_with_details, student)
+            classrooms_list = _get_student_classrooms(
+                classrooms_with_details, student)
 
         serialized = ClassroomDetailSerializer(classrooms_list, many=True)
         return Response(serialized.data, status=HTTP_200_OK)
@@ -116,24 +120,21 @@ def _get_classroom_with_details(classrooms: List[Classroom]) -> List[Dict[str, A
 def _get_teacher_classrooms(classroom_with_details: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     full_classrooms = []
 
-    for classroom in classroom_with_details:
-        classroom_id = classroom['id']
-        classroom_data = classroom
+    for classroom_data in classroom_with_details:
+        classroom_id = classroom_data['id']
 
-        student_count = ClassroomStudent.objects.filter(
-            classroom__id=classroom_id
-        ).count()
-        classroom_data["student_count"] = student_count
+        # Count students directly
+        student_qs = ClassroomStudent.objects.filter(
+            classroom__id=classroom_id)
+        classroom_data["student_count"] = student_qs.count()
 
-        result = TermScore.objects.filter(
-            classroom_student__classroom__id=classroom_id
-        ).aggregate(average_score=Avg('score'))
-
-        avg_term_score = result['average_score'] or 0.0
-        classroom_data["avg_term_score"] = avg_term_score
+        # Avg term score from stored field on students
+        avg_score = student_qs.aggregate(avg=Avg('avg_score'))['avg'] or 0.0
+        classroom_data["avg_term_score"] = avg_score
         classroom_data["avg_term_expectation_level"] = get_expectation_level(
-            avg_term_score)
-
+            avg_score)
+        
+        # Avg mtihani score from ClassExamPerformance
         result = ClassExamPerformance.objects.filter(
             classroom_id=classroom_id
         ).aggregate(average_score=Avg('avg_score'))
@@ -151,21 +152,13 @@ def _get_teacher_classrooms(classroom_with_details: List[Dict[str, Any]]) -> Lis
 def _get_student_classrooms(classroom_with_details: List[Dict[str, Any]], student: ClassroomStudent) -> List[Dict[str, Any]]:
     full_classrooms = []
 
-    for classroom in classroom_with_details:
-        classroom_id = classroom['id']
-        classroom_data = classroom
+    for classroom_data in classroom_with_details:
+        classroom_id = classroom_data['id']
         classroom_data["student_code"] = student.code
 
         # Avg term score
-        result = TermScore.objects.filter(
-            classroom_student=student,
-            classroom_student__classrooms__id=classroom_id
-        ).aggregate(average_score=Avg('score'))
-
-        avg_term_score = result['average_score'] or 0.0
-        classroom_data["avg_term_score"] = avg_term_score
-        classroom_data["avg_term_expectation_level"] = get_expectation_level(
-            avg_term_score)
+        classroom_data["avg_term_score"] = student.avg_score
+        classroom_data["avg_term_expectation_level"] = student.avg_expectation_level
 
         # Avg mtihani score
         result = StudentExamSessionPerformance.objects.filter(
@@ -179,430 +172,195 @@ def _get_student_classrooms(classroom_with_details: List[Dict[str, Any]], studen
             avg_mtihani_score)
 
         # Term scores list
-        term_scores_qs = TermScore.objects.filter(
-            classroom_student=student,
-            classroom_student__classrooms__id=classroom_id
-        ).order_by('grade', 'term')
-
-        classroom_data["term_scores"] = [
-            {
-                "id": ts.id,
-                "grade": ts.grade,
-                "term": ts.term,
-                "score": ts.score,
-                "expectation_level": ts.expectation_level,
-            }
-            for ts in term_scores_qs
-        ]
+        classroom_data["term_scores"] = list(
+            TermScore.objects.filter(
+                classroom_student=student,
+                classroom_student__classroom__id=classroom_id
+            ).order_by('grade', 'term')
+            .values('id', 'grade', 'term', 'score', 'expectation_level')
+        )
 
         full_classrooms.append(classroom_data)
 
     return full_classrooms
 
 
-# # ======================== CLASS VIEWS ========================
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated, IsTeacher])
-# def create_class(request):
-#     try:
-#         teacher = Teacher.objects.get(user=request.user)
-#     except Teacher.DoesNotExist:
-#         return Response({
-#             "status": False,
-#             "message": "You must create a teacher profile first."}, status=HTTP_400_BAD_REQUEST)
-
-#     data = request.data.copy()
-#     data['teacher'] = teacher.id
-
-#     serializer = ClassSerializer(data=data)
-#     if serializer.is_valid():
-#         class_instance = serializer.save()
-
-#         # Handle optional lesson_times
-#         lesson_times = request.data.get('lesson_times', [])
-#         for entry in lesson_times:
-#             day = entry.get("day")
-#             time = entry.get("time")
-#             if day and time:
-#                 LessonTime.objects.create(
-#                     class_ref=class_instance, day=day, time=time)
-
-#         return Response(ClassSerializer(class_instance).data, status=HTTP_201_CREATED)
-
-#     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-
-
-# @api_view(['PATCH'])
-# @permission_classes([IsAuthenticated, IsTeacher])
-# def update_class(request):
-#     class_id = request.data.get("class_id")
-#     if not class_id:
-#         return Response({"error": "Missing class_id in request."}, status=HTTP_400_BAD_REQUEST)
-
-#     try:
-#         teacher = Teacher.objects.get(user=request.user)
-#         classroom = Class.objects.get(id=class_id, teacher=teacher)
-#     except (Teacher.DoesNotExist, Class.DoesNotExist):
-#         return Response({"error": "Class not found or not yours."}, status=404)
-
-#     fields = ["name", "school_name", "school_address", "grade"]
-#     updated_fields = []
-
-#     for field in fields:
-#         if field in request.data:
-#             setattr(classroom, field, request.data[field])
-#             updated_fields.append(field)
-
-#     # Save basic class updates first
-#     classroom.save()
-
-#     # Handle lesson time updates
-#     lesson_times = request.data.get("lesson_times")
-#     if lesson_times is not None:
-#         if not isinstance(lesson_times, list):
-#             return Response({"error": "lesson_times must be a list of {day, time} objects."}, status=HTTP_400_BAD_REQUEST)
-
-#         # Delete old ones
-#         classroom.lesson_times.all().delete()
-
-#         # Create new lesson times
-#         for entry in lesson_times:
-#             day = entry.get("day")
-#             time = entry.get("time")
-#             if day and time:
-#                 LessonTime.objects.create(
-#                     class_ref=classroom, day=day, time=time)
-
-#         updated_fields.append("lesson_times")
-
-#     return Response({
-#         "status": "Class updated",
-#         "updated_fields": updated_fields,
-#         "class_id": classroom.id
-#     }, status=HTTP_200_OK)
-
-
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated, IsTeacher])
-# def class_detail(request, class_id):
-#     try:
-#         teacher = Teacher.objects.get(user=request.user)
-#         classroom = Class.objects.get(id=class_id, teacher=teacher)
-#     except (Teacher.DoesNotExist, Class.DoesNotExist):
-#         return Response({"error": "Class not found or not yours."}, status=404)
-
-#     # Overall class average
-#     overall_avg = (
-#         TermScore.objects
-#         .filter(student__classroom=classroom)
-#         .aggregate(avg=Avg("score"))["avg"]
-#     )
-
-#     # Average per term
-#     term_averages = (
-#         TermScore.objects
-#         .filter(student__classroom=classroom)
-#         .values("grade", "term")
-#         .annotate(avg_score=Avg("score"))
-#         .order_by("grade", "term")
-#     )
-
-#     return Response({
-#         "id": classroom.id,
-#         "name": classroom.name,
-#         "grade": classroom.grade,
-#         "school_name": classroom.school_name,
-#         "school_address": classroom.school_address,
-#         "code": classroom.code,
-#         "class_average": round(overall_avg, 2),
-#         "class_expectation": get_expectation_level(overall_avg),
-#         "term_score_averages": [
-#             {
-#                 "grade": a["grade"],
-#                 "term": a["term"],
-#                 "average_score": round(a["avg_score"], 2) if a["avg_score"] else None,
-
-#             } for a in term_averages
-#         ]
-#     }, status=HTTP_200_OK)
-
-
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated, IsTeacher])
-# def students_in_class(request, class_id):
-#     try:
-#         teacher = Teacher.objects.get(user=request.user)
-#         classroom = Class.objects.get(id=class_id, teacher=teacher)
-#     except (Teacher.DoesNotExist, Class.DoesNotExist):
-#         return Response({"error": "Class not found or not yours."}, status=404)
-
-#     students = classroom.students.prefetch_related("term_scores").all()
-
-#     # 🔍 Search filter
-#     search_query = request.GET.get("search")
-#     if search_query:
-#         students = students.filter(
-#             Q(name__icontains=search_query) | Q(code__icontains=search_query)
-#         )
-
-#     # 🧠 Add student average as annotation (so we can order)
-#     students = students.annotate(avg_score=Avg("term_scores__score"))
-
-#     # ⬆️⬇️ Ordering
-#     ordering = request.GET.get("ordering")
-#     if ordering:
-#         if ordering.lstrip("-") in ["name", "avg_score"]:
-#             students = students.order_by(ordering)
-
-#     # 📄 Pagination
-#     paginator = GlobalPagination()
-#     page = paginator.paginate_queryset(students, request)
-
-#     student_data = []
-#     for student in page:
-#         scores = student.term_scores.all().values(
-#             "grade", "term", "score").order_by("grade", "term")
-#         term_scores = [
-#             {
-#                 "grade": s["grade"],
-#                 "term": s["term"],
-#                 "score": s["score"],
-#                 "expectation": get_expectation_level(s["score"])
-#             }
-#             for s in scores
-#         ]
-#         student_data.append({
-#             "id": student.id,
-#             "name": student.name,
-#             "code": student.code,
-#             "term_scores": term_scores,
-#             "average_score": round(student.avg_score, 2) if student.avg_score else None,
-#             "average_expectation": get_expectation_level(student.avg_score) if student.avg_score else None
-#         })
-
-#     return paginator.get_paginated_response(student_data)
-
-
-# # ======================== TEACHER VIEWS ========================
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated, IsTeacher])
-# def create_teacher(request):
-#     if Teacher.objects.filter(user=request.user).exists():
-#         return Response({"error": "Teacher profile already exists."}, status=HTTP_400_BAD_REQUEST)
-
-#     phone_no = request.data.get("phone_no")
-#     if not phone_no:
-#         return Response({"error": "Phone number is required."}, status=HTTP_400_BAD_REQUEST)
-
-#     teacher = Teacher.objects.create(
-#         user=request.user,
-#         phone_no=phone_no
-#     )
-
-#     return Response({
-#         "status": "Teacher profile created",
-#         "teacher_id": teacher.id
-#     }, status=HTTP_201_CREATED)
-
-
-# @api_view(['PATCH'])
-# @permission_classes([IsAuthenticated, IsTeacher])
-# def update_teacher(request):
-#     try:
-#         teacher = Teacher.objects.get(user=request.user)
-#     except Teacher.DoesNotExist:
-#         return Response({"error": "Teacher profile not found."}, status=404)
-
-#     phone = request.data.get("phone_no")
-#     if phone:
-#         teacher.phone_no = phone
-#         teacher.save()
-#         return Response({"status": "Phone updated"})
-#     return Response({"error": "No phone number provided."}, status=HTTP_400_BAD_REQUEST)
-
-
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated, IsTeacher])
-# def my_classes(request):
-#     try:
-#         teacher = Teacher.objects.get(user=request.user)
-#     except Teacher.DoesNotExist:
-#         return Response({"error": "Teacher profile not found."}, status=404)
-
-#     classes = teacher.classes.all()
-
-#     data = []
-#     for c in classes:
-#         lesson_times = c.lesson_times.all().values("day", "time")
-#         data.append({
-#             "id": c.id,
-#             "name": c.name,
-#             "grade": c.grade,
-#             "school_name": c.school_name,
-#             "school_address": c.school_address,
-#             "code": c.code,
-#             "lesson_times": list(lesson_times)
-#         })
-
-#     return Response(data, status=HTTP_200_OK)
-
-
-# # ======================== STUDENT VIEWS ========================
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated, IsTeacher])
-# @parser_classes([MultiPartParser])
-# def upload_students_csv(request):
-#     csv_file = request.FILES.get('file')
-#     class_id = request.POST.get("class_id")
-
-#     if not csv_file:
-#         return Response({"error": "No file uploaded."}, status=HTTP_400_BAD_REQUEST)
-
-#     if not csv_file.name.endswith('.csv'):
-#         return Response({"error": "Only CSV files are supported."}, status=HTTP_400_BAD_REQUEST)
-
-#     if not class_id:
-#         return Response({"error": "Missing class_id in request."}, status=HTTP_400_BAD_REQUEST)
-
-#     # Get teacher and class
-#     try:
-#         teacher = Teacher.objects.get(user=request.user)
-#         classroom = Class.objects.get(id=class_id, teacher=teacher)
-#     except Teacher.DoesNotExist:
-#         return Response({"error": "Teacher profile not found."}, status=HTTP_400_BAD_REQUEST)
-#     except Class.DoesNotExist:
-#         return Response({"error": "Class not found or not assigned to you."}, status=404)
-
-#     try:
-#         data_set = csv_file.read().decode('UTF-8')
-#         io_string = io.StringIO(data_set)
-#         reader = csv.DictReader(io_string)
-#     except Exception as e:
-#         return Response({"error": f"Failed to parse CSV: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
-
-#     created_students = []
-
-#     for row in reader:
-#         name = row.get('student_name')
-#         if not name:
-#             continue
-
-#         student, _ = Student.objects.get_or_create(
-#             name=name,
-#             classroom=classroom,
-#             defaults={"code": generate_unique_code()}
-#         )
-#         created_students.append(student.name)
-
-#         for col, value in row.items():
-#             if not col:
-#                 continue
-
-#             match = re.match(r"Grade(\d+)Term(\d+)Score", col)
-#             if match and value and value.strip():
-#                 try:
-#                     grade = int(match.group(1))
-#                     term = int(match.group(2))
-#                     score = float(value.strip())
-#                     TermScore.objects.update_or_create(
-#                         student=student,
-#                         grade=grade,
-#                         term=term,
-#                         defaults={"score": score}
-#                     )
-#                 except (ValueError, TypeError):
-#                     continue
-
-#     return Response({
-#         "status": "success",
-#         "created_students": created_students,
-#         "class": classroom.name,
-#         "grade": classroom.grade
-#     }, status=HTTP_201_CREATED)
-
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated, IsTeacher])
-# def upsert_term_scores(request):
-#     student_id = request.data.get("student_id")
-#     scores = request.data.get("scores", [])
-
-#     if not student_id or not isinstance(scores, list):
-#         return Response({"error": "Missing student_id or invalid scores list."}, status=HTTP_400_BAD_REQUEST)
-
-#     try:
-#         student = Student.objects.get(
-#             id=student_id, classroom__teacher__user=request.user)
-#     except Student.DoesNotExist:
-#         return Response({"error": "Student not found or not in your class."}, status=404)
-
-#     result = []
-
-#     for entry in scores:
-#         grade = entry.get("grade")
-#         term = entry.get("term")
-#         score = entry.get("score")
-
-#         if not all([grade, term, score]):
-#             result.append({
-#                 "grade": grade,
-#                 "term": term,
-#                 "status": "skipped",
-#                 "reason": "Missing grade, term, or score"
-#             })
-#             continue
-
-#         term_score, created = TermScore.objects.update_or_create(
-#             student=student,
-#             grade=grade,
-#             term=term,
-#             defaults={"score": score}
-#         )
-
-#         result.append({
-#             "grade": grade,
-#             "term": term,
-#             "score": term_score.score,
-#             "status": "created" if created else "updated"
-#         })
-
-#     return Response({
-#         "student": student.name,
-#         "student_id": student.id,
-#         "results": result
-#     }, status=HTTP_200_OK)
-
-
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def my_term_scores(request):
-#     try:
-#         student = Student.objects.get(user=request.user)
-#     except Student.DoesNotExist:
-#         return Response({"error": "Student profile not found."}, status=404)
-
-#     scores = student.term_scores.all().order_by("grade", "term")
-#     score_list = []
-
-#     for score in scores:
-#         score_list.append({
-#             "grade": score.grade,
-#             "term": score.term,
-#             "score": score.score,
-#             "expectation": get_expectation_level(score.score)
-#         })
-
-#     # Average
-#     avg = scores.aggregate(avg=Avg("score"))["avg"]
-
-#     return Response({
-#         "student_id": student.id,
-#         "name": student.name,
-#         "code": student.code,
-#         "term_scores": score_list,
-#         "average_score": round(avg, 2) if avg else None,
-#         "average_expectation": get_expectation_level(avg) if avg else None
-#     }, status=HTTP_200_OK)
+#  ================================================ get-classroom-term-scores
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_classroom_term_scores(request) -> Response:
+    try:
+        classroom_id = request.GET.get("classroom_id")
+        if not classroom_id:
+            return Response({"message": "Missing classroom_id in request."}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+        except Classroom.DoesNotExist:
+            return Response({"message": "Classroom not found."}, status=HTTP_400_BAD_REQUEST)
+
+        # Get all students in this classroom
+        students = ClassroomStudent.objects.filter(classroom=classroom)
+
+        # Get all term scores for these students
+        term_scores = TermScore.objects.filter(classroom_student__in=students)
+
+        # Group and average
+        score_map = defaultdict(list)
+        expectation_map = defaultdict(list)
+
+        for ts in term_scores:
+            key = (ts.grade, ts.term)
+            score_map[key].append(ts.score)
+            expectation_map[key].append(ts.expectation_level)
+
+        classroom_term_scores = []
+        for (grade, term), scores in score_map.items():
+            expectation_levels = expectation_map[(grade, term)]
+            most_common_expectation = Counter(expectation_levels).most_common(1)[
+                0][0] if expectation_levels else ""
+            classroom_term_scores.append({
+                "grade": grade,
+                "term": term,
+                "score": round(sum(scores) / len(scores), 2),
+                "expectation_level": most_common_expectation
+            })
+
+        return Response({"term_scores": classroom_term_scores}, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return Response({
+            "message": "Something went wrong on our side :( Please try again later."
+        }, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+#  ================================================ get-classroom-students
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_classroom_students(request):
+    try:
+        classroom_id = request.GET.get("classroom_id")
+        if not classroom_id:
+            return Response({"message": "Missing classroom_id in request."}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+        except Classroom.DoesNotExist:
+            return Response({"message": "Classroom not found."}, status=HTTP_400_BAD_REQUEST)
+
+        students = ClassroomStudent.objects.filter(classroom=classroom)
+
+        # Filtering
+        search = request.GET.get("search")
+        if search:
+            students = students.filter(name__icontains=search)
+
+        status = request.GET.get("status")
+        if status:
+            students = students.filter(status=status)
+
+        expectation = request.GET.get("expectation_level")
+        if expectation:
+            students = students.filter(avg_expectation_level=expectation)
+
+        # Paginate
+        paginator = GlobalPagination()
+        paginated_students = paginator.paginate_queryset(students, request)
+        serializer = ClassroomStudentSerializer(paginated_students, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return Response({
+            "message": "Something went wrong on our side :( Please try again later."
+        }, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+#  ================================================ edit-classroom
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def edit_classroom(request, classroom_id) -> Response:
+    try:
+        teacher = request.user.teacher
+        try:
+            classroom = Classroom.objects.get(id=classroom_id, teacher=teacher)
+        except Classroom.DoesNotExist:
+            return Response({"message": "Classroom not found."}, status=HTTP_404_NOT_FOUND)
+
+        serializer = ClassroomSerializer(
+            classroom, data=request.data, context={"request": request}, partial=True
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        # Extract validated data
+        validated_data = serializer.validated_data
+        lesson_times_data = validated_data.pop('lesson_times', [])
+        uploaded_students_data = validated_data.pop('uploaded_students', [])
+
+        # Update top-level classroom fields
+        for attr, value in validated_data.items():
+            setattr(classroom, attr, value)
+        classroom.save()
+
+        # Replace lesson times
+        classroom.lesson_times.all().delete()
+        for lt in lesson_times_data:
+            LessonTime.objects.create(classroom=classroom, **lt)
+
+        for student_data in uploaded_students_data:
+            name = student_data['name']
+            scores = student_data.get('scores', [])
+
+            try:
+                student = classroom.students.get(name=name)
+                # Update or create scores for each grade/term pair
+                for score_data in scores:
+                    term_score, _ = TermScore.objects.update_or_create(
+                        classroom_student=student,
+                        grade=score_data['grade'],
+                        term=score_data['term'],
+                        defaults={"score": score_data['score']}
+                    )
+                # Update average score & expectation
+                all_scores = student.term_scores.all()
+                avg = round(sum(s.score for s in all_scores) / len(all_scores), 2)
+                student.avg_score = avg
+                student.avg_expectation_level = get_expectation_level(avg)
+                student.save()
+
+            except ClassroomStudent.DoesNotExist:
+                # New student
+                score_values = [s['score'] for s in scores if 'score' in s]
+                avg_score = round(sum(score_values) / len(score_values), 2) if score_values else 0.0
+                avg_expectation = get_expectation_level(avg_score)
+
+                student = ClassroomStudent.objects.create(
+                    name=name,
+                    avg_score=avg_score,
+                    avg_expectation_level=avg_expectation,
+                )
+                student.classroom.add(classroom)
+
+                for score_data in scores:
+                    TermScore.objects.create(
+                        classroom_student=student,
+                        **score_data
+                    )
+
+        classroom_with_details = _get_classroom_with_details([classroom])
+        full_classroom = _get_teacher_classrooms(classroom_with_details)[0]
+        return Response({
+            "message": "Classroom updated successfully.",
+            "new_classroom": ClassroomDetailSerializer(full_classroom).data
+        }, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error updating classroom: {e}")
+        return Response({"message": "An unexpected error occurred."}, status=HTTP_500_INTERNAL_SERVER_ERROR)

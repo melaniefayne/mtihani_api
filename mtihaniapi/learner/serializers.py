@@ -1,4 +1,6 @@
 # learner/serializers.py
+# make sure this is imported at the top
+from utils import get_expectation_level
 from rest_framework import serializers
 
 from learner.models import Classroom, LessonTime, ClassroomStudent, TermScore
@@ -31,7 +33,8 @@ class LessonTimeSerializer(serializers.Serializer):
         classroom = self.context.get('classroom')
 
         if classroom and LessonTime.objects.filter(classroom=classroom, day=day, time=time).exists():
-            raise serializers.ValidationError("Lesson time already exists for this day and time.")
+            raise serializers.ValidationError(
+                "Lesson time already exists for this day and time.")
         return data
 
 
@@ -68,7 +71,19 @@ class ClassroomSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     f"A student named '{student_name}' already exists in this classroom.")
 
-            classroom_student = ClassroomStudent.objects.create(name=student_name)
+            # Calculate average score and expectation level
+            score_values = [s['score']
+                            for s in term_scores_data if 'score' in s]
+            avg_score = round(sum(score_values) /
+                              len(score_values), 2) if score_values else 0.0
+            avg_expectation = get_expectation_level(avg_score)
+
+            # Create the student with calculated fields
+            classroom_student = ClassroomStudent.objects.create(
+                name=student_name,
+                avg_score=avg_score,
+                avg_expectation_level=avg_expectation,
+            )
             classroom_student.classroom.add(classroom)
 
             for score_data in term_scores_data:
@@ -108,3 +123,9 @@ class ClassroomDetailSerializer(serializers.Serializer):
     # Optional for students
     student_code = serializers.CharField(required=False)
     term_scores = TermScoreSerializer(many=True, required=False)
+
+
+class ClassroomStudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClassroomStudent
+        fields = ['id', 'name', 'status', 'avg_score', 'avg_expectation_level']
