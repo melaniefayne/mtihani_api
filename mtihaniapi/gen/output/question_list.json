@@ -1,0 +1,102 @@
+[
+    {
+        "question": "What are some basic skills required to use and care for laboratory apparatus and instruments effectively?",
+        "expected_answer": "Basic skills include proper handling, cleaning, and storage of laboratory apparatus and instruments to ensure their longevity and accuracy."
+    },
+    {
+        "question": "How can you identify an acid and a base using litmus paper?",
+        "expected_answer": "Acids turn blue litmus paper red, while bases turn red litmus paper blue."
+    },
+    {
+        "question": "What are the different types of pollution, and what causes them?",
+        "expected_answer": "Types of pollution include air, water, soil, and noise pollution. Causes include industrial emissions, waste disposal, agricultural activities, and urbanization."
+    },
+    {
+        "question": "What is the mechanical advantage of a lever if the effort arm is 2 meters and the load arm is 0.5 meters?",
+        "expected_answer": "The mechanical advantage is 4, calculated by dividing the length of the effort arm by the length of the load arm (2/0.5)."
+    },
+    {
+        "question": "What class of fire involves flammable liquids, and what type of extinguisher should be used?",
+        "expected_answer": "Class B fires involve flammable liquids, and a foam or dry chemical extinguisher should be used."
+    },
+    {
+        "question": "Why is it important to conserve the environment, and what are some methods used in environmental conservation?",
+        "expected_answer": "Conserving the environment is important to maintain biodiversity and ensure sustainable resources. Methods include recycling, afforestation, and pollution control."
+    },
+    {
+        "question": "What are the advantages and disadvantages of hard and soft water?",
+        "expected_answer": "Hard water can cause scaling in pipes but is beneficial for health due to minerals. Soft water is better for cleaning but lacks minerals."
+    },
+    {
+        "question": "What are some common uses of metals and alloys in everyday life?",
+        "expected_answer": "Metals and alloys are used in construction, transportation, electrical wiring, and household appliances due to their strength and conductivity."
+    },
+    {
+        "question": "What are some properties of a magnet, and how are magnets used in daily life?",
+        "expected_answer": "Magnets have north and south poles and attract ferromagnetic materials. They are used in compasses, motors, and magnetic locks."
+    },
+    {
+        "question": "If James accidentally spills a chemical in the laboratory, what First Aid measures should he take?",
+        "expected_answer": "James should wash the affected area with plenty of water, remove contaminated clothing, and seek medical attention if necessary."
+    },
+    {
+        "question": "How can you distinguish between a physical change and a chemical change using an example?",
+        "expected_answer": "A physical change, like melting ice, does not change the substance's identity, while a chemical change, like rusting iron, forms a new substance."
+    },
+    {
+        "question": "How can you classify elements into metals and non-metals based on their atomic structure?",
+        "expected_answer": "Metals have few electrons in their outer shell and tend to lose them, while non-metals have more electrons in their outer shell and tend to gain or share electrons."
+    },
+    {
+        "question": "What are some common electrical appliances used in day-to-day life, and what safety measures should be observed when handling them?",
+        "expected_answer": "Common appliances include refrigerators, televisions, and irons. Safety measures include not overloading sockets and keeping appliances away from water."
+    },
+    {
+        "question": "How can you demonstrate the process of osmosis using a simple experiment?",
+        "expected_answer": "Place a potato slice in saltwater and another in freshwater. The slice in freshwater will swell due to osmosis, while the one in saltwater will shrink."
+    },
+    {
+        "question": "What is the difference between an element and a compound?",
+        "expected_answer": "An element is a pure substance made of one type of atom, while a compound consists of two or more elements chemically combined."
+    },
+    {
+        "question": "How is energy transformed from one form to another in a hydroelectric power plant?",
+        "expected_answer": "In a hydroelectric power plant, potential energy of water is converted to kinetic energy, which is then transformed into electrical energy."
+    },
+    {
+        "question": "What are the functions of the kidneys in the human excretory system?",
+        "expected_answer": "The kidneys filter waste products from the blood, regulate water and electrolyte balance, and produce urine."
+    },
+    {
+        "question": "What are some ways to reduce friction in machinery?",
+        "expected_answer": "Ways to reduce friction include using lubricants, polishing surfaces, and using ball bearings."
+    },
+    {
+        "question": "Why is science important in daily life?",
+        "expected_answer": "Science is important because it helps us understand the natural world, solve problems, and improve technology and quality of life."
+    },
+    {
+        "question": "How does pressure act differently in solids, liquids, and gases?",
+        "expected_answer": "In solids, pressure is exerted in a specific direction; in liquids, it acts equally in all directions; in gases, it is exerted uniformly throughout the container."
+    },
+    {
+        "question": "What are the functions of the ovaries in the female reproductive system?",
+        "expected_answer": "The ovaries produce eggs (ova) and secrete hormones like estrogen and progesterone."
+    },
+    {
+        "question": "What are the main differences between plant and animal cells?",
+        "expected_answer": "Plant cells have a cell wall and chloroplasts, while animal cells do not. Plant cells also have a large central vacuole, unlike animal cells."
+    },
+    {
+        "question": "What is the function of the uterus in the female reproductive system?",
+        "expected_answer": "The uterus is where a fertilized egg implants and develops into a fetus during pregnancy."
+    },
+    {
+        "question": "What is a common method used to separate a homogeneous mixture, such as saltwater?",
+        "expected_answer": "Distillation is a common method used to separate salt from water in a homogeneous mixture like saltwater."
+    },
+    {
+        "question": "What are some basic skills required to use and care for laboratory apparatus and instruments effectively?",
+        "expected_answer": "Basic skills include proper handling, cleaning, and storage of laboratory apparatus and instruments to ensure their longevity and accuracy."
+    }
+]

@@ -9,7 +9,7 @@ python3 manage.py runserver
 pip freeze > requirements.txt
 django-admin startapp appName
 
-python3 mtihanigen/mtihani_chat.py
+python3 exam/mtihanigen/get_exam_curriculum.py
 
 # migrations
 python manage.py makemigrations && python manage.py migrate

@@ -1,24 +1,40 @@
-# pipeline.py
+# curriculum.py
 
-import math
+import random
 import json
 from typing import List, Dict, Any
 from constants import *
 import json
 import requests
 
-def load_curriculum(file_path: str) -> List[Dict[str, Any]]:
+
+def load_curriculum() -> List[Dict[str, Any]]:
     """Load the CBC curriculum JSON."""
-    with open(file_path, "r") as f:
-        return json.load(f)
+    with open(CURRICULUM_FILE, "r") as f:
+        cbc_data = json.load(f)
+        return cbc_data
+    
+
+def get_strand_id_grade_pairs(cbc_data: List[Dict[str, Any]]) -> List[Dict[str, any]]:
+    result = []
+    for grade_obj in cbc_data:
+        grade = grade_obj.get("grade")
+        strands = grade_obj.get("strands", [])
+        for strand in strands:
+            result.append({
+                "id": strand.get("id"),
+                "grade": grade,
+                "strand": strand.get("name")
+            })
+    return result
 
 
-def parse_curriculum(selected_strands: List[str], cbc_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+def parse_curriculum(selected_strands: List[int], cbc_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Filter the curriculum based on selected strands."""
     selected_data = []
     for grade in cbc_data:
         for strand in grade.get("strands", []):
-            if strand["name"] in selected_strands:
+            if strand["id"] in selected_strands:
                 selected_data.append({
                     "grade": grade["grade"],
                     "strand_name": strand["name"],
@@ -28,13 +44,14 @@ def parse_curriculum(selected_strands: List[str], cbc_data: List[Dict[str, Any]]
 
 
 def generate_question_plan(parsed_curriculum: Dict[str, Any], total_questions: int = 25) -> List[Dict[str, Any]]:
-    """Plan questions across Bloom skills and strands evenly, dynamic based on total_questions."""
+    """Plan questions across Bloom skills and strands fairly."""
     selected = parsed_curriculum["selected"]
     question_plan = []
 
     if not selected:
         return question_plan
 
+    # Step 1: Flatten sub-strands into strands_cycle
     strands_cycle = []
     for strand in selected:
         for sub_strand in strand["sub_strands"]:
@@ -49,18 +66,24 @@ def generate_question_plan(parsed_curriculum: Dict[str, Any], total_questions: i
     if not strands_cycle:
         return question_plan
 
-    # Dynamic distribution: How many questions per skill
-    questions_per_skill = math.ceil(total_questions / len(BLOOM_SKILLS))
+    # Step 2: Shuffle strands for fairer distribution
+    random.shuffle(strands_cycle)
 
-    bloom_distribution = {skill: questions_per_skill for skill in BLOOM_SKILLS}
+    # Step 3: Distribute Bloom skills fairly
+    num_skills = len(BLOOM_SKILLS)
+    base_count = total_questions // num_skills
+    extra = total_questions % num_skills
 
-    # Adjust distribution if needed (remove extra questions)
-    total_assigned = questions_per_skill * len(BLOOM_SKILLS)
-    if total_assigned > total_questions:
-        extra = total_assigned - total_questions
-        for skill in BLOOM_SKILLS[-extra:]:
-            bloom_distribution[skill] -= 1
+    bloom_distribution = {skill: base_count for skill in BLOOM_SKILLS}
 
+    # Round-robin trim for remaining question slots
+    i = 0
+    while extra > 0:
+        bloom_distribution[BLOOM_SKILLS[i % num_skills]] += 1
+        extra -= 1
+        i += 1
+
+    # Step 4: Assign questions
     strands_index = 0
 
     for bloom_skill, count in bloom_distribution.items():
@@ -87,7 +110,7 @@ def generate_question_plan(parsed_curriculum: Dict[str, Any], total_questions: i
     return question_plan
 
 
-def build_question_breakdown_json(question_plan: List[Dict[str, Any]], output_file: str =OUTPUT_FILE) -> List[Dict[str, Any]]:
+def build_question_breakdown_json(question_plan: List[Dict[str, Any]], output_file: str = QUESTION_BRD_OUTPUT_FILE) -> List[Dict[str, Any]]:
     """Build structured JSON from question plan and write to a file."""
     structured_questions = []
 
@@ -110,29 +133,33 @@ def build_question_breakdown_json(question_plan: List[Dict[str, Any]], output_fi
     return structured_questions
 
 
+def get_exam_curriculum(strand_ids: List[int],  question_count: int) -> List[Dict[str, Any]]:
+    cbc_data = load_curriculum()
+
+    parsed = parse_curriculum(strand_ids, cbc_data)
+
+    question_plan = generate_question_plan(
+        parsed, total_questions=question_count)
+
+    question_brd = build_question_breakdown_json(question_plan)
+
+    return question_brd
+
+
 def generate_exam_questions(question_brd: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Call Flowise endpoint to LLM generate questions."""
-    payload = {
-        "question_breakdown": question_brd,
-    }
-    response = requests.post(FLOWISE_API_URL, headers=FLOWISE_HEADERS, json=payload)
-    return response.json()
+    # payload = {
+    #     "question_breakdown": question_brd,
+    # }
+    # response = requests.post(
+    #     FLOWISE_API_URL, headers=FLOWISE_HEADERS, json=payload)
+    # return response.json()
+    return {}
 
 
 if __name__ == "__main__":
-    # Load CBC data
-    cbc_data = load_curriculum(CURRICULUM_FILE)
-
-    # Select strands (later user input)
-    selected_strands = ["Force and Energy", "Mixtures, Elements and Compounds"]
-
-    # Parse Curriculum
-    parsed = parse_curriculum(selected_strands, cbc_data)
-
-    # Generate Question Breakdown
-    question_plan = generate_question_plan(parsed, total_questions=10)
-    question_brd = build_question_breakdown_json(question_plan)
+    selected_strands = [1, 4, 6]
+    question_brd = get_exam_curriculum(strand_ids=selected_strands, question_count=10)
 
     aiRes = generate_exam_questions(question_brd)
     print(aiRes)
-
