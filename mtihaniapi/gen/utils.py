@@ -2,34 +2,28 @@ import json
 from typing import List, Dict, Any, Union
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
-import os
-import dotenv
 import re
 import tiktoken
-dotenv.load_dotenv()
+from gen.constants import *
 
-
-QUESTION_LIST_OUTPUT_FILE = "output/question_list.json"
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-FLOWISE_API_URL = "https://cloud.flowiseai.com/api/v1/prediction/68022f7f-b4f3-431b-a64e-0c4d61734800"
-FLOWISE_API_KEY = os.getenv("FLOWISE_MTIHANI_API_KEY")
-FLOWISE_HEADERS = {"Authorization": f"Bearer {FLOWISE_API_KEY}"}
-
-CREATE_EXAM_PROMPT_TEXT = """You are an expert Integrated Science teacher preparing a comprehensive exam for Junior Secondary School in Kenya.
+CREATE_EXAM_PROMPT_TEXT = """
+You are an expert Integrated Science teacher preparing a high-quality exam for Junior Secondary School learners in Kenya. Each exam item must be based strictly on the official curriculum and promote both conceptual understanding and cognitive skill development.
 
 You will receive a list of breakdown items. For each item:
-- Generate EXACTLY three question.
-- The questions MUST align strictly with the `strand`, `sub_strand`, `learning_outcomes`, and `skills_to_assess`.
-- Each index i in the "questions" array must match the answer at expected_answers[i] and the skill at bloom_skills[i] (same order).
-- Use scenario-based questions involving named characters. Vary the names to make the exam more engaging and realistic where appropriate. Especially for application and comprehension skills.
-- For knowledge-based items, use direct questions when suitable (e.g. definitions, naming, listing).
 
-Rules:
-- Do NOT mix content between strands.
+- Generate **EXACTLY {bloom_skill_count} question-answer pairs** based on the provided `bloom_skills` list. Each index `i` in the `questions` and `expected_answers` list must correspond to `bloom_skills[i]` — maintain the exact order.
+- Each question must strictly reflect the `strand`, `sub_strand`, `learning_outcomes`, and `skills_to_assess` provided.
+- Use **realistic, scenario-based questions** where appropriate, especially for application, analysis, and evaluation levels. You may invent character names (e.g., Zawadi, Amina, Brian) to bring variety — do not reuse the same names repeatedly.
+- For **Knowledge-level** items, prefer direct questions (e.g. “Define...”, “List...”, “Name...”).
+- For higher-order skills (Application, Analysis, Synthesis, Evaluation), focus on multi-step reasoning, justifications, comparisons, or contextual decision-making.
+- All answers must be **accurate**, **concise**, and **clearly aligned** with their question and skill level. If possible, include **examples or explanations** in Comprehension and above.
+- Avoid literal use of words like “comprehend” in questions. Instead, use more natural phrasing like “Explain,” “Summarize,” or “Describe.”
+- Ensure scientific expressions (e.g. equations, process names) are **correct and CBC-aligned**.
+
+**Rules:**
+- Do NOT mix content between strands or sub-strands.
 - Do NOT skip any item.
-- Do NOT reorder or mix skills.
-- Keep questions academically appropriate and realistic for junior secondary learners.
+- Avoid repeating phrasing structures (e.g. “Tom is asked to…”); use diverse sentence styles.
 
 Use this structure per item:
 {{
@@ -44,7 +38,7 @@ Return ONLY a valid JSON array (no explanation, no markdown). Each object must h
 """
 
 CREATE_EXAM_LLM_PROMPT = PromptTemplate(
-    input_variables=["question_breakdown"],
+    input_variables=["question_breakdown", "bloom_skill_count"],
     template=CREATE_EXAM_PROMPT_TEXT
 )
 
@@ -59,15 +53,16 @@ OPENAI_LLM_4O = ChatOpenAI(
 def generate_llm_question_list(
         input_data: Dict[str, Any],
         llm_model: str = "gpt-4o",
-        is_debug: bool = False, 
-        llm: Any = OPENAI_LLM_4O)-> Union[List[Dict[str, Any]], Dict[str, Any]]:
+        is_debug: bool = False,
+        llm: Any = OPENAI_LLM_4O,
+        bloom_skill_count: int = APP_BLOOM_SKILL_COUNT) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     try:
         # LCEL-style prompt-to-LLM pipe
         runnable = CREATE_EXAM_LLM_PROMPT | llm
 
         # Format and count input
         formatted_prompt = CREATE_EXAM_LLM_PROMPT.format(
-            question_breakdown=json.dumps(input_data))
+            question_breakdown=json.dumps(input_data), bloom_skill_count=bloom_skill_count)
 
         if (is_debug):
             input_tokens = get_token_count_from_str(
@@ -76,7 +71,9 @@ def generate_llm_question_list(
 
         # Invoke model
         response = runnable.invoke(
-            {"question_breakdown": json.dumps(input_data)})
+            {
+                "question_breakdown": json.dumps(input_data),
+                "bloom_skill_count": bloom_skill_count})
         if (is_debug):
             print("📦 Raw LLM output:\n", response)
 
@@ -95,7 +92,7 @@ def generate_llm_question_list(
             return {"error": f"Failed to parse LLM response: {e}", "raw": cleaned}
 
     except Exception as e:
-        return {"error": f"Error: {e}", "raw": cleaned}
+        return {"error": f"Error: {e}"}
 
 
 def get_token_count_from_str(text: str, llm_model: str) -> int:
@@ -108,57 +105,3 @@ def clean_llm_response(raw_response: str) -> str:
     cleaned = re.sub(r"^```(?:json)?\n?", "", raw_response.strip())
     cleaned = re.sub(r"\n?```$", "", cleaned)
     return cleaned.strip()
-
-
-JSS_SCIENCE_STRANDS = [
-    {
-        "id": 1,
-        "grade": 7,
-        "strand": "Scientific Investigation"
-    },
-    {
-        "id": 2,
-        "grade": 7,
-        "strand": "Mixtures, Elements and Compounds"
-    },
-    {
-        "id": 3,
-        "grade": 7,
-        "strand": "Living Things and Their Environment"
-    },
-    {
-        "id": 4,
-        "grade": 7,
-        "strand": "Force and Energy"
-    },
-    {
-        "id": 5,
-        "grade": 8,
-        "strand": "Mixtures, Elements and Compounds"
-    },
-    {
-        "id": 6,
-        "grade": 8,
-        "strand": "Living Things and the Environment"
-    },
-    {
-        "id": 7,
-        "grade": 8,
-        "strand": "Force and Energy"
-    },
-    {
-        "id": 8,
-        "grade": 9,
-        "strand": "Mixtures, Elements and Compounds"
-    },
-    {
-        "id": 9,
-        "grade": 9,
-        "strand": "Living Things and Their Environment"
-    },
-    {
-        "id": 10,
-        "grade": 9,
-        "strand": "Force and Energy"
-    }
-]

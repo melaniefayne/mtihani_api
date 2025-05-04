@@ -5,12 +5,7 @@ import json
 from typing import List, Dict, Any
 import json
 from itertools import cycle
-
-CURRICULUM_FILE = "gen/data/cbc_data.json"
-QUESTION_BRD_OUTPUT_FILE = "output/question_breakdown.json"
-BLOOM_SKILLS = [
-    "Knowledge", "Comprehension", "Application", "Analysis", "Synthesis", "Evaluation"
-]
+from gen.constants import *
 
 
 def load_curriculum(file_path: str) -> List[Dict[str, Any]]:
@@ -48,7 +43,10 @@ def parse_curriculum(selected_strands: List[int], cbc_data: List[Dict[str, Any]]
     return {"selected": selected_data}
 
 
-def generate_question_plan(parsed_curriculum: Dict[str, Any], question_count: int = 25) -> List[Dict[str, Any]]:
+def generate_question_plan(
+        parsed_curriculum: Dict[str, Any], 
+        question_count: int = APP_QUESTION_COUNT, 
+        bloom_skill_count: int = APP_BLOOM_SKILL_COUNT) -> List[Dict[str, Any]]:
     """Plan questions across Bloom skills and strands fairly."""
     question_plan = []
     selected = parsed_curriculum.get("selected", [])
@@ -85,8 +83,8 @@ def generate_question_plan(parsed_curriculum: Dict[str, Any], question_count: in
 
     for _ in range(question_count):
         target = next(strand_cycle)
-        bloom_skills = random.sample(BLOOM_SKILLS, 3)
-
+        bloom_skills = random.sample(BLOOM_SKILLS, min(bloom_skill_count, len(BLOOM_SKILLS)))
+    
         question_plan.append({
             "number": current_number,
             "grade": target["grade"],
@@ -101,7 +99,10 @@ def generate_question_plan(parsed_curriculum: Dict[str, Any], question_count: in
     return question_plan
 
 
-def build_question_breakdown_json(question_plan: List[Dict[str, Any]], should_write: bool, output_file: str = QUESTION_BRD_OUTPUT_FILE) -> List[Dict[str, Any]]:
+def build_question_breakdown_json(
+        question_plan: List[Dict[str, Any]], 
+        is_debug: bool, 
+        output_file: str = QUESTION_BRD_OUTPUT_FILE) -> List[Dict[str, Any]]:
     """Build structured JSON from question plan and write to a file."""
     structured_questions = []
 
@@ -116,7 +117,7 @@ def build_question_breakdown_json(question_plan: List[Dict[str, Any]], should_wr
             "skills_to_assess": qp['skills_to_assess'] if qp['skills_to_assess'] else []
         })
 
-    if (should_write):
+    if (is_debug):
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(structured_questions, f, ensure_ascii=False, indent=4)
         print(f"✅ Question breakdown written to {output_file}")
@@ -124,15 +125,21 @@ def build_question_breakdown_json(question_plan: List[Dict[str, Any]], should_wr
     return structured_questions
 
 
-def get_exam_curriculum(strand_ids: List[int],  question_count: int, should_write: bool = False, curriculum_file: str = CURRICULUM_FILE) -> List[Dict[str, Any]]:
+def get_exam_curriculum(
+        strand_ids: List[int],  
+        question_count: int, 
+        is_debug: bool = False, 
+        curriculum_file: str = CURRICULUM_FILE,
+        bloom_skill_count: int = APP_BLOOM_SKILL_COUNT,
+    ) -> List[Dict[str, Any]]:
     cbc_data = load_curriculum(curriculum_file)
 
     parsed = parse_curriculum(strand_ids, cbc_data)
 
     question_plan = generate_question_plan(
-        parsed, question_count=question_count)
+        parsed, question_count=question_count, bloom_skill_count=bloom_skill_count)
 
-    question_brd = build_question_breakdown_json(question_plan, should_write)
+    question_brd = build_question_breakdown_json(question_plan, is_debug)
 
     return question_brd
 

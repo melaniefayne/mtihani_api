@@ -5,8 +5,6 @@ from gen.curriculum import get_exam_curriculum
 from gen.utils import generate_llm_question_list
 from permissions import IsTeacher
 from rest_framework.response import Response
-import json
-from typing import List, Dict, Any
 
 
 @api_view(['POST'])
@@ -15,13 +13,17 @@ def create_exam(request) -> Response:
     try:
         strand_ids = request.data.get("strand_ids", [])
         question_count = request.data.get("question_count", 25)
+        bloom_skill_count = int(request.data.get("bloom_skill_count", 3))
 
         # Build the curriculum-based breakdown for the LLM
         question_brd = get_exam_curriculum(
-            strand_ids=strand_ids, question_count=question_count)
+            strand_ids=strand_ids, 
+            question_count=question_count,
+            bloom_skill_count=bloom_skill_count)
 
         try:
-            exam_items = generate_llm_question_list(input_data=question_brd)
+            exam_items = generate_llm_question_list(
+                input_data=question_brd, bloom_skill_count=bloom_skill_count)
             # Check if it's a list of dicts with expected key
             if not isinstance(exam_items, list):
                 return Response({
@@ -32,16 +34,22 @@ def create_exam(request) -> Response:
             # Proceed with formatting
             response_data = []
             for i, item in enumerate(question_brd):
-                if i >= len(exam_items):
-                    break
+                questions = exam_items[i].get("questions", [])
+                if isinstance(questions, str):
+                    questions = [questions]
+
+                answers = exam_items[i].get("expected_answers", [])
+                if isinstance(answers, str):
+                    answers = [answers]
+
                 response_data.append({
                     "number": item.get("number"),
                     "grade": item.get("grade"),
                     "strand": item.get("strand"),
                     "sub_strand": item.get("sub_strand"),
                     "bloom_skills": item.get("bloom_skills"),
-                    "questions": exam_items[i].get("questions", []),
-                    "answers": exam_items[i].get("expected_answers", []),
+                    "questions": questions,
+                    "answers": answers,
                 })
 
             return Response(response_data, status=HTTP_200_OK)
