@@ -1,10 +1,54 @@
 [
     {
-        "question_number": 1,
+        "number": 1,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Introduction to Integrated Science",
+        "bloom_skills": [
+            "Application",
+            "Synthesis",
+            "Knowledge"
+        ],
+        "learning_outcomes": [
+            "Outline the components of Integrated Science as a field of study",
+            "Explain the importance of science in daily life",
+            "Show interest in learning Integrated Science at junior school"
+        ],
+        "skills_to_assess": [
+            "Ability to explain the importance of science in daily life"
+        ]
+    },
+    {
+        "number": 2,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Laboratory Safety",
+        "bloom_skills": [
+            "Knowledge",
+            "Analysis",
+            "Application"
+        ],
+        "learning_outcomes": [
+            "Identify common hazards and their symbols in the laboratory",
+            "Explain causes of common accidents in the laboratory",
+            "Demonstrate First Aid measures for common laboratory accidents",
+            "Appreciate the importance of safety in the laboratory and access to a healthy working environment"
+        ],
+        "skills_to_assess": [
+            "Ability to demonstrate First Aid measures for common laboratory accidents",
+            "Ability to identify common hazards and their symbols in the laboratory"
+        ]
+    },
+    {
+        "number": 3,
         "grade": 7,
         "strand": "Scientific Investigation",
         "sub_strand": "Laboratory Apparatus and Instruments",
-        "target_bloom_skill": "Knowledge",
+        "bloom_skills": [
+            "Synthesis",
+            "Analysis",
+            "Evaluation"
+        ],
         "learning_outcomes": [
             "Describe the basic skills in science",
             "Use and care for apparatus and instruments in the laboratory",
@@ -16,11 +60,34 @@
         ]
     },
     {
-        "question_number": 2,
+        "number": 4,
+        "grade": 7,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Mixtures",
+        "bloom_skills": [
+            "Evaluation",
+            "Comprehension",
+            "Knowledge"
+        ],
+        "learning_outcomes": [
+            "Separate homogeneous mixtures using appropriate methods",
+            "Outline applications of separating homogeneous mixtures in day-to-day life",
+            "Appreciate the use of different methods of separating mixtures in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to separate homogeneous mixtures using appropriate method"
+        ]
+    },
+    {
+        "number": 5,
         "grade": 7,
         "strand": "Mixtures, Elements and Compounds",
         "sub_strand": "Acids, Bases and Indicators",
-        "target_bloom_skill": "Knowledge",
+        "bloom_skills": [
+            "Knowledge",
+            "Synthesis",
+            "Application"
+        ],
         "learning_outcomes": [
             "Identify acids and bases using a litmus paper",
             "Prepare an acid-base indicator from plant extracts",
@@ -34,185 +101,59 @@
         ]
     },
     {
-        "question_number": 3,
-        "grade": 9,
-        "strand": "Living Things and Their Environment",
-        "sub_strand": "Pollution",
-        "target_bloom_skill": "Knowledge",
-        "learning_outcomes": [
-            "Identify and describe different types of pollution",
-            "Explain the causes and effects of pollution on human health and the environment",
-            "Suggest measures for pollution control and prevention",
-            "Show concern for pollution in the environment"
-        ],
-        "skills_to_assess": [
-            "Ability to describe different types of pollution and their causes",
-            "Ability to explain the effects of pollution on human health and the environment"
-        ]
-    },
-    {
-        "question_number": 4,
-        "grade": 9,
-        "strand": "Force and Energy",
-        "sub_strand": "Machines",
-        "target_bloom_skill": "Knowledge",
-        "learning_outcomes": [
-            "Identify types of simple machines",
-            "Describe how simple machines work and how they make work easier",
-            "Calculate mechanical advantage, velocity ratio and efficiency of simple machines",
-            "Relate the use of machines to real-life situations",
-            "Appreciate the importance of simple machines in improving quality of life"
-        ],
-        "skills_to_assess": [
-            "Ability to calculate mechanical advantage and efficiency",
-            "Ability to identify and explain functions of simple machines"
-        ]
-    },
-    {
-        "question_number": 5,
-        "grade": 8,
-        "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Classes of Fire",
-        "target_bloom_skill": "Knowledge",
-        "learning_outcomes": [
-            "Identify the different classes of fire",
-            "Match each class of fire with the appropriate fire extinguisher",
-            "Describe appropriate fire safety measures at home, school and workplace",
-            "Appreciate the importance of fire safety and preparedness"
-        ],
-        "skills_to_assess": [
-            "Ability to identify fire classes and use appropriate extinguishing methods"
-        ]
-    },
-    {
-        "question_number": 6,
-        "grade": 9,
-        "strand": "Living Things and Their Environment",
-        "sub_strand": "Conservation of the Environment",
-        "target_bloom_skill": "Comprehension",
-        "learning_outcomes": [
-            "Explain the importance of conserving the environment",
-            "Describe various methods used in environmental conservation",
-            "Participate in conservation initiatives in the school or community",
-            "Demonstrate responsibility and commitment to environmental protection"
-        ],
-        "skills_to_assess": [
-            "Ability to apply environmental conservation practices",
-            "Ability to describe the importance of conserving the environment"
-        ]
-    },
-    {
-        "question_number": 7,
-        "grade": 9,
-        "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Water Hardness",
-        "target_bloom_skill": "Comprehension",
-        "learning_outcomes": [
-            "Describe the physical properties of water",
-            "Differentiate between hard and soft water",
-            "Explain causes of temporary and permanent hardness in water",
-            "Apply methods of softening hard water",
-            "State advantages and disadvantages of hard and soft water",
-            "Appreciate the importance of water treatment"
-        ],
-        "skills_to_assess": [
-            "Ability to apply different methods to soften temporary hard water",
-            "Ability to outline advantages and disadvantages of hard and soft water"
-        ]
-    },
-    {
-        "question_number": 8,
-        "grade": 9,
-        "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Metals and Alloys",
-        "target_bloom_skill": "Comprehension",
-        "learning_outcomes": [
-            "Describe physical properties of metals",
-            "Identify the composition of common alloys",
-            "State the uses of metals and alloys in day-to-day life",
-            "Explain causes, effects and prevention of rusting",
-            "Appreciate the importance of proper use and maintenance of metallic materials"
-        ],
-        "skills_to_assess": [
-            "Ability to explain the effect of rusting on metals",
-            "Ability to outline uses of metals and alloys"
-        ]
-    },
-    {
-        "question_number": 9,
+        "number": 6,
         "grade": 7,
-        "strand": "Force and Energy",
-        "sub_strand": "Magnetism",
-        "target_bloom_skill": "Comprehension",
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Human Reproductive System",
+        "bloom_skills": [
+            "Application",
+            "Synthesis",
+            "Comprehension"
+        ],
         "learning_outcomes": [
-            "Demonstrate the properties of a magnet",
-            "Classify materials as magnetic or non-magnetic",
-            "Identify the uses of magnets in day-to-day life",
-            "Appreciate the applications of magnets in day-to-day life"
+            "Identify parts of the human male and female reproductive systems",
+            "Describe functions of parts of the male and female reproductive system",
+            "Describe the physical changes that take place in boys and girls during adolescence",
+            "Develop a plan to manage developmental challenges during adolescence",
+            "Appreciate that physical changes in boys and girls during adolescence have social and reproductive implications"
         ],
         "skills_to_assess": [
-            "Ability to demonstrate the properties of a magnet",
-            "Ability to identify the uses of magnets in day-to-day life"
+            "Ability to describe functions of parts of the male and female reproductive system",
+            "Ability to develop a plan to manage developmental challenges during adolescence"
         ]
     },
     {
-        "question_number": 10,
+        "number": 7,
         "grade": 7,
-        "strand": "Scientific Investigation",
-        "sub_strand": "Laboratory Safety",
-        "target_bloom_skill": "Application",
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Human Excretory System",
+        "bloom_skills": [
+            "Evaluation",
+            "Analysis",
+            "Application"
+        ],
         "learning_outcomes": [
-            "Identify common hazards and their symbols in the laboratory",
-            "Explain causes of common accidents in the laboratory",
-            "Demonstrate First Aid measures for common laboratory accidents",
-            "Appreciate the importance of safety in the laboratory and access to a healthy working environment"
+            "Identify parts of human skin and their functions",
+            "Identify parts of the urinary system and their functions",
+            "Describe causes of kidney disorders",
+            "Develop and maintain a daily log on activities that promote skin and kidney health",
+            "Appreciate the need for a healthy lifestyle to promote kidney and skin health"
         ],
         "skills_to_assess": [
-            "Ability to demonstrate First Aid measures for common laboratory accidents",
-            "Ability to identify common hazards and their symbols in the laboratory"
+            "Ability to develop and maintain a daily log on activities that promote skin and kidney health",
+            "Ability to identify parts of the excretory system and their functions"
         ]
     },
     {
-        "question_number": 11,
-        "grade": 8,
-        "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Physical and Chemical Changes",
-        "target_bloom_skill": "Application",
-        "learning_outcomes": [
-            "Describe characteristics of physical and chemical changes",
-            "Differentiate between physical and chemical changes",
-            "Classify changes as either physical or chemical",
-            "Relate physical and chemical changes to day-to-day life",
-            "Appreciate the relevance of physical and chemical changes in day-to-day life"
-        ],
-        "skills_to_assess": [
-            "Ability to distinguish between physical and chemical changes"
-        ]
-    },
-    {
-        "question_number": 12,
-        "grade": 9,
-        "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Structure of the Atom",
-        "target_bloom_skill": "Application",
-        "learning_outcomes": [
-            "Describe the structure of the atom",
-            "Determine the mass number of elements",
-            "Draw electron arrangements in atoms using dot or cross diagrams",
-            "Classify elements into metals and non-metals",
-            "Show interest in classifying elements into metals and non-metals"
-        ],
-        "skills_to_assess": [
-            "Ability to classify elements into metals and non-metals",
-            "Ability to describe the structure of the atom"
-        ]
-    },
-    {
-        "question_number": 13,
+        "number": 8,
         "grade": 7,
         "strand": "Force and Energy",
         "sub_strand": "Electrical Energy",
-        "target_bloom_skill": "Application",
+        "bloom_skills": [
+            "Evaluation",
+            "Comprehension",
+            "Synthesis"
+        ],
         "learning_outcomes": [
             "Identify sources of electricity in the environment",
             "Demonstrate flow of electric current using simple electric circuits",
@@ -227,27 +168,36 @@
         ]
     },
     {
-        "question_number": 14,
-        "grade": 8,
-        "strand": "Living Things and the Environment",
-        "sub_strand": "Movement of Materials In and Out of the Cell",
-        "target_bloom_skill": "Analysis",
+        "number": 9,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Magnetism",
+        "bloom_skills": [
+            "Application",
+            "Comprehension",
+            "Analysis"
+        ],
         "learning_outcomes": [
-            "Describe the processes of diffusion and osmosis",
-            "Demonstrate diffusion and osmosis using simple experiments",
-            "Relate diffusion and osmosis to movement of materials in living organisms",
-            "Appreciate the importance of diffusion and osmosis in living organisms"
+            "Demonstrate the properties of a magnet",
+            "Classify materials as magnetic or non-magnetic",
+            "Identify the uses of magnets in day-to-day life",
+            "Appreciate the applications of magnets in day-to-day life"
         ],
         "skills_to_assess": [
-            "Ability to demonstrate and explain diffusion and osmosis"
+            "Ability to demonstrate the properties of a magnet",
+            "Ability to identify the uses of magnets in day-to-day life"
         ]
     },
     {
-        "question_number": 15,
+        "number": 10,
         "grade": 8,
         "strand": "Mixtures, Elements and Compounds",
         "sub_strand": "Elements and Compounds",
-        "target_bloom_skill": "Analysis",
+        "bloom_skills": [
+            "Evaluation",
+            "Comprehension",
+            "Application"
+        ],
         "learning_outcomes": [
             "Explain the relationship between an atom, an element, a molecule and a compound",
             "Assign symbols to selected elements",
@@ -260,94 +210,95 @@
         ]
     },
     {
-        "question_number": 16,
+        "number": 11,
         "grade": 8,
-        "strand": "Force and Energy",
-        "sub_strand": "Transformation of Energy",
-        "target_bloom_skill": "Analysis",
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Physical and Chemical Changes",
+        "bloom_skills": [
+            "Evaluation",
+            "Knowledge",
+            "Synthesis"
+        ],
         "learning_outcomes": [
-            "Identify various forms of energy",
-            "Describe how one form of energy can be transformed into another",
-            "Relate transformation of energy to real-life situations",
-            "Appreciate the importance of energy transformation in day-to-day life"
+            "Describe characteristics of physical and chemical changes",
+            "Differentiate between physical and chemical changes",
+            "Classify changes as either physical or chemical",
+            "Relate physical and chemical changes to day-to-day life",
+            "Appreciate the relevance of physical and chemical changes in day-to-day life"
         ],
         "skills_to_assess": [
-            "Ability to describe transformation of energy and its application"
+            "Ability to distinguish between physical and chemical changes"
         ]
     },
     {
-        "question_number": 17,
-        "grade": 7,
-        "strand": "Living Things and Their Environment",
-        "sub_strand": "Human Excretory System",
-        "target_bloom_skill": "Analysis",
-        "learning_outcomes": [
-            "Identify parts of human skin and their functions",
-            "Identify parts of the urinary system and their functions",
-            "Describe causes of kidney disorders",
-            "Develop and maintain a daily log on activities that promote skin and kidney health",
-            "Appreciate the need for a healthy lifestyle to promote kidney and skin health"
-        ],
-        "skills_to_assess": [
-            "Ability to develop and maintain a daily log on activities that promote skin and kidney health",
-            "Ability to identify parts of the excretory system and their functions"
-        ]
-    },
-    {
-        "question_number": 18,
-        "grade": 9,
-        "strand": "Force and Energy",
-        "sub_strand": "Friction",
-        "target_bloom_skill": "Synthesis",
-        "learning_outcomes": [
-            "Explain the concept and causes of friction",
-            "Identify the advantages and disadvantages of friction",
-            "Suggest ways of increasing or reducing friction in daily life",
-            "Appreciate the role of friction in everyday situations"
-        ],
-        "skills_to_assess": [
-            "Ability to describe the concept of friction and its effects",
-            "Ability to identify ways of reducing or increasing friction"
-        ]
-    },
-    {
-        "question_number": 19,
-        "grade": 7,
-        "strand": "Scientific Investigation",
-        "sub_strand": "Introduction to Integrated Science",
-        "target_bloom_skill": "Synthesis",
-        "learning_outcomes": [
-            "Outline the components of Integrated Science as a field of study",
-            "Explain the importance of science in daily life",
-            "Show interest in learning Integrated Science at junior school"
-        ],
-        "skills_to_assess": [
-            "Ability to explain the importance of science in daily life"
-        ]
-    },
-    {
-        "question_number": 20,
+        "number": 12,
         "grade": 8,
-        "strand": "Force and Energy",
-        "sub_strand": "Pressure",
-        "target_bloom_skill": "Synthesis",
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Classes of Fire",
+        "bloom_skills": [
+            "Analysis",
+            "Knowledge",
+            "Comprehension"
+        ],
         "learning_outcomes": [
-            "Define pressure and explain how it acts in solids, liquids and gases",
-            "Identify factors that affect pressure",
-            "Describe how pressure is measured",
-            "Relate pressure to day-to-day applications",
-            "Appreciate the usefulness of pressure in real-life situations"
+            "Identify the different classes of fire",
+            "Match each class of fire with the appropriate fire extinguisher",
+            "Describe appropriate fire safety measures at home, school and workplace",
+            "Appreciate the importance of fire safety and preparedness"
         ],
         "skills_to_assess": [
-            "Ability to explain pressure and its application in real life"
+            "Ability to identify fire classes and use appropriate extinguishing methods"
         ]
     },
     {
-        "question_number": 21,
+        "number": 13,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "The Cell",
+        "bloom_skills": [
+            "Synthesis",
+            "Comprehension",
+            "Application"
+        ],
+        "learning_outcomes": [
+            "Describe the structure and functions of parts of plant and animal cells",
+            "Differentiate between plant and animal cells",
+            "Appreciate the role of cells in living organisms"
+        ],
+        "skills_to_assess": [
+            "Ability to identify and describe parts of plant and animal cells"
+        ]
+    },
+    {
+        "number": 14,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "Movement of Materials In and Out of the Cell",
+        "bloom_skills": [
+            "Application",
+            "Synthesis",
+            "Evaluation"
+        ],
+        "learning_outcomes": [
+            "Describe the processes of diffusion and osmosis",
+            "Demonstrate diffusion and osmosis using simple experiments",
+            "Relate diffusion and osmosis to movement of materials in living organisms",
+            "Appreciate the importance of diffusion and osmosis in living organisms"
+        ],
+        "skills_to_assess": [
+            "Ability to demonstrate and explain diffusion and osmosis"
+        ]
+    },
+    {
+        "number": 15,
         "grade": 8,
         "strand": "Living Things and the Environment",
         "sub_strand": "Reproduction in Human Beings",
-        "target_bloom_skill": "Synthesis",
+        "bloom_skills": [
+            "Evaluation",
+            "Comprehension",
+            "Application"
+        ],
         "learning_outcomes": [
             "Describe the parts and functions of the human reproductive system",
             "Explain the process of fertilisation and development of the embryo",
@@ -360,67 +311,215 @@
         ]
     },
     {
-        "question_number": 22,
+        "number": 16,
         "grade": 8,
-        "strand": "Living Things and the Environment",
-        "sub_strand": "The Cell",
-        "target_bloom_skill": "Evaluation",
+        "strand": "Force and Energy",
+        "sub_strand": "Transformation of Energy",
+        "bloom_skills": [
+            "Knowledge",
+            "Application",
+            "Analysis"
+        ],
         "learning_outcomes": [
-            "Describe the structure and functions of parts of plant and animal cells",
-            "Differentiate between plant and animal cells",
-            "Appreciate the role of cells in living organisms"
+            "Identify various forms of energy",
+            "Describe how one form of energy can be transformed into another",
+            "Relate transformation of energy to real-life situations",
+            "Appreciate the importance of energy transformation in day-to-day life"
         ],
         "skills_to_assess": [
-            "Ability to identify and describe parts of plant and animal cells"
+            "Ability to describe transformation of energy and its application"
         ]
     },
     {
-        "question_number": 23,
-        "grade": 7,
-        "strand": "Living Things and Their Environment",
-        "sub_strand": "Human Reproductive System",
-        "target_bloom_skill": "Evaluation",
+        "number": 17,
+        "grade": 8,
+        "strand": "Force and Energy",
+        "sub_strand": "Pressure",
+        "bloom_skills": [
+            "Evaluation",
+            "Application",
+            "Knowledge"
+        ],
         "learning_outcomes": [
-            "Identify parts of the human male and female reproductive systems",
-            "Describe functions of parts of the male and female reproductive system",
-            "Describe the physical changes that take place in boys and girls during adolescence",
-            "Develop a plan to manage developmental challenges during adolescence",
-            "Appreciate that physical changes in boys and girls during adolescence have social and reproductive implications"
+            "Define pressure and explain how it acts in solids, liquids and gases",
+            "Identify factors that affect pressure",
+            "Describe how pressure is measured",
+            "Relate pressure to day-to-day applications",
+            "Appreciate the usefulness of pressure in real-life situations"
         ],
         "skills_to_assess": [
-            "Ability to describe functions of parts of the male and female reproductive system",
-            "Ability to develop a plan to manage developmental challenges during adolescence"
+            "Ability to explain pressure and its application in real life"
         ]
     },
     {
-        "question_number": 24,
-        "grade": 7,
+        "number": 18,
+        "grade": 9,
         "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Mixtures",
-        "target_bloom_skill": "Evaluation",
+        "sub_strand": "Structure of the Atom",
+        "bloom_skills": [
+            "Comprehension",
+            "Knowledge",
+            "Analysis"
+        ],
         "learning_outcomes": [
-            "Separate homogeneous mixtures using appropriate methods",
-            "Outline applications of separating homogeneous mixtures in day-to-day life",
-            "Appreciate the use of different methods of separating mixtures in day-to-day life"
+            "Describe the structure of the atom",
+            "Determine the mass number of elements",
+            "Draw electron arrangements in atoms using dot or cross diagrams",
+            "Classify elements into metals and non-metals",
+            "Show interest in classifying elements into metals and non-metals"
         ],
         "skills_to_assess": [
-            "Ability to separate homogeneous mixtures using appropriate method"
+            "Ability to classify elements into metals and non-metals",
+            "Ability to describe the structure of the atom"
         ]
     },
     {
-        "question_number": 25,
+        "number": 19,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Metals and Alloys",
+        "bloom_skills": [
+            "Analysis",
+            "Evaluation",
+            "Application"
+        ],
+        "learning_outcomes": [
+            "Describe physical properties of metals",
+            "Identify the composition of common alloys",
+            "State the uses of metals and alloys in day-to-day life",
+            "Explain causes, effects and prevention of rusting",
+            "Appreciate the importance of proper use and maintenance of metallic materials"
+        ],
+        "skills_to_assess": [
+            "Ability to explain the effect of rusting on metals",
+            "Ability to outline uses of metals and alloys"
+        ]
+    },
+    {
+        "number": 20,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Water Hardness",
+        "bloom_skills": [
+            "Application",
+            "Comprehension",
+            "Analysis"
+        ],
+        "learning_outcomes": [
+            "Describe the physical properties of water",
+            "Differentiate between hard and soft water",
+            "Explain causes of temporary and permanent hardness in water",
+            "Apply methods of softening hard water",
+            "State advantages and disadvantages of hard and soft water",
+            "Appreciate the importance of water treatment"
+        ],
+        "skills_to_assess": [
+            "Ability to apply different methods to soften temporary hard water",
+            "Ability to outline advantages and disadvantages of hard and soft water"
+        ]
+    },
+    {
+        "number": 21,
+        "grade": 9,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Pollution",
+        "bloom_skills": [
+            "Knowledge",
+            "Analysis",
+            "Synthesis"
+        ],
+        "learning_outcomes": [
+            "Identify and describe different types of pollution",
+            "Explain the causes and effects of pollution on human health and the environment",
+            "Suggest measures for pollution control and prevention",
+            "Show concern for pollution in the environment"
+        ],
+        "skills_to_assess": [
+            "Ability to describe different types of pollution and their causes",
+            "Ability to explain the effects of pollution on human health and the environment"
+        ]
+    },
+    {
+        "number": 22,
+        "grade": 9,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Conservation of the Environment",
+        "bloom_skills": [
+            "Evaluation",
+            "Application",
+            "Comprehension"
+        ],
+        "learning_outcomes": [
+            "Explain the importance of conserving the environment",
+            "Describe various methods used in environmental conservation",
+            "Participate in conservation initiatives in the school or community",
+            "Demonstrate responsibility and commitment to environmental protection"
+        ],
+        "skills_to_assess": [
+            "Ability to apply environmental conservation practices",
+            "Ability to describe the importance of conserving the environment"
+        ]
+    },
+    {
+        "number": 23,
+        "grade": 9,
+        "strand": "Force and Energy",
+        "sub_strand": "Friction",
+        "bloom_skills": [
+            "Analysis",
+            "Application",
+            "Evaluation"
+        ],
+        "learning_outcomes": [
+            "Explain the concept and causes of friction",
+            "Identify the advantages and disadvantages of friction",
+            "Suggest ways of increasing or reducing friction in daily life",
+            "Appreciate the role of friction in everyday situations"
+        ],
+        "skills_to_assess": [
+            "Ability to describe the concept of friction and its effects",
+            "Ability to identify ways of reducing or increasing friction"
+        ]
+    },
+    {
+        "number": 24,
+        "grade": 9,
+        "strand": "Force and Energy",
+        "sub_strand": "Machines",
+        "bloom_skills": [
+            "Comprehension",
+            "Application",
+            "Synthesis"
+        ],
+        "learning_outcomes": [
+            "Identify types of simple machines",
+            "Describe how simple machines work and how they make work easier",
+            "Calculate mechanical advantage, velocity ratio and efficiency of simple machines",
+            "Relate the use of machines to real-life situations",
+            "Appreciate the importance of simple machines in improving quality of life"
+        ],
+        "skills_to_assess": [
+            "Ability to calculate mechanical advantage and efficiency",
+            "Ability to identify and explain functions of simple machines"
+        ]
+    },
+    {
+        "number": 25,
         "grade": 7,
         "strand": "Scientific Investigation",
-        "sub_strand": "Laboratory Apparatus and Instruments",
-        "target_bloom_skill": "Evaluation",
+        "sub_strand": "Introduction to Integrated Science",
+        "bloom_skills": [
+            "Analysis",
+            "Application",
+            "Synthesis"
+        ],
         "learning_outcomes": [
-            "Describe the basic skills in science",
-            "Use and care for apparatus and instruments in the laboratory",
-            "Use the SI units for basic and derived quantities in science",
-            "Appreciate consumer protection when handling different apparatus, instruments and other materials in day-to-day life"
+            "Outline the components of Integrated Science as a field of study",
+            "Explain the importance of science in daily life",
+            "Show interest in learning Integrated Science at junior school"
         ],
         "skills_to_assess": [
-            "Ability to use and care for apparatus and instruments in the laboratory"
+            "Ability to explain the importance of science in daily life"
         ]
     }
 ]

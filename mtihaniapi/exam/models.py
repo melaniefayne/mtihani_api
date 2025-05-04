@@ -5,7 +5,6 @@ from learner.models import Classroom, ClassroomStudent, Teacher
 class Exam(models.Model):
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='exams')
     teacher =  models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name='exams')
-    grade = models.IntegerField()
     code = models.CharField(max_length=50, unique=True)
     status = models.CharField(max_length=50)
     duration_min = models.IntegerField()
@@ -16,29 +15,28 @@ class Exam(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class ExamQuestion(models.Model):
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='questions')
+    number = models.IntegerField()
     grade = models.IntegerField()
-    strand_id = models.IntegerField()
-    skill_id = models.IntegerField()
-    skill_name = models.CharField(max_length=255)
-    strand_name = models.CharField(max_length=255)
-    sub_strand_id = models.IntegerField()
-    sub_strand_name = models.CharField(max_length=255)
+    strand = models.CharField(max_length=100)
+    sub_strand = models.CharField(max_length=100)
+    bloom_skill = models.CharField(max_length=100)
     description = models.TextField()
     expected_answer = models.TextField()
     tr_description = models.TextField(blank=True, null=True)
     tr_expected_answer = models.TextField(blank=True, null=True)
-    difficulty_level = models.CharField(max_length=50)
+    question_options = models.CharField(max_length=1500)
+    answer_options = models.CharField(max_length=1500)
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='questions')
 
 class ExamQuestionAnalysis(models.Model):
-    exam = models.OneToOneField('Exam', on_delete=models.CASCADE, related_name='analysis')
     question_count = models.IntegerField()
-    grade_distribution = models.JSONField(default=list)  # List of {id, name, score, expectation_level, count}
-    bloom_skill_distribution = models.JSONField(default=list)
-    sub_strand_distribution = models.JSONField(default=list)
-    difficulty_distribution = models.JSONField(default=list)
+    grade_distribution = models.CharField(max_length=1500)  # List of {id, name, score, expectation_level, count}
+    bloom_skill_distribution = models.CharField(max_length=1500)
+    strand_distribution = models.CharField(max_length=1500)
+    sub_strand_distribution = models.CharField(max_length=1500)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    exam = models.OneToOneField(Exam, on_delete=models.CASCADE, related_name='analysis')
 
 
 class StudentExamSession(models.Model):
@@ -63,7 +61,7 @@ class StudentExamSessionPerformance(models.Model):
     session = models.OneToOneField(StudentExamSession, on_delete=models.CASCADE, related_name='student_exam_session_performance')
     avg_score = models.FloatField()
     avg_expectation_level = models.CharField(max_length=100, blank=True)
-    bloom_skill_scores = models.JSONField(default=list)  # list of score dicts
+    bloom_skill_scores = models.CharField(max_length=1500)  # list of score dicts
     strand_scores = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -78,7 +76,7 @@ class ClassExamPerformance(models.Model):
     exam = models.OneToOneField(Exam, on_delete=models.CASCADE)
     avg_score = models.FloatField()
     avg_expectation_level = models.CharField(max_length=100, blank=True)
-    bloom_skill_scores = models.JSONField(default=list)
+    bloom_skill_scores = models.CharField(max_length=1500)
     strand_scores = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

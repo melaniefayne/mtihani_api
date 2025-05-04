@@ -1,0 +1,527 @@
+[
+    {
+        "number": 1,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Introduction to Integrated Science",
+        "bloom_skills": [
+            "Analysis",
+            "Evaluation",
+            "Synthesis"
+        ],
+        "questions": [
+            "Mary and John are discussing the components of Integrated Science. Analyze their conversation and identify the key components they should include.",
+            "James argues that science is not important in daily life. Evaluate his statement and provide reasons to support or refute his claim.",
+            "Imagine you are a teacher introducing Integrated Science to a new class. Synthesize a brief introduction that would spark interest in the students."
+        ],
+        "answers": [
+            "Key components include biology, chemistry, physics, and earth sciences.",
+            "Science is important because it helps us understand the world, solve problems, and improve technology.",
+            "Integrated Science is fascinating because it combines different scientific fields to help us understand the world better and solve real-life problems."
+        ]
+    },
+    {
+        "number": 2,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Laboratory Safety",
+        "bloom_skills": [
+            "Analysis",
+            "Comprehension",
+            "Application"
+        ],
+        "questions": [
+            "In a laboratory, Sarah notices a spill and a broken glass. Analyze the situation and identify potential hazards and their symbols.",
+            "Tom witnessed a minor burn accident in the lab. Explain the causes of such accidents and how they can be prevented.",
+            "During a lab session, a student cuts their finger. Demonstrate the First Aid measures you would take to address this accident."
+        ],
+        "answers": [
+            "Potential hazards include chemical spills (corrosive symbol) and broken glass (sharp object symbol).",
+            "Accidents can be caused by carelessness, improper handling of equipment, or lack of safety gear. Prevention includes following safety protocols and wearing protective gear.",
+            "Clean the wound with water, apply antiseptic, and cover with a bandage."
+        ]
+    },
+    {
+        "number": 3,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Laboratory Apparatus and Instruments",
+        "bloom_skills": [
+            "Evaluation",
+            "Comprehension",
+            "Knowledge"
+        ],
+        "questions": [
+            "Evaluate the importance of using and caring for laboratory apparatus and instruments correctly.",
+            "During a lab session, Alex is unsure how to use a Bunsen burner. Comprehend the steps he should follow to use it safely.",
+            "List the SI units for length, mass, and time."
+        ],
+        "answers": [
+            "Proper use and care prevent accidents, ensure accurate results, and prolong the lifespan of the equipment.",
+            "Check for gas leaks, light the match before turning on the gas, and adjust the flame as needed.",
+            "Meter for length, kilogram for mass, and second for time."
+        ]
+    },
+    {
+        "number": 4,
+        "grade": 7,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Mixtures",
+        "bloom_skills": [
+            "Knowledge",
+            "Comprehension",
+            "Application"
+        ],
+        "questions": [
+            "List three methods used to separate homogeneous mixtures.",
+            "During a science fair, Lucy explains how distillation is used in everyday life. Comprehend her explanation.",
+            "John has a mixture of salt and water. Apply the appropriate method to separate them."
+        ],
+        "answers": [
+            "Distillation, evaporation, and chromatography.",
+            "Distillation is used to purify water and separate alcohol from mixtures.",
+            "Evaporation or distillation can be used to separate salt from water."
+        ]
+    },
+    {
+        "number": 5,
+        "grade": 7,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Acids, Bases and Indicators",
+        "bloom_skills": [
+            "Analysis",
+            "Synthesis",
+            "Knowledge"
+        ],
+        "questions": [
+            "Analyze the reaction of litmus paper when dipped in vinegar and baking soda solution.",
+            "Synthesize a list of real-life applications of acids and bases.",
+            "Define an acid and a base."
+        ],
+        "answers": [
+            "Vinegar turns blue litmus red (acidic), and baking soda turns red litmus blue (basic).",
+            "Acids are used in cleaning agents and food preservation; bases are used in soap and baking.",
+            "Acids release hydrogen ions in solution, while bases release hydroxide ions."
+        ]
+    },
+    {
+        "number": 6,
+        "grade": 7,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Human Reproductive System",
+        "bloom_skills": [
+            "Evaluation",
+            "Application",
+            "Knowledge"
+        ],
+        "questions": [
+            "Evaluate the function of the ovaries in the female reproductive system.",
+            "Jane is experiencing mood swings and growth spurts during adolescence. Develop a plan to help her manage these changes.",
+            "Name the part of the male reproductive system responsible for producing sperm."
+        ],
+        "answers": [
+            "Ovaries produce eggs and hormones like estrogen and progesterone.",
+            "Encourage open communication, maintain a balanced diet, and engage in physical activities.",
+            "Testes."
+        ]
+    },
+    {
+        "number": 7,
+        "grade": 7,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Human Excretory System",
+        "bloom_skills": [
+            "Application",
+            "Comprehension",
+            "Knowledge"
+        ],
+        "questions": [
+            "Create a daily log for activities that promote skin and kidney health.",
+            "During a biology class, Mark is asked to identify parts of the urinary system. Comprehend his response.",
+            "List the main functions of the human skin."
+        ],
+        "answers": [
+            "Include drinking water, eating a balanced diet, exercising, and maintaining hygiene.",
+            "Kidneys, ureters, bladder, and urethra.",
+            "Protection, temperature regulation, and sensation."
+        ]
+    },
+    {
+        "number": 8,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Electrical Energy",
+        "bloom_skills": [
+            "Analysis",
+            "Comprehension",
+            "Application"
+        ],
+        "questions": [
+            "Analyze the role of a circuit breaker in an electrical circuit.",
+            "During a safety workshop, Emily explains the importance of not overloading sockets. Comprehend her explanation.",
+            "List three common electrical appliances found in homes."
+        ],
+        "answers": [
+            "A circuit breaker prevents overload by cutting off the current flow.",
+            "Overloading can cause overheating and fires; it's important to distribute electrical load evenly.",
+            "Refrigerator, television, and microwave."
+        ]
+    },
+    {
+        "number": 9,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Magnetism",
+        "bloom_skills": [
+            "Synthesis",
+            "Application",
+            "Analysis"
+        ],
+        "questions": [
+            "Synthesize a demonstration to show the properties of a magnet.",
+            "During a science project, Tom uses magnets to sort materials. Apply this method to identify uses of magnets in daily life.",
+            "Analyze why some materials are attracted to magnets while others are not."
+        ],
+        "answers": [
+            "Show attraction and repulsion, magnetic field lines, and how magnets attract iron.",
+            "Magnets are used in compasses, fridge doors, and magnetic locks.",
+            "Materials with unpaired electrons (like iron) are magnetic; others are not."
+        ]
+    },
+    {
+        "number": 10,
+        "grade": 8,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Elements and Compounds",
+        "bloom_skills": [
+            "Application",
+            "Knowledge",
+            "Synthesis"
+        ],
+        "questions": [
+            "Apply the concept of elements and compounds to explain the difference between water and oxygen.",
+            "During a chemistry class, Sarah is asked to assign symbols to elements. Comprehend her response.",
+            "Write a word equation for the reaction of hydrogen and oxygen to form water."
+        ],
+        "answers": [
+            "Water is a compound (H2O), while oxygen is an element (O2).",
+            "H for hydrogen, O for oxygen, and Na for sodium.",
+            "Hydrogen + Oxygen → Water."
+        ]
+    },
+    {
+        "number": 11,
+        "grade": 8,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Physical and Chemical Changes",
+        "bloom_skills": [
+            "Evaluation",
+            "Analysis",
+            "Knowledge"
+        ],
+        "questions": [
+            "Evaluate the characteristics of a chemical change using the rusting of iron as an example.",
+            "During a science experiment, Lucy observes a change in color and temperature. Analyze whether this is a physical or chemical change.",
+            "Define a physical change and provide an example."
+        ],
+        "answers": [
+            "Chemical changes involve new substances; rusting forms iron oxide.",
+            "It's a chemical change due to new substances and energy change.",
+            "A physical change alters form but not composition, e.g., melting ice."
+        ]
+    },
+    {
+        "number": 12,
+        "grade": 8,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Classes of Fire",
+        "bloom_skills": [
+            "Knowledge",
+            "Comprehension",
+            "Analysis"
+        ],
+        "questions": [
+            "List the different classes of fire.",
+            "During a safety drill, John explains the use of a CO2 extinguisher. Comprehend his explanation.",
+            "Analyze the importance of having fire safety measures at home."
+        ],
+        "answers": [
+            "Class A, B, C, D, and K.",
+            "CO2 extinguishers are used for electrical fires and flammable liquids.",
+            "Fire safety measures prevent injuries and property damage."
+        ]
+    },
+    {
+        "number": 13,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "The Cell",
+        "bloom_skills": [
+            "Application",
+            "Knowledge",
+            "Analysis"
+        ],
+        "questions": [
+            "Apply your knowledge to identify and describe the parts of a plant cell.",
+            "During a biology lesson, Mary is asked to differentiate between plant and animal cells. Comprehend her response.",
+            "Analyze the role of the cell membrane in both plant and animal cells."
+        ],
+        "answers": [
+            "Parts include cell wall, chloroplasts, and vacuole.",
+            "Plant cells have cell walls and chloroplasts; animal cells do not.",
+            "The cell membrane controls the movement of substances in and out of the cell."
+        ]
+    },
+    {
+        "number": 14,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "Movement of Materials In and Out of the Cell",
+        "bloom_skills": [
+            "Knowledge",
+            "Application",
+            "Analysis"
+        ],
+        "questions": [
+            "Define diffusion and osmosis.",
+            "During an experiment, Tom observes sugar dissolving in water. Apply the concept of diffusion to explain this observation.",
+            "Analyze the importance of osmosis in plant cells."
+        ],
+        "answers": [
+            "Diffusion is the movement of particles from high to low concentration; osmosis is the movement of water across a semi-permeable membrane.",
+            "Sugar particles move from high concentration in the sugar to low concentration in water.",
+            "Osmosis helps maintain cell turgor and nutrient absorption."
+        ]
+    },
+    {
+        "number": 15,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "Reproduction in Human Beings",
+        "bloom_skills": [
+            "Application",
+            "Synthesis",
+            "Analysis"
+        ],
+        "questions": [
+            "Apply your understanding to describe the function of the uterus in the female reproductive system.",
+            "During a health class, Jane is asked to explain the process of fertilization. Synthesize her explanation.",
+            "Analyze the importance of practicing hygiene during puberty."
+        ],
+        "answers": [
+            "The uterus nurtures the fertilized egg and supports fetal development.",
+            "Fertilization occurs when a sperm cell unites with an egg cell, forming a zygote.",
+            "Hygiene prevents infections and promotes health during bodily changes."
+        ]
+    },
+    {
+        "number": 16,
+        "grade": 8,
+        "strand": "Force and Energy",
+        "sub_strand": "Transformation of Energy",
+        "bloom_skills": [
+            "Synthesis",
+            "Application",
+            "Knowledge"
+        ],
+        "questions": [
+            "Synthesize a scenario where energy transformation occurs in a household appliance.",
+            "During a physics class, Alex is asked to apply the concept of energy transformation to a wind turbine. Comprehend his explanation.",
+            "List three forms of energy."
+        ],
+        "answers": [
+            "A toaster transforms electrical energy into thermal energy to toast bread.",
+            "Wind turbines convert kinetic energy from wind into electrical energy.",
+            "Kinetic, potential, and thermal energy."
+        ]
+    },
+    {
+        "number": 17,
+        "grade": 8,
+        "strand": "Force and Energy",
+        "sub_strand": "Pressure",
+        "bloom_skills": [
+            "Comprehension",
+            "Evaluation",
+            "Knowledge"
+        ],
+        "questions": [
+            "Explain how pressure acts in a liquid using the example of a water bottle.",
+            "During a science fair, Lucy evaluates the factors affecting pressure in gases. Comprehend her findings.",
+            "Define pressure and provide an example of its application in daily life."
+        ],
+        "answers": [
+            "Pressure in a liquid acts equally in all directions and increases with depth.",
+            "Factors include temperature, volume, and number of gas particles.",
+            "Pressure is force per unit area; e.g., tire pressure supports vehicle weight."
+        ]
+    },
+    {
+        "number": 18,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Structure of the Atom",
+        "bloom_skills": [
+            "Evaluation",
+            "Application",
+            "Synthesis"
+        ],
+        "questions": [
+            "Evaluate the structure of an atom and its components.",
+            "During a chemistry class, Tom is asked to classify elements into metals and non-metals. Apply your knowledge to assist him.",
+            "Synthesize a diagram showing the electron arrangement of a carbon atom."
+        ],
+        "answers": [
+            "An atom consists of protons, neutrons, and electrons.",
+            "Metals are conductive and malleable; non-metals are insulators and brittle.",
+            "Carbon has 6 electrons arranged as 2 in the first shell and 4 in the second."
+        ]
+    },
+    {
+        "number": 19,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Metals and Alloys",
+        "bloom_skills": [
+            "Synthesis",
+            "Application",
+            "Comprehension"
+        ],
+        "questions": [
+            "Synthesize a list of common alloys and their compositions.",
+            "During a science project, Mary applies her knowledge to explain the prevention of rusting. Comprehend her explanation.",
+            "Analyze the effects of rusting on metal structures."
+        ],
+        "answers": [
+            "Steel (iron and carbon), brass (copper and zinc), bronze (copper and tin).",
+            "Rusting can be prevented by painting, galvanizing, or using stainless steel.",
+            "Rusting weakens structures, leading to damage and potential failure."
+        ]
+    },
+    {
+        "number": 20,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Water Hardness",
+        "bloom_skills": [
+            "Evaluation",
+            "Knowledge",
+            "Synthesis"
+        ],
+        "questions": [
+            "Evaluate the advantages and disadvantages of hard and soft water.",
+            "During a chemistry class, Alex is asked to apply methods to soften temporary hard water. Comprehend his response.",
+            "Synthesize a list of causes of water hardness."
+        ],
+        "answers": [
+            "Hard water is rich in minerals but causes scale; soft water is better for cleaning but lacks minerals.",
+            "Boiling or adding lime can soften temporary hard water.",
+            "Calcium and magnesium ions cause water hardness."
+        ]
+    },
+    {
+        "number": 21,
+        "grade": 9,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Pollution",
+        "bloom_skills": [
+            "Comprehension",
+            "Evaluation",
+            "Knowledge"
+        ],
+        "questions": [
+            "Describe the different types of pollution and their causes.",
+            "During an environmental science class, Jane evaluates the effects of pollution on human health. Comprehend her findings.",
+            "List three measures to control pollution."
+        ],
+        "answers": [
+            "Air, water, soil, and noise pollution caused by emissions, waste, and industrial activities.",
+            "Pollution can cause respiratory issues, waterborne diseases, and ecosystem damage.",
+            "Recycling, using clean energy, and enforcing environmental laws."
+        ]
+    },
+    {
+        "number": 22,
+        "grade": 9,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Conservation of the Environment",
+        "bloom_skills": [
+            "Analysis",
+            "Application",
+            "Synthesis"
+        ],
+        "questions": [
+            "Analyze the importance of conserving the environment.",
+            "During a community project, Tom applies his knowledge to implement conservation practices. Comprehend his actions.",
+            "Synthesize a plan for a school-based environmental conservation initiative."
+        ],
+        "answers": [
+            "Conservation ensures resource sustainability and biodiversity protection.",
+            "Tom plants trees, reduces waste, and promotes recycling.",
+            "Organize tree planting, waste reduction campaigns, and environmental education."
+        ]
+    },
+    {
+        "number": 23,
+        "grade": 9,
+        "strand": "Force and Energy",
+        "sub_strand": "Friction",
+        "bloom_skills": [
+            "Synthesis",
+            "Application",
+            "Analysis"
+        ],
+        "questions": [
+            "Synthesize a scenario where friction is beneficial in daily life.",
+            "During a physics lesson, Alex applies his knowledge to suggest ways of reducing friction. Comprehend his suggestions.",
+            "Analyze the disadvantages of friction in machinery."
+        ],
+        "answers": [
+            "Friction between shoes and the ground prevents slipping.",
+            "Use lubricants, smooth surfaces, or streamline shapes.",
+            "Friction causes wear and tear, reducing efficiency and lifespan."
+        ]
+    },
+    {
+        "number": 24,
+        "grade": 9,
+        "strand": "Force and Energy",
+        "sub_strand": "Machines",
+        "bloom_skills": [
+            "Evaluation",
+            "Comprehension",
+            "Synthesis"
+        ],
+        "questions": [
+            "Evaluate the mechanical advantage of a lever used to lift a heavy object.",
+            "During a science class, Mary comprehends the function of a pulley. Explain her understanding.",
+            "Synthesize a list of simple machines and their uses."
+        ],
+        "answers": [
+            "Mechanical advantage is the ratio of output force to input force, making lifting easier.",
+            "A pulley changes the direction of force, making lifting easier.",
+            "Lever (lifting), pulley (lifting), wheel and axle (transportation)."
+        ]
+    },
+    {
+        "number": 25,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Introduction to Integrated Science",
+        "bloom_skills": [
+            "Comprehension",
+            "Application",
+            "Synthesis"
+        ],
+        "questions": [
+            "Explain the importance of science in daily life.",
+            "During a class discussion, Tom applies his knowledge to give examples of science in everyday activities. Comprehend his examples.",
+            "Synthesize a short speech to encourage students to take an interest in Integrated Science."
+        ],
+        "answers": [
+            "Science helps solve problems, improve technology, and understand natural phenomena.",
+            "Cooking (chemistry), using gadgets (physics), and gardening (biology).",
+            "Integrated Science is exciting as it helps us understand the world and solve real-life problems."
+        ]
+    }
+]
