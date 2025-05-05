@@ -15,9 +15,10 @@ class ExamQuestionInline(admin.TabularInline):
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
     list_display = (
-        "code", "classroom", "teacher", "status", "is_published", "generation_config", "generation_error"
+        "id", "code", "classroom", "teacher", "status", "is_published", "generation_config", "generation_error"
     )
-    list_filter = ("status", "is_published", "classroom__name", "teacher__user__username")
+    list_filter = ("status", "is_published", "classroom__name",
+                   "teacher__user__username")
     search_fields = ("code", "classroom__name", "teacher__user__username")
     readonly_fields = ("created_at", "updated_at", "duration_min")
     inlines = [ExamQuestionInline]
@@ -26,7 +27,7 @@ class ExamAdmin(admin.ModelAdmin):
 @admin.register(ExamQuestion)
 class ExamQuestionAdmin(admin.ModelAdmin):
     list_display = (
-        "exam", "number", "grade", "strand", "sub_strand", "bloom_skill"
+         "id", "exam", "number", "grade", "strand", "sub_strand", "bloom_skill"
     )
     list_filter = ("grade", "strand", "sub_strand", "bloom_skill")
     search_fields = ("description", "expected_answer", "strand", "sub_strand")

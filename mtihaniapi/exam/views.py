@@ -16,6 +16,9 @@ from django.utils.dateparse import parse_datetime
 APP_QUESTION_COUNT = 25
 APP_BLOOM_SKILL_COUNT = 3
 
+#  ================================================ create-exam
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])
 def create_exam(request) -> Response:
@@ -40,11 +43,12 @@ def create_exam(request) -> Response:
 
         if not start_date_time or not end_date_time:
             return Response({"message": "Invalid date format. Use ISO 8601 (e.g. '2025-05-10T09:00:00Z')"},
-                    status=HTTP_400_BAD_REQUEST)
+                            status=HTTP_400_BAD_REQUEST)
 
         strand_ids = request.data.get("strand_ids", [])
         question_count = request.data.get("question_count", APP_QUESTION_COUNT)
-        bloom_skill_count = request.data.get("bloom_skill_count", APP_BLOOM_SKILL_COUNT)
+        bloom_skill_count = request.data.get(
+            "bloom_skill_count", APP_BLOOM_SKILL_COUNT)
         generation_config = {
             "strand_ids": strand_ids,
             "question_count": question_count,
@@ -106,20 +110,7 @@ def generate_exam_content(exam_id, generation_config):
                 exam=exam
             )
 
-        saved_questions = exam.questions.all()
-
-        ExamQuestionAnalysis.objects.create(
-            exam=exam,
-            question_count=saved_questions.count(),
-            grade_distribution=json.dumps([{"name": k, "count": v} for k, v in Counter(
-                q.grade for q in saved_questions).items()]),
-            bloom_skill_distribution=json.dumps([{"name": k, "count": v} for k, v in Counter(
-                q.bloom_skill for q in saved_questions).items()]),
-            strand_distribution=json.dumps([{"name": k, "count": v} for k, v in Counter(
-                q.strand for q in saved_questions).items()]),
-            sub_strand_distribution=json.dumps([{"name": k, "count": v} for k, v in Counter(
-                q.sub_strand for q in saved_questions).items()]),
-        )
+        calculate_exam_analysis(exam)
 
         exam.status = "Upcoming"
         exam.save()
@@ -130,12 +121,30 @@ def generate_exam_content(exam_id, generation_config):
         print(f"Background generation failed for Exam ID {exam_id}: {e}")
 
 
+def calculate_exam_analysis(exam):
+    questions = exam.questions.all()
+
+    analysis_data = {
+        "question_count": questions.count(),
+        "grade_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.grade for q in questions).items()]),
+        "bloom_skill_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.bloom_skill for q in questions).items()]),
+        "strand_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.strand for q in questions).items()]),
+        "sub_strand_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.sub_strand for q in questions).items()]),
+    }
+
+    # Update or create the analysis
+    ExamQuestionAnalysis.objects.update_or_create(
+        exam=exam,
+        defaults=analysis_data
+    )
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])
 def retry_exam_generation(request) -> Response:
     try:
+        exam_id = request.GET.get("exam_id")
         try:
-            exam_id = request.GET.get("exam_id")
             exam = Exam.objects.get(id=exam_id, teacher__user=request.user)
         except Exam.DoesNotExist:
             return Response({"message": "Exam not found or you do not have permission to access it."},
@@ -198,7 +207,7 @@ def get_llm_generated_exam(
 
         if not isinstance(exam_items, list):
             return {"error": exam_items["error"], "raw": exam_items}
-        
+
         response_data = []
         for i, item in enumerate(question_brd):
             questions = exam_items[i].get("questions", [])
@@ -223,3 +232,99 @@ def get_llm_generated_exam(
 
     except Exception as e:
         return {"error": f"LLM generation failed: {str(e)}"}
+
+#  ================================================================
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def edit_exam(request) -> Response:
+    try:
+        exam_id = request.GET.get("exam_id")
+        try:
+            exam = Exam.objects.get(id=exam_id, teacher__user=request.user)
+        except Exam.DoesNotExist:
+            return Response({"message": "Exam not found or permission denied."}, status=HTTP_404_NOT_FOUND)
+
+        start_dt_str = request.data.get("start_date_time")
+        end_dt_str = request.data.get("end_date_time")
+        is_published = request.data.get("is_published")
+
+        # If either start or end date is provided, both must be
+        if (start_dt_str and not end_dt_str) or (end_dt_str and not start_dt_str):
+            return Response({"message": "Both start_date_time and end_date_time must be provided together."},
+                            status=HTTP_400_BAD_REQUEST)
+
+        # Parse and update time fields
+        if start_dt_str and end_dt_str:
+            start_dt = parse_datetime(start_dt_str)
+            end_dt = parse_datetime(end_dt_str)
+
+            if not start_dt or not end_dt:
+                return Response({"message": "Invalid date format. Use ISO 8601 format."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            exam.start_date_time = start_dt
+            exam.end_date_time = end_dt
+
+        # Update is_published if present
+        if is_published is not None:
+            exam.is_published = bool(is_published)
+
+        exam.save()
+
+        return Response({"message": "Exam updated successfully."}, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Edit exam failed: {e}")
+        return Response({"message": "Something went wrong while updating the exam."},
+                        status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def edit_exam_questions(request) -> Response:
+    try:
+        question_edits = request.data.get("questions", [])
+        if not question_edits or not isinstance(question_edits, list):
+            return Response({"message": "Please provide a list of questions to edit."}, status=HTTP_400_BAD_REQUEST)
+
+        updated_questions = []
+
+        for q in question_edits:
+            required_fields = ["id", "bloom_skill",
+                               "description", "expected_answer"]
+            if not all(k in q for k in required_fields):
+                return Response({
+                    "message": f"Each question must include: {', '.join(required_fields)}"
+                }, status=HTTP_400_BAD_REQUEST)
+
+            try:
+                question = ExamQuestion.objects.select_related(
+                    "exam__teacher").get(id=q["id"])
+            except ExamQuestion.DoesNotExist:
+                return Response({"message": f"Question with ID {q['id']} not found."}, status=HTTP_404_NOT_FOUND)
+
+            if question.exam.teacher.user != request.user:
+                return Response({"message": "You do not have permission to edit this question."},
+                                status=HTTP_403_FORBIDDEN)
+
+            question.bloom_skill = q["bloom_skill"]
+            question.description = q["description"]
+            question.expected_answer = q["expected_answer"]
+            question.save()
+
+            updated_questions.append(question)
+
+        if updated_questions:
+            exam = updated_questions[0].exam
+            calculate_exam_analysis(exam)
+
+        return Response({
+            "message": f"{len(updated_questions)} question(s) updated successfully.",
+        }, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Batch edit failed: {e}")
+        return Response({"message": "Something went wrong while editing the questions."},
+                        status=HTTP_500_INTERNAL_SERVER_ERROR)
