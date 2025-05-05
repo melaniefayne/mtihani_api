@@ -45,8 +45,8 @@ def parse_curriculum(selected_strands: List[int], cbc_data: List[Dict[str, Any]]
 
 def generate_question_plan(
         parsed_curriculum: Dict[str, Any], 
-        question_count: int = APP_QUESTION_COUNT, 
-        bloom_skill_count: int = APP_BLOOM_SKILL_COUNT) -> List[Dict[str, Any]]:
+        question_count: int,
+        bloom_skill_count: int) -> List[Dict[str, Any]]:
     """Plan questions across Bloom skills and strands fairly."""
     question_plan = []
     selected = parsed_curriculum.get("selected", [])
@@ -127,7 +127,7 @@ def build_question_breakdown_json(
 
 def get_exam_curriculum(
         strand_ids: List[int],  
-        question_count: int, 
+        question_count: int = APP_QUESTION_COUNT, 
         is_debug: bool = False, 
         curriculum_file: str = CURRICULUM_FILE,
         bloom_skill_count: int = APP_BLOOM_SKILL_COUNT,

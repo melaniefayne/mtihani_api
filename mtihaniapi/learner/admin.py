@@ -1,9 +1,5 @@
 from django.contrib import admin
-from .models import (
-    Teacher, Classroom, LessonTime,
-    ClassroomStudent, TermScore
-)
-
+from learner.models import *
 
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
@@ -18,7 +14,7 @@ class LessonTimeInline(admin.TabularInline):
 
 @admin.register(Classroom)
 class ClassroomAdmin(admin.ModelAdmin):
-    list_display = ('name', 'grade', 'subject', 'school_name', 'teacher', 'updated_at')
+    list_display = ('id', 'name', 'grade', 'subject', 'school_name', 'teacher', 'updated_at')
     list_filter = ('grade', 'teacher', 'subject')
     search_fields = ('name', 'school_name', 'teacher__name')
     inlines = [LessonTimeInline]

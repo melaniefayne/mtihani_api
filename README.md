@@ -3,7 +3,9 @@
 ## Commands
 
 ```bash
-source .venv/bin/activate && cd mtihaniapi 
+source .venv/bin/activate && cd mtihaniapi
+redis-server
+celery -A mtihaniapi worker --loglevel=info
 python3 manage.py runserver
 
 pip freeze > requirements.txt
