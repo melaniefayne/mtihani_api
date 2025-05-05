@@ -7,11 +7,14 @@ from gen.curriculum import get_exam_curriculum
 from gen.utils import generate_llm_question_list
 from learner.models import Classroom, Teacher
 from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis
-from permissions import IsTeacher
+from exam.serializers import ExamQuestionSerializer, ExamSerializer
+from utils import GlobalPagination
+from permissions import IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
 from typing import List, Dict, Any, Optional, Union
 from collections import Counter
 from django.utils.dateparse import parse_datetime
+from django.db.models import Q
 
 APP_QUESTION_COUNT = 25
 APP_BLOOM_SKILL_COUNT = 3
@@ -328,3 +331,108 @@ def edit_exam_questions(request) -> Response:
         print(f"Batch edit failed: {e}")
         return Response({"message": "Something went wrong while editing the questions."},
                         status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
+def get_user_exams(request) -> Response:
+    try:
+        user = request.user
+        filters = Q()
+
+        # Fetch classrooms based on role
+        if hasattr(user, 'teacher'):
+            classrooms = user.teacher.classrooms.all()
+            filters &= Q(classroom__in=classrooms)
+        elif hasattr(user, 'classroomstudent'):
+            classrooms = user.classroomstudent.classroom.all()
+            filters &= Q(classroom__in=classrooms) & Q(is_published=True)
+        else:
+            return Response({"message": "Only teachers or students can access exams."}, status=403)
+
+        # Optional filters
+        classroom_id = request.GET.get("classroom_id")
+        if classroom_id:
+            filters &= Q(classroom__id=classroom_id)
+
+        status = request.GET.get("status")
+        if status:
+            filters &= Q(status=status)
+
+        is_published = request.GET.get("is_published")
+        if is_published is not None:
+            filters &= Q(is_published=is_published.lower() == "true")
+
+        # from_date = request.GET.get("from")
+        # to_date = request.GET.get("to")
+
+        # if from_date:
+        #     parsed_from = parse_datetime(from_date)
+        #     if parsed_from:
+        #         filters &= Q(start_date_time__gte=parsed_from)
+
+        # if to_date:
+        #     parsed_to = parse_datetime(to_date)
+        #     if parsed_to:
+        #         filters &= Q(end_date_time__lte=parsed_to)
+
+        exams = Exam.objects.filter(filters).select_related(
+            'classroom', 'teacher', 'analysis'
+        ).order_by('-start_date_time')
+
+        paginator = GlobalPagination()
+        paginated_exams = paginator.paginate_queryset(exams, request)
+
+        serialized = ExamSerializer(paginated_exams, many=True)
+
+        return paginator.get_paginated_response(serialized.data)
+
+    except Exception as e:
+        print(f"Error fetching exams: {e}")
+        return Response({"message": "Something went wrong while fetching exams."}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_exam_questions(request) -> Response:
+    try:
+        exam_id = request.GET.get("exam_id")
+        try:
+            exam = Exam.objects.get(id=exam_id)
+        except Exam.DoesNotExist:
+            return Response({"message": "Exam not found."}, status=404)
+
+        filters = Q(exam=exam)
+
+        grade = request.GET.get("grade")
+        bloom_skill = request.GET.get("bloom_skill")
+        strand = request.GET.get("strand")
+        sub_strand = request.GET.get("sub_strand")
+        search = request.GET.get("search")
+
+        if grade:
+            filters &= Q(grade=grade)
+
+        if bloom_skill:
+            filters &= Q(bloom_skill__icontains=bloom_skill)
+
+        if strand:
+            filters &= Q(strand__icontains=strand)
+
+        if sub_strand:
+            filters &= Q(sub_strand__icontains=sub_strand)
+
+        if search:
+            filters &= Q(description__icontains=search)
+
+        questions = ExamQuestion.objects.filter(filters).order_by("number")
+
+        paginator = GlobalPagination()
+        paginated_qs = paginator.paginate_queryset(questions, request)
+        serialized = ExamQuestionSerializer(paginated_qs, many=True)
+
+        return paginator.get_paginated_response(serialized.data)
+
+    except Exception as e:
+        print(f"Error fetching exam questions: {e}")
+        return Response({"message": "Something went wrong while fetching questions."}, status=500)
