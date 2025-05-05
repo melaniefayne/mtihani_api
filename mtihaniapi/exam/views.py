@@ -199,13 +199,6 @@ def get_llm_generated_exam(
         if not isinstance(exam_items, list):
             return {"error": exam_items["error"], "raw": exam_items}
         
-        print("#####")
-        print(questions)
-        print(answers)
-
-        if len(exam_items) != len(question_brd):
-            print(f"⚠️ Warning: exam_items ({len(exam_items)}) ≠ question_brd ({len(question_brd)})")
-
         response_data = []
         for i, item in enumerate(question_brd):
             questions = exam_items[i].get("questions", [])

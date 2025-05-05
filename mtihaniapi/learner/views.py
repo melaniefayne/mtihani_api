@@ -279,8 +279,9 @@ def get_classroom_students(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])
-def edit_classroom(request, classroom_id) -> Response:
+def edit_classroom(request) -> Response:
     try:
+        classroom_id = request.GET.get("classroom_id")
         teacher = request.user.teacher
         try:
             classroom = Classroom.objects.get(id=classroom_id, teacher=teacher)
@@ -364,8 +365,9 @@ def edit_classroom(request, classroom_id) -> Response:
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])
-def edit_classroom_student(request, student_id) -> Response:
+def edit_classroom_student(request) -> Response:
     try:
+        student_id = request.GET.get("student_id")
         try:
             classroom_student = ClassroomStudent.objects.get(id=student_id)
         except ClassroomStudent.DoesNotExist:
