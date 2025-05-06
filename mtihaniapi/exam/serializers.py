@@ -43,6 +43,7 @@ def _safe_json_parse(raw):
 
 class ExamSerializer(serializers.ModelSerializer):
     classroom_id = serializers.IntegerField(source='classroom.id')
+    classroom_name = serializers.CharField(source='classroom.name')
     analysis = ExamQuestionAnalysisSerializer()
 
     class Meta:
@@ -50,7 +51,7 @@ class ExamSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'start_date_time', 'end_date_time', 'status', 'is_published',
             'code', 'duration_min', 'generation_error',
-            'classroom_id', 'analysis', 'created_at'
+            'classroom_id', 'classroom_name', 'analysis', 'created_at'
         ]
 
 

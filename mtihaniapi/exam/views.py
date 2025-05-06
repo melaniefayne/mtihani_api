@@ -24,7 +24,7 @@ APP_BLOOM_SKILL_COUNT = 3
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])
-def create_exam(request) -> Response:
+def create_classroom_exam(request) -> Response:
     try:
         classroom_id = request.GET.get("classroom_id")
         if not classroom_id:
@@ -241,7 +241,7 @@ def get_llm_generated_exam(
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])
-def edit_exam(request) -> Response:
+def edit_classroom_exam(request) -> Response:
     try:
         exam_id = request.GET.get("exam_id")
         try:
@@ -253,35 +253,43 @@ def edit_exam(request) -> Response:
         end_dt_str = request.data.get("end_date_time")
         is_published = request.data.get("is_published")
 
-        # If either start or end date is provided, both must be
         if (start_dt_str and not end_dt_str) or (end_dt_str and not start_dt_str):
-            return Response({"message": "Both start_date_time and end_date_time must be provided together."},
-                            status=HTTP_400_BAD_REQUEST)
+            return Response({
+                "message": "Both start_date_time and end_date_time must be provided together."
+            }, status=HTTP_400_BAD_REQUEST)
 
-        # Parse and update time fields
         if start_dt_str and end_dt_str:
             start_dt = parse_datetime(start_dt_str)
             end_dt = parse_datetime(end_dt_str)
-
             if not start_dt or not end_dt:
-                return Response({"message": "Invalid date format. Use ISO 8601 format."},
-                                status=HTTP_400_BAD_REQUEST)
-
+                return Response({
+                    "message": "Invalid date format. Use ISO 8601 format (e.g. 2025-05-10T09:00:00Z)."
+                }, status=HTTP_400_BAD_REQUEST)
             exam.start_date_time = start_dt
             exam.end_date_time = end_dt
 
-        # Update is_published if present
+        success_msg = "Exam updated successfully."
         if is_published is not None:
             exam.is_published = bool(is_published)
+            success_msg = (
+                "Exam published successfully! Your students are now able to view this exam"
+                if exam.is_published else
+                "Exam unpublished successfully! Publish the exam for your students to access it"
+            )
 
         exam.save()
+        serializer = ExamSerializer(exam)
 
-        return Response({"message": "Exam updated successfully."}, status=HTTP_200_OK)
+        return Response({
+            "message": success_msg,
+            "new_exam": serializer.data
+        }, status=HTTP_200_OK)
 
     except Exception as e:
         print(f"Edit exam failed: {e}")
-        return Response({"message": "Something went wrong while updating the exam."},
-                        status=HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({
+            "message": "Something went wrong while updating the exam."
+        }, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -323,15 +331,20 @@ def edit_exam_questions(request) -> Response:
             exam = updated_questions[0].exam
             calculate_exam_analysis(exam)
 
-        return Response({
-            "message": f"{len(updated_questions)} question(s) updated successfully.",
-        }, status=HTTP_200_OK)
+ 
+            serializer = ExamSerializer(exam)
+            return Response({
+                "message": f"{len(updated_questions)} question(s) updated successfully.",
+                "new_exam": serializer.data
+            }, status=HTTP_200_OK)
 
     except Exception as e:
         print(f"Batch edit failed: {e}")
         return Response({"message": "Something went wrong while editing the questions."},
                         status=HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+# TODO: separate get exams for teacher and for students
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsTeacherOrStudent])
@@ -436,3 +449,23 @@ def get_exam_questions(request) -> Response:
     except Exception as e:
         print(f"Error fetching exam questions: {e}")
         return Response({"message": "Something went wrong while fetching questions."}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_single_exam(request) -> Response:
+    try:
+        exam_id = request.GET.get("exam_id")
+
+        try:
+            exam = Exam.objects.select_related(
+                'teacher', 'classroom', 'analysis').get(id=exam_id)
+        except Exam.DoesNotExist:
+            return Response({"message": "Exam not found."}, status=HTTP_400_BAD_REQUEST)
+
+        serializer = ExamSerializer(exam)
+        return Response({"new_exam": serializer.data}, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error fetching exam detail: {e}")
+        return Response({"message": "Something went wrong while fetching the exam."}, status=500)

@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import *
 from learner.serializers import ClassroomDetailSerializer, ClassroomInputSerializer, ClassroomStudentSerializer
-from permissions import IsTeacher, IsTeacherOrStudent
+from permissions import IsStudent, IsTeacher, IsTeacherOrStudent
 from utils import GlobalPagination, get_expectation_level
 from learner.models import (
     LessonTime, Teacher, TermScore, Classroom, ClassroomStudent)
@@ -387,7 +387,7 @@ def edit_classroom_student(request) -> Response:
             term = score_data.get("term")
             score = score_data.get("score")
 
-            if score_id:  # Update existing
+            if score_id:
                 try:
                     term_score = TermScore.objects.get(
                         id=score_id, classroom_student=classroom_student)
@@ -402,7 +402,7 @@ def edit_classroom_student(request) -> Response:
                 if TermScore.objects.filter(
                     classroom_student=classroom_student, grade=grade, term=term
                 ).exists():
-                    continue  # Avoid duplicate entry if somehow already exists
+                    continue
 
                 new_term_score = TermScore.objects.create(
                     classroom_student=classroom_student,
@@ -413,7 +413,6 @@ def edit_classroom_student(request) -> Response:
                 )
                 score_values.append(score)
 
-        # Update average score and level
         if score_values:
             avg_score = round(sum(score_values) / len(score_values), 2)
             classroom_student.avg_score = avg_score
@@ -427,3 +426,31 @@ def edit_classroom_student(request) -> Response:
     except Exception as e:
         print(f"Error updating classroom student: {e}")
         return Response({"message": "An unexpected error occurred."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsStudent])
+def join_classroom(request):
+    try:
+        user = request.user
+        student_code = request.data.get("student_code")
+
+        if not student_code:
+            return Response({"message": "Missing student_code for classroom registration."}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            classroom_student = ClassroomStudent.objects.get(code=student_code)
+            if classroom_student.user is not None:
+                return Response({"message": "This student code has already been registered."}, status=HTTP_400_BAD_REQUEST)
+        except ClassroomStudent.DoesNotExist:
+            return Response({"message": "Invalid student code. No matching student found."}, status=HTTP_404_NOT_FOUND)
+
+        classroom_student.user = user
+        classroom_student.status = "Active"
+        classroom_student.save()
+
+        return Response({"message": "Classroom registration successful"}, status=HTTP_201_CREATED)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)

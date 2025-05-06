@@ -119,7 +119,7 @@ def login_user(request):
             return Response({"message": "Error fetching user details."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({
-            "message": "Login successful",
+            "message": "Login successful. Welcome back",
             "user": user_details,
             "token": str(refresh.access_token),
         }, status=HTTP_200_OK)
