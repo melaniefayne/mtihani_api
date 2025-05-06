@@ -29,6 +29,7 @@ def register_user(request):
             return Response({"message": "User email already exists"}, status=HTTP_400_BAD_REQUEST)
 
         student_id = None
+        classroom_student = None
 
         # Handle student_code check before creating user
         if role == 'student':
@@ -36,7 +37,8 @@ def register_user(request):
                 return Response({"message": "Missing student_code for student registration."}, status=HTTP_400_BAD_REQUEST)
 
             try:
-                classroom_student = ClassroomStudent.objects.get(code=student_code)
+                classroom_student = ClassroomStudent.objects.get(
+                    code=student_code)
                 if classroom_student.user is not None:
                     return Response({"message": "This student code has already been registered."}, status=HTTP_400_BAD_REQUEST)
             except ClassroomStudent.DoesNotExist:
@@ -47,7 +49,7 @@ def register_user(request):
             username=email,
             email=email,
             password=password,
-            first_name=classroom_student.name
+            first_name=classroom_student.name if role == "student" else name
         )
 
         group, _ = Group.objects.get_or_create(name=role)
@@ -65,7 +67,6 @@ def register_user(request):
 
         elif role == 'student':
             classroom_student.user = user
-            classroom_student.email = email
             classroom_student.status = "Active"
             classroom_student.save()
             student_id = classroom_student.id
@@ -88,7 +89,7 @@ def register_user(request):
     except Exception as e:
         print(f"Error: {e}")
         return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-    
+
 
 @api_view(['POST'])
 def login_user(request):

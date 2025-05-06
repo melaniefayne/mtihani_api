@@ -428,29 +428,34 @@ def edit_classroom_student(request) -> Response:
         return Response({"message": "An unexpected error occurred."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, IsStudent])
-def join_classroom(request):
-    try:
-        user = request.user
-        student_code = request.data.get("student_code")
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated, IsStudent])
+# def join_classroom(request):
+#     try:
+#         user = request.user
+#         student_code = request.data.get("student_code")
 
-        if not student_code:
-            return Response({"message": "Missing student_code for classroom registration."}, status=HTTP_400_BAD_REQUEST)
+#         if not student_code:
+#             return Response({"message": "Missing student_code for classroom registration."}, status=HTTP_400_BAD_REQUEST)
 
-        try:
-            classroom_student = ClassroomStudent.objects.get(code=student_code)
-            if classroom_student.user is not None:
-                return Response({"message": "This student code has already been registered."}, status=HTTP_400_BAD_REQUEST)
-        except ClassroomStudent.DoesNotExist:
-            return Response({"message": "Invalid student code. No matching student found."}, status=HTTP_404_NOT_FOUND)
+#         try:
+#             classroom_student = ClassroomStudent.objects.get(code=student_code)
 
-        classroom_student.user = user
-        classroom_student.status = "Active"
-        classroom_student.save()
+#             if classroom_student.user is not None:
+#                 return Response({"message": "This student code has already been registered."}, status=HTTP_400_BAD_REQUEST)
 
-        return Response({"message": "Classroom registration successful"}, status=HTTP_201_CREATED)
+#             if classroom_student.name.strip().lower() != user.first_name.strip().lower():
+#                 return Response({"message": "Your first name does not match the name on the student code. Please confirm with your teacher."}, status=HTTP_400_BAD_REQUEST)
 
-    except Exception as e:
-        print(f"Error: {e}")
-        return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+#         except ClassroomStudent.DoesNotExist:
+#             return Response({"message": "Invalid student code. No matching student found."}, status=HTTP_404_NOT_FOUND)
+
+#         classroom_student.user = user
+#         classroom_student.status = "Active"
+#         classroom_student.save()
+
+#         return Response({"message": "Classroom registration successful"}, status=HTTP_201_CREATED)
+
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
