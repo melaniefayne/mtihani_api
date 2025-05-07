@@ -1,6 +1,6 @@
 from django.db import models
 from utils import generate_unique_code
-from learner.models import Classroom, ClassroomStudent, Teacher
+from learner.models import Classroom, Student, Teacher
 from datetime import timedelta
 
 
@@ -70,13 +70,13 @@ class ExamQuestionAnalysis(models.Model):
 
 class StudentExamSession(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
-    start_date_time = models.DateTimeField()
+    start_date_time = models.DateTimeField(null=True)
     end_date_time = models.DateTimeField(null=True, blank=True)
     duration_min = models.IntegerField(null=True, blank=True)
     avg_score = models.FloatField(null=True, blank=True)
     expectation_level = models.CharField(max_length=100, blank=True, null=True)
     student = models.ForeignKey(
-        ClassroomStudent, on_delete=models.CASCADE, related_name='student_exam_session')
+        Student, on_delete=models.CASCADE, related_name='student_exam_session')
 
 
 class StudentExamSessionAnswer(models.Model):

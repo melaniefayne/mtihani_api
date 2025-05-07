@@ -26,9 +26,9 @@ class TermScoreInline(admin.TabularInline):
     readonly_fields = ('expectation_level',)
 
 
-@admin.register(ClassroomStudent)
-class ClassroomStudentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'user_linked', 'classrooms_list', 'avg_score')
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'user_linked', 'classroom_name', 'avg_score')
     search_fields = ('name', 'code', 'user__email')
     list_filter = ('classroom', 'avg_expectation_level')
     inlines = [TermScoreInline]
@@ -37,14 +37,14 @@ class ClassroomStudentAdmin(admin.ModelAdmin):
         return obj.user.email if obj.user else '—'
     user_linked.short_description = 'User'
 
-    def classrooms_list(self, obj):
-        return ", ".join([c.name for c in obj.classroom.all()])
-    classrooms_list.short_description = 'Classrooms'
+    def classroom_name(self, obj):
+        return obj.classroom.name if obj.classroom else '—'
+    classroom_name.short_description = 'Classroom'
 
 
 @admin.register(TermScore)
 class TermScoreAdmin(admin.ModelAdmin):
-    list_display = ('classroom_student', 'grade', 'term', 'score', 'expectation_level')
+    list_display = ('student', 'grade', 'term', 'score', 'expectation_level')
     list_filter = ('grade', 'term', 'expectation_level')
-    search_fields = ('classroom_student__name',)
+    search_fields = ('student__name',)
     readonly_fields = ('expectation_level',)

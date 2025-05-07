@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import *
 from gen.curriculum import get_exam_curriculum
 from gen.utils import generate_llm_question_list
-from learner.models import Classroom, Teacher
-from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis
+from learner.models import Classroom, Student, Teacher
+from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis, StudentExamSession
 from exam.serializers import ExamQuestionSerializer, ExamSerializer
 from utils import GlobalPagination
 from permissions import IsTeacher, IsTeacherOrStudent
@@ -66,6 +66,12 @@ def create_classroom_exam(request) -> Response:
             teacher=Teacher.objects.get(user=request.user),
             generation_config=json.dumps(generation_config)
         )
+
+        # Eagerly create ExamSession entries for each student
+        students = Student.objects.filter(classroom=classroom)
+        StudentExamSession.objects.bulk_create([
+            StudentExamSession(student=s, exam=exam) for s in students
+        ])
 
         # Trigger background task
         generate_exam_content.delay(exam.id, generation_config)
@@ -331,7 +337,6 @@ def edit_exam_questions(request) -> Response:
             exam = updated_questions[0].exam
             calculate_exam_analysis(exam)
 
- 
             serializer = ExamSerializer(exam)
             return Response({
                 "message": f"{len(updated_questions)} question(s) updated successfully.",
@@ -344,8 +349,6 @@ def edit_exam_questions(request) -> Response:
                         status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# TODO: separate get exams for teacher and for students
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsTeacherOrStudent])
 def get_user_exams(request) -> Response:
@@ -357,8 +360,10 @@ def get_user_exams(request) -> Response:
         if hasattr(user, 'teacher'):
             classrooms = user.teacher.classrooms.all()
             filters &= Q(classroom__in=classrooms)
-        elif hasattr(user, 'classroomstudent'):
-            classrooms = user.classroomstudent.classroom.all()
+        elif user.groups.filter(name="student").exists():
+            from learner.models import Student
+            student_records = Student.objects.filter(user=user).select_related("classroom")
+            classrooms = [s.classroom for s in student_records if s.classroom]
             filters &= Q(classroom__in=classrooms) & Q(is_published=True)
         else:
             return Response({"message": "Only teachers or students can access exams."}, status=403)
@@ -464,8 +469,8 @@ def get_single_exam(request) -> Response:
             return Response({"message": "Exam not found."}, status=HTTP_400_BAD_REQUEST)
 
         serializer = ExamSerializer(exam)
-        return Response({"new_exam": serializer.data}, status=HTTP_200_OK)
+        return Response({"exam": serializer.data}, status=HTTP_200_OK)
 
     except Exception as e:
         print(f"Error fetching exam detail: {e}")
-        return Response({"message": "Something went wrong while fetching the exam."}, status=500)
+        return Response({"message": "Something went wrong while fetching the exam."}, status=HTTP_500_INTERNAL_SERVER_ERROR)

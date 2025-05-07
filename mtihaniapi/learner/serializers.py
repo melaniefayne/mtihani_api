@@ -3,7 +3,7 @@
 from utils import get_expectation_level
 from rest_framework import serializers
 
-from learner.models import Classroom, LessonTime, ClassroomStudent, TermScore
+from learner.models import Classroom, LessonTime, Student, TermScore
 
 
 class TermScoreInputSerializer(serializers.Serializer):
@@ -79,16 +79,16 @@ class ClassroomInputSerializer(serializers.ModelSerializer):
             avg_expectation = get_expectation_level(avg_score)
 
             # Create the student with calculated fields
-            classroom_student = ClassroomStudent.objects.create(
+            student = Student.objects.create(
                 name=student_name,
+                classroom=classroom,
                 avg_score=avg_score,
-                avg_expectation_level=avg_expectation,
+                avg_expectation_level=avg_expectation
             )
-            classroom_student.classroom.add(classroom)
 
             for score_data in term_scores_data:
                 TermScore.objects.create(
-                    classroom_student=classroom_student,
+                    student=student,
                     **score_data
                 )
 
@@ -125,36 +125,18 @@ class ClassroomDetailSerializer(serializers.Serializer):
     term_scores = TermScoreSerializer(many=True, required=False)
 
 
-class ClassroomStudentSerializer(serializers.ModelSerializer):
-    classroom_id = serializers.SerializerMethodField()
-    classroom_name = serializers.SerializerMethodField()
-    term_scores = serializers.SerializerMethodField()
+class StudentSerializer(serializers.ModelSerializer):
+    classroom_id = serializers.IntegerField(
+        source="classroom.id", read_only=True)
+    classroom_name = serializers.CharField(
+        source="classroom.name", read_only=True)
+    term_scores = TermScoreSerializer(many=True, read_only=True)
+
     class Meta:
-        model = ClassroomStudent
+        model = Student
         fields = [
             'id', 'name', 'code', 'status',
             'avg_score', 'avg_expectation_level',
             'classroom_id', 'classroom_name',
             'term_scores'
         ]
-
-    def get_classroom_id(self, obj):
-        classroom = self.context.get('classroom')
-        return classroom.id if classroom else None
-
-    def get_classroom_name(self, obj):
-        classroom = self.context.get('classroom')
-        return classroom.name if classroom else None
-    
-    def get_term_scores(self, obj):
-        classroom = self.context.get('classroom')
-        if not classroom:
-            return []
-
-        classroom = self.context.get('classroom')
-        if classroom:
-            scores = obj.term_scores.filter(classroom_student=obj, classroom_student__classroom=classroom)
-        else:
-            scores = obj.term_scores.all()
-        return TermScoreSerializer(scores, many=True).data
-        

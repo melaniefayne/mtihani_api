@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import Group
 from rest_framework.status import *
-from learner.models import ClassroomStudent, Teacher
+from learner.models import Student, Teacher
 from django.db.models import Q
 
 
@@ -28,28 +28,20 @@ def register_user(request):
         if User.objects.filter(Q(username=email) | Q(email=email)).exists():
             return Response({"message": "User email already exists"}, status=HTTP_400_BAD_REQUEST)
 
-        student_id = None
-        classroom_student = None
-
-        # Handle student_code check before creating user
+        student_record = None
         if role == 'student':
             if not student_code:
                 return Response({"message": "Missing student_code for student registration."}, status=HTTP_400_BAD_REQUEST)
-
             try:
-                classroom_student = ClassroomStudent.objects.get(
-                    code=student_code)
-                if classroom_student.user is not None:
+                student_record = Student.objects.get(code=student_code)
+                if student_record.user is not None:
                     return Response({"message": "This student code has already been registered."}, status=HTTP_400_BAD_REQUEST)
-            except ClassroomStudent.DoesNotExist:
+            except Student.DoesNotExist:
                 return Response({"message": "Invalid student code. No matching student found."}, status=HTTP_404_NOT_FOUND)
 
-        # Create the user after validation passes
         user = User.objects.create_user(
-            username=email,
-            email=email,
-            password=password,
-            first_name=classroom_student.name if role == "student" else name
+            username=email, email=email, password=password,
+            first_name=student_record.name if role == "student" else name
         )
 
         group, _ = Group.objects.get_or_create(name=role)
@@ -57,19 +49,15 @@ def register_user(request):
 
         teacher_id = None
 
-        if role == 'teacher':
-            teacher = Teacher.objects.create(
-                name=name,
-                user=user,
-                phone_no=phone_no
-            )
-            teacher_id = teacher.id
+        if role == 'student' and student_record:
+            student_record.user = user
+            student_record.status = "Active"
+            student_record.save()
 
-        elif role == 'student':
-            classroom_student.user = user
-            classroom_student.status = "Active"
-            classroom_student.save()
-            student_id = classroom_student.id
+        elif role == 'teacher':
+            teacher = Teacher.objects.create(
+                user=user, name=name, phone_no=phone_no)
+            teacher_id = teacher.id
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -80,15 +68,14 @@ def register_user(request):
                 "name": user.first_name,
                 "role": role,
                 "teacher_id": teacher_id,
-                "student_id": student_id,
                 "phone_no": phone_no,
             },
             "token": str(refresh.access_token),
         }, status=HTTP_201_CREATED)
 
     except Exception as e:
-        print(f"Error: {e}")
-        return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error during registration: {e}")
+        return Response({"message": "Something went wrong. Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -132,7 +119,6 @@ def login_user(request):
 
 def get_user_details(user):
     try:
-        student_id = None
         teacher_id = None
         phone_no = None
         created_at = None
@@ -152,11 +138,6 @@ def get_user_details(user):
 
         elif user.groups.filter(name="student").exists():
             role = "student"
-            try:
-                student = ClassroomStudent.objects.get(user=user)
-                student_id = student.id
-            except ClassroomStudent.DoesNotExist:
-                pass
 
         return {
             "user_id": user.id,
@@ -164,7 +145,6 @@ def get_user_details(user):
             "name": user.first_name,
             "role": role,
             "teacher_id": teacher_id,
-            "student_id": student_id,
             "phone_no": phone_no,
             "created_at": created_at,
             "updated_at": updated_at,

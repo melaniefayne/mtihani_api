@@ -59,7 +59,7 @@ class LessonTime(models.Model):
         return f"{self.classroom.name} on {self.day} at {self.time.strftime('%I:%M %p')}"
 
 
-class ClassroomStudent(models.Model):
+class Student(models.Model):
     STATUSES = [
         ("Active", "Active"),
         ("Inactive", "Inactive"),
@@ -69,23 +69,25 @@ class ClassroomStudent(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=6, unique=True,
                             default=generate_unique_code)
-    user = models.OneToOneField(
-        User, on_delete=models.SET_NULL, null=True, blank=True)
-    classroom = models.ManyToManyField(Classroom, related_name='students')
-    status = models.CharField(max_length=15, choices=STATUSES, default="Inactive")
-    avg_score = models.FloatField()
+    user = models.ForeignKey(User, on_delete=models.SET_NULL,
+                             null=True, blank=True, related_name="students")
+    classroom = models.ForeignKey(
+        Classroom, on_delete=models.CASCADE, related_name='students')
+    status = models.CharField(
+        max_length=15, choices=STATUSES, default="Inactive")
+    avg_score = models.FloatField(default=0.0)
     avg_expectation_level = models.CharField(max_length=100, blank=True)
 
     class Meta:
-        unique_together = ('name', 'code')
+        unique_together = ('classroom', 'code')
 
     def save(self, *args, **kwargs):
         from utils import get_expectation_level
-        self.expectation_level = get_expectation_level(self.avg_score)
+        self.avg_expectation_level = get_expectation_level(self.avg_score)
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.classroom.name}"
 
 
 class TermScore(models.Model):
@@ -103,11 +105,11 @@ class TermScore(models.Model):
     )
     score = models.FloatField()
     expectation_level = models.CharField(max_length=100, blank=True)
-    classroom_student = models.ForeignKey(
-        ClassroomStudent, on_delete=models.CASCADE, related_name='term_scores')
+    student = models.ForeignKey(
+        Student, on_delete=models.CASCADE, related_name='term_scores')
 
     class Meta:
-        unique_together = ('classroom_student', 'grade', 'term')
+        unique_together = ('student', 'grade', 'term')
 
     def save(self, *args, **kwargs):
         from utils import get_expectation_level
@@ -115,4 +117,4 @@ class TermScore(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.classroom_student.name} - G{self.grade} T{self.term}: {self.score}"
+        return f"{self.student.name} - G{self.grade} T{self.term}: {self.score}"
