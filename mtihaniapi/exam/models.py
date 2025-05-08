@@ -2,6 +2,7 @@ from django.db import models
 from utils import generate_unique_code
 from learner.models import Classroom, Student, Teacher
 from datetime import timedelta
+from django.utils import timezone
 
 
 class Exam(models.Model):
@@ -26,16 +27,25 @@ class Exam(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     generation_config = models.TextField(blank=True, null=True)
-    generation_error = models.TextField(null=True)
+    generation_error = models.TextField(null=True, blank=True)
     classroom = models.ForeignKey(
         Classroom, on_delete=models.CASCADE, related_name='exams')
     teacher = models.ForeignKey(
         Teacher, on_delete=models.SET_NULL, null=True, related_name='exams')
 
     def save(self, *args, **kwargs):
+        now = timezone.now()
+
         if self.start_date_time and self.end_date_time:
-            delta: timedelta = self.end_date_time - self.start_date_time
+            delta = self.end_date_time - self.start_date_time
             self.duration_min = int(delta.total_seconds() // 60)
+
+            # Automatically update status based on time
+            if self.status == "Upcoming" and self.start_date_time <= now <= self.end_date_time:
+                self.status = "Ongoing"
+            elif self.status == "Ongoing" and now > self.end_date_time:
+                self.status = "Grading"
+
         super().save(*args, **kwargs)
 
 

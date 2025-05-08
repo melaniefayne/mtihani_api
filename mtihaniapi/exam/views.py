@@ -1,3 +1,4 @@
+from django.utils import timezone
 import json
 from celery import shared_task
 from rest_framework.decorators import api_view, permission_classes
@@ -397,6 +398,18 @@ def get_user_exams(request) -> Response:
         exams = Exam.objects.filter(filters).select_related(
             'classroom', 'teacher', 'analysis'
         ).order_by('-start_date_time')
+
+        now = timezone.now()
+        
+        for exam in exams:
+            print(f"now={timezone.now()}, exam_start={exam.start_date_time}, exam_end={exam.end_date_time}")
+
+        possibly_stale_exams = exams.filter(
+            Q(status="Upcoming", start_date_time__lte=now, end_date_time__gte=now) |
+            Q(status="Ongoing", end_date_time__lt=now)
+        )
+        for exam in possibly_stale_exams:
+            exam.save()
 
         paginator = GlobalPagination()
         paginated_exams = paginator.paginate_queryset(exams, request)
