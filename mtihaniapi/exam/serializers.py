@@ -45,14 +45,20 @@ class ExamSerializer(serializers.ModelSerializer):
     classroom_id = serializers.IntegerField(source='classroom.id')
     classroom_name = serializers.CharField(source='classroom.name')
     analysis = ExamQuestionAnalysisSerializer()
+    student_session_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Exam
         fields = [
             'id', 'start_date_time', 'end_date_time', 'status', 'is_published',
             'code', 'duration_min', 'generation_error',
-            'classroom_id', 'classroom_name', 'analysis', 'created_at'
+            'classroom_id', 'classroom_name', 'analysis', 'created_at',
+            'student_session_id'  # << only shows for students
         ]
+
+    def get_student_session_id(self, exam):
+        student_exam_sessions = self.context.get("student_exam_sessions", {})
+        return student_exam_sessions.get(exam.id)
 
 
 class ExamQuestionSerializer(serializers.ModelSerializer):
@@ -86,17 +92,26 @@ def _safe_parse_json(raw):
 
 
 class StudentExamSessionSerializer(serializers.ModelSerializer):
+    exam_id = serializers.IntegerField(source='exam.id')
+    student_id = serializers.ReadOnlyField(source='student.number')
+
     class Meta:
         model = StudentExamSession
-        fields = '__all__'
+        fields = ['id', 'is_late_submission', 'start_date_time', 'status',
+                  'end_date_time', 'duration_min', 'avg_score', 'expectation_level',
+                  'exam_id', 'student_id']
 
 
 class StudentExamSessionAnswerSerializer(serializers.ModelSerializer):
+    question_id = serializers.IntegerField(source='question.id')
     question_number = serializers.ReadOnlyField(source='question.number')
     question_description = serializers.ReadOnlyField(
         source='question.description')
+    strand = serializers.ReadOnlyField(source='question.strand')
+    grade = serializers.IntegerField(source='question.grade')
 
     class Meta:
         model = StudentExamSessionAnswer
-        fields = ['id', 'question', 'question_number',
-                  'question_description', 'description', 'score', 'tr_score']
+        fields = ['id', 'question_id', 'question_number',
+                  'question_description', 'description', 'score', 'tr_score',
+                  'strand', 'grade']

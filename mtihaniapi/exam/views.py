@@ -352,36 +352,36 @@ def edit_exam_questions(request) -> Response:
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated, IsTeacherOrStudent])
-def get_user_exams(request) -> Response:
+def get_user_exams(request):
     try:
         user = request.user
         filters = Q()
+        exams = Exam.objects.none()
+        student_exam_session_map = {}
 
-        # Fetch classrooms based on role
+        # === TEACHER FLOW ===
         if hasattr(user, 'teacher'):
             classrooms = user.teacher.classrooms.all()
             filters &= Q(classroom__in=classrooms)
+
+        # === STUDENT FLOW ===
         elif user.groups.filter(name="student").exists():
-            from learner.models import Student
             student_records = Student.objects.filter(
                 user=user).select_related("classroom")
+
+            if not student_records.exists():
+                return Response({"message": "Student record not found."}, status=HTTP_404_NOT_FOUND)
+
             classrooms = [s.classroom for s in student_records if s.classroom]
             filters &= Q(classroom__in=classrooms) & Q(is_published=True)
-        else:
-            return Response({"message": "Only teachers or students can access exams."}, status=403)
 
-        # Optional filters
+        else:
+            return Response({"message": "Only teachers or students can access exams."}, status=HTTP_403_FORBIDDEN)
+
+        # === OPTIONAL FILTERS ===
         classroom_id = request.GET.get("classroom_id")
         if classroom_id:
             filters &= Q(classroom__id=classroom_id)
-
-        status = request.GET.get("status")
-        if status:
-            filters &= Q(status=status)
-
-        is_published = request.GET.get("is_published")
-        if is_published is not None:
-            filters &= Q(is_published=is_published.lower() == "true")
 
         # from_date = request.GET.get("from")
         # to_date = request.GET.get("to")
@@ -396,16 +396,21 @@ def get_user_exams(request) -> Response:
         #     if parsed_to:
         #         filters &= Q(end_date_time__lte=parsed_to)
 
+        status = request.GET.get("status")
+        if status:
+            filters &= Q(status=status)
+
+        is_published = request.GET.get("is_published")
+        if is_published is not None:
+            filters &= Q(is_published=is_published.lower() == "true")
+
+        # === FETCH EXAMS ===
         exams = Exam.objects.filter(filters).select_related(
             'classroom', 'teacher', 'analysis'
         ).order_by('-start_date_time')
 
+        # === AUTO-UPDATE STALE EXAM STATUS ===
         now = timezone.now()
-
-        for exam in exams:
-            print(
-                f"now={timezone.now()}, exam_start={exam.start_date_time}, exam_end={exam.end_date_time}")
-
         possibly_stale_exams = exams.filter(
             Q(status="Upcoming", start_date_time__lte=now, end_date_time__gte=now) |
             Q(status="Ongoing", end_date_time__lt=now)
@@ -413,16 +418,32 @@ def get_user_exams(request) -> Response:
         for exam in possibly_stale_exams:
             exam.save()
 
+        # === FETCH STUDENT SESSION MAPPING ===
+        if user.groups.filter(name="student").exists():
+            student_exam_sessions = StudentExamSession.objects.filter(
+                student__in=student_records,
+                exam__in=exams
+            )
+            student_exam_session_map = {
+                s.exam_id: s.id for s in student_exam_sessions
+            }
+
+        # === PAGINATION ===
         paginator = GlobalPagination()
         paginated_exams = paginator.paginate_queryset(exams, request)
 
-        serialized = ExamSerializer(paginated_exams, many=True)
+        # === SERIALIZATION ===
+        serialized = ExamSerializer(
+            paginated_exams,
+            many=True,
+            context={"student_exam_sessions": student_exam_session_map}
+        )
 
         return paginator.get_paginated_response(serialized.data)
 
     except Exception as e:
         print(f"Error fetching exams: {e}")
-        return Response({"message": "Something went wrong while fetching exams."}, status=500)
+        return Response({"message": "Something went wrong while fetching exams."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -495,8 +516,8 @@ def get_single_exam(request) -> Response:
 @permission_classes([IsAuthenticated, IsStudent])
 def start_exam_session(request):
     try:
-        exam_id = request.data.get("exam_id")
-        student_id = request.data.get("student_id")
+        exam_id = request.GET.get("exam_id")
+        student_id = request.GET.get("student_id")
 
         if not exam_id or not student_id:
             return Response({"message": "Missing exam_id or student_id"}, status=HTTP_400_BAD_REQUEST)
@@ -507,6 +528,7 @@ def start_exam_session(request):
         except (Exam.DoesNotExist, Student.DoesNotExist):
             return Response({"message": "Exam or Student not found."}, status=HTTP_404_NOT_FOUND)
 
+        # Get or create the session
         session, created = StudentExamSession.objects.get_or_create(
             student=student,
             exam=exam,
@@ -516,20 +538,23 @@ def start_exam_session(request):
             }
         )
 
-        if not created and not session.start_date_time:
+        # If existing but start_time is empty, restart it
+        if not created:
             session.start_date_time = timezone.now()
             session.status = "Ongoing"
+            session.end_date_time = None
+            session.avg_score = None
+            session.expectation_level = None
             session.save()
 
-        # Ensure answers are created
-        existing_answers = StudentExamSessionAnswer.objects.filter(
-            session=session)
-        if existing_answers.count() == 0:
-            questions = ExamQuestion.objects.filter(exam=exam)
-            StudentExamSessionAnswer.objects.bulk_create([
-                StudentExamSessionAnswer(session=session, question=q, description="") for q in questions
-            ])
+        # Always delete any previous answers and create new ones
+        StudentExamSessionAnswer.objects.filter(session=session).delete()
+        questions = ExamQuestion.objects.filter(exam=exam)
+        StudentExamSessionAnswer.objects.bulk_create([
+            StudentExamSessionAnswer(session=session, question=q, description="") for q in questions
+        ])
 
+        # Return session info
         res = get_exam_session_data(session)
         return Response(res, status=HTTP_200_OK)
 
@@ -549,17 +574,21 @@ def get_exam_session(request):
             return Response({"message": "Missing exam_id or student_id"}, status=HTTP_400_BAD_REQUEST)
 
         try:
-            session = StudentExamSession.objects.get(
-                exam_id=exam_id, student_id=student_id)
-        except StudentExamSession.DoesNotExist:
-            return Response({"message": "StudentExamSession not found"}, status=HTTP_404_NOT_FOUND)
+            exam = Exam.objects.get(id=exam_id)
+            student = Student.objects.get(id=student_id)
+        except (Exam.DoesNotExist, Student.DoesNotExist):
+            return Response({"message": "Exam or Student not found."}, status=HTTP_404_NOT_FOUND)
+
+        session = StudentExamSession.objects.get(student=student, exam=exam)
 
         res = get_exam_session_data(session)
         return Response(res, status=HTTP_200_OK)
 
+    except StudentExamSession.DoesNotExist:
+        return Response({"message": "No exam session found."}, status=HTTP_404_NOT_FOUND)
     except Exception as e:
-        print(f"Error fetching session data: {e}")
-        return Response({"message": "Something went wrong while fetching the exam session data."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error getting exam session: {e}")
+        return Response({"message": "Something went wrong while fetching the exam session."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -568,20 +597,26 @@ def update_exam_answer(request):
     try:
         answer_id = request.GET.get("answer_id")
         try:
-            answer = StudentExamSessionAnswer.objects.get(id=answer_id)
+            answer = StudentExamSessionAnswer.objects.select_related(
+                'session').get(id=answer_id)
         except StudentExamSessionAnswer.DoesNotExist:
             return Response({"message": "Answer not found."}, status=HTTP_404_NOT_FOUND)
+
+        if answer.session.status != "Ongoing" or answer.session.exam.status != "Ongoing":
+            return Response(
+                {"message": "This session is not active. Answers cannot be updated."},
+                status=HTTP_400_BAD_REQUEST
+            )
 
         description = request.data.get("description")
 
         if description is None:
             return Response({"message": "Missing description field."}, status=HTTP_400_BAD_REQUEST)
 
-        answer.description = description
-        answer.save()
+        answer.description = description.strip()
+        answer.save(update_fields=["description", "updated_at"])
 
-        res = get_exam_session_data(answer.session)
-        return Response({"message": "Answer updated successfully.", "session_data": res}, status=HTTP_200_OK)
+        return Response({"message": "Answer updated successfully."}, status=HTTP_200_OK)
 
     except Exception as e:
         print(f"Error updating answer: {e}")
@@ -603,8 +638,8 @@ def get_exam_session_data(session) -> Dict[str, Any]:
 @permission_classes([IsAuthenticated, IsStudent])
 def end_exam_session(request):
     try:
-        exam_id = request.data.get("exam_id")
-        student_id = request.data.get("student_id")
+        exam_id = request.GET.get("exam_id")
+        student_id = request.GET.get("student_id")
 
         if not exam_id or not student_id:
             return Response({"message": "Missing exam_id or student_id"}, status=HTTP_400_BAD_REQUEST)
@@ -617,7 +652,7 @@ def end_exam_session(request):
 
         now = timezone.now()
         session.end_date_time = now
-        session.status = "Complete"
+        session.status = "Grading"
         session.save()
 
         return Response({

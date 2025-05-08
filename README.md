@@ -4,9 +4,9 @@
 
 ```bash
 source .venv/bin/activate && cd mtihaniapi
+python3 manage.py runserver
 redis-server
 celery -A mtihaniapi worker --loglevel=info
-python3 manage.py runserver
 
 pip freeze > requirements.txt
 django-admin startapp appName
@@ -25,3 +25,7 @@ python manage.py createsuperuser
 - Create system roles: admin, teacher, user
 - Upload cbc JSONs
 - Register teachers & classes & students (teacherOne: grade 7 & 8, teacherTwo: grade 9)
+
+
+## Notes
+- Make the language simpler!

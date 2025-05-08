@@ -28,7 +28,7 @@ class TermScoreInline(admin.TabularInline):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'user_linked', 'classroom_name', 'avg_score')
+    list_display = ('id', 'name', 'code', 'user_linked', 'classroom_name', 'avg_score')
     search_fields = ('name', 'code', 'user__email')
     list_filter = ('classroom', 'avg_expectation_level')
     inlines = [TermScoreInline]

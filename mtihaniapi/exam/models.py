@@ -4,17 +4,18 @@ from learner.models import Classroom, Student, Teacher
 from datetime import timedelta
 from django.utils import timezone
 
+STATUSES = [
+    ("Generating", "Generating"),
+    ("Failed", "Failed"),
+    ("Upcoming", "Upcoming"),
+    ("Ongoing", "Ongoing"),
+    ("Grading", "Grading"),
+    ("Complete", "Complete"),
+    ("Archive", "Archive"),
+]
+
 
 class Exam(models.Model):
-    STATUSES = [
-        ("Generating", "Generating"),
-        ("Failed", "Failed"),
-        ("Upcoming", "Upcoming"),
-        ("Ongoing", "Ongoing"),
-        ("Grading", "Grading"),
-        ("Complete", "Complete"),
-        ("Archive", "Archive"),
-    ]
 
     start_date_time = models.DateTimeField()
     end_date_time = models.DateTimeField()
@@ -38,12 +39,12 @@ class Exam(models.Model):
             delta = self.end_date_time - self.start_date_time
             self.duration_min = int(delta.total_seconds() // 60)
 
-            # Automatically update status based on time
-            now = timezone.now()
-            if self.status == "Upcoming" and self.start_date_time <= now <= self.end_date_time:
-                self.status = "Ongoing"
-            elif self.status == "Ongoing" and now > self.end_date_time:
-                self.status = "Grading"
+        # Automatically update status based on time
+        now = timezone.now()
+        if self.status == "Upcoming" and self.start_date_time <= now <= self.end_date_time:
+            self.status = "Ongoing"
+        elif self.status == "Ongoing" and now > self.end_date_time:
+            self.status = "Grading"
 
         super().save(*args, **kwargs)
 
@@ -78,13 +79,6 @@ class ExamQuestionAnalysis(models.Model):
 
 
 class StudentExamSession(models.Model):
-    STATUSES = [
-        ("Upcoming", "Upcoming"),
-        ("Ongoing", "Ongoing"),
-        ("Complete", "Complete"),
-        ("Graded", "Graded"),
-    ]
-
     status = models.CharField(
         max_length=15, choices=STATUSES, default="Upcoming")
     is_late_submission = models.BooleanField(default=False)
@@ -97,6 +91,9 @@ class StudentExamSession(models.Model):
     student = models.ForeignKey(
         Student, on_delete=models.CASCADE, related_name='student_exam_session')
 
+    class Meta:
+        unique_together = ('student', 'exam')
+
     def save(self, *args, **kwargs):
         if self.start_date_time and self.end_date_time:
             delta = self.end_date_time - self.start_date_time
@@ -104,6 +101,8 @@ class StudentExamSession(models.Model):
 
         if self.end_date_time and self.exam.end_date_time:
             self.is_late_submission = self.end_date_time > self.exam.end_date_time
+
+        super().save(*args, **kwargs)
 
 
 class StudentExamSessionAnswer(models.Model):
