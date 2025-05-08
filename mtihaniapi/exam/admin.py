@@ -27,7 +27,7 @@ class ExamAdmin(admin.ModelAdmin):
 @admin.register(ExamQuestion)
 class ExamQuestionAdmin(admin.ModelAdmin):
     list_display = (
-         "id", "exam", "number", "grade", "strand", "sub_strand", "bloom_skill"
+        "id", "exam", "number", "grade", "strand", "sub_strand", "bloom_skill"
     )
     list_filter = ("grade", "strand", "sub_strand", "bloom_skill")
     search_fields = ("description", "expected_answer", "strand", "sub_strand")
@@ -44,3 +44,33 @@ class ExamQuestionAnalysisAdmin(admin.ModelAdmin):
         "bloom_skill_distribution", "strand_distribution",
         "sub_strand_distribution", "created_at", "updated_at"
     )
+
+
+@admin.register(StudentExamSession)
+class StudentExamSessionAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'exam', 'student', 'status',
+        'start_date_time', 'end_date_time',
+        'duration_min', 'avg_score', 'expectation_level',
+        'is_late_submission'
+    ]
+    list_filter = ['status', 'is_late_submission', 'exam__classroom']
+    search_fields = ['student__name', 'exam__code',
+                     'exam__teacher__user__username']
+    readonly_fields = ['start_date_time', 'end_date_time', 'duration_min']
+    ordering = ['-start_date_time']
+
+
+@admin.register(StudentExamSessionAnswer)
+class StudentExamSessionAnswerAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'session', 'question', 'short_description', 'score', 'tr_score',
+        'created_at', 'updated_at'
+    ]
+    list_filter = ['score', 'tr_score']
+    search_fields = ['session__student__name', 'question__description']
+    ordering = ['session', 'question__number']
+
+    def short_description(self, obj):
+        return (obj.description[:50] + "...") if obj.description and len(obj.description) > 50 else obj.description
+    short_description.short_description = "Answer Preview"

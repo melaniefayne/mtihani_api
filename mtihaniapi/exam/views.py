@@ -7,10 +7,10 @@ from rest_framework.status import *
 from gen.curriculum import get_exam_curriculum
 from gen.utils import generate_llm_question_list
 from learner.models import Classroom, Student, Teacher
-from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis, StudentExamSession
-from exam.serializers import ExamQuestionSerializer, ExamSerializer
+from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis, StudentExamSession, StudentExamSessionAnswer
+from exam.serializers import ExamQuestionSerializer, ExamSerializer, StudentExamSessionAnswerSerializer, StudentExamSessionSerializer
 from utils import GlobalPagination
-from permissions import IsTeacher, IsTeacherOrStudent
+from permissions import IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
 from typing import List, Dict, Any, Optional, Union
 from collections import Counter
@@ -363,7 +363,8 @@ def get_user_exams(request) -> Response:
             filters &= Q(classroom__in=classrooms)
         elif user.groups.filter(name="student").exists():
             from learner.models import Student
-            student_records = Student.objects.filter(user=user).select_related("classroom")
+            student_records = Student.objects.filter(
+                user=user).select_related("classroom")
             classrooms = [s.classroom for s in student_records if s.classroom]
             filters &= Q(classroom__in=classrooms) & Q(is_published=True)
         else:
@@ -400,9 +401,10 @@ def get_user_exams(request) -> Response:
         ).order_by('-start_date_time')
 
         now = timezone.now()
-        
+
         for exam in exams:
-            print(f"now={timezone.now()}, exam_start={exam.start_date_time}, exam_end={exam.end_date_time}")
+            print(
+                f"now={timezone.now()}, exam_start={exam.start_date_time}, exam_end={exam.end_date_time}")
 
         possibly_stale_exams = exams.filter(
             Q(status="Upcoming", start_date_time__lte=now, end_date_time__gte=now) |
@@ -487,3 +489,142 @@ def get_single_exam(request) -> Response:
     except Exception as e:
         print(f"Error fetching exam detail: {e}")
         return Response({"message": "Something went wrong while fetching the exam."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsStudent])
+def start_exam_session(request):
+    try:
+        exam_id = request.data.get("exam_id")
+        student_id = request.data.get("student_id")
+
+        if not exam_id or not student_id:
+            return Response({"message": "Missing exam_id or student_id"}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            exam = Exam.objects.get(id=exam_id)
+            student = Student.objects.get(id=student_id)
+        except (Exam.DoesNotExist, Student.DoesNotExist):
+            return Response({"message": "Exam or Student not found."}, status=HTTP_404_NOT_FOUND)
+
+        session, created = StudentExamSession.objects.get_or_create(
+            student=student,
+            exam=exam,
+            defaults={
+                "start_date_time": timezone.now(),
+                "status": "Ongoing"
+            }
+        )
+
+        if not created and not session.start_date_time:
+            session.start_date_time = timezone.now()
+            session.status = "Ongoing"
+            session.save()
+
+        # Ensure answers are created
+        existing_answers = StudentExamSessionAnswer.objects.filter(
+            session=session)
+        if existing_answers.count() == 0:
+            questions = ExamQuestion.objects.filter(exam=exam)
+            StudentExamSessionAnswer.objects.bulk_create([
+                StudentExamSessionAnswer(session=session, question=q, description="") for q in questions
+            ])
+
+        res = get_exam_session_data(session)
+        return Response(res, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error starting exam session: {e}")
+        return Response({"message": "Something went wrong while starting the exam session."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsStudent])
+def get_exam_session(request):
+    try:
+        exam_id = request.GET.get("exam_id")
+        student_id = request.GET.get("student_id")
+
+        if not exam_id or not student_id:
+            return Response({"message": "Missing exam_id or student_id"}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            session = StudentExamSession.objects.get(
+                exam_id=exam_id, student_id=student_id)
+        except StudentExamSession.DoesNotExist:
+            return Response({"message": "StudentExamSession not found"}, status=HTTP_404_NOT_FOUND)
+
+        res = get_exam_session_data(session)
+        return Response(res, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error fetching session data: {e}")
+        return Response({"message": "Something went wrong while fetching the exam session data."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsStudent])
+def update_exam_answer(request):
+    try:
+        answer_id = request.GET.get("answer_id")
+        try:
+            answer = StudentExamSessionAnswer.objects.get(id=answer_id)
+        except StudentExamSessionAnswer.DoesNotExist:
+            return Response({"message": "Answer not found."}, status=HTTP_404_NOT_FOUND)
+
+        description = request.data.get("description")
+
+        if description is None:
+            return Response({"message": "Missing description field."}, status=HTTP_400_BAD_REQUEST)
+
+        answer.description = description
+        answer.save()
+
+        res = get_exam_session_data(answer.session)
+        return Response({"message": "Answer updated successfully.", "session_data": res}, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error updating answer: {e}")
+        return Response({"message": "Something went wrong while updating the answer."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def get_exam_session_data(session) -> Dict[str, Any]:
+    answers = StudentExamSessionAnswer.objects.filter(session=session)
+    session_obj = StudentExamSessionSerializer(session).data
+    answers_obj = StudentExamSessionAnswerSerializer(
+        answers, many=True).data
+    return {
+        "session": session_obj,
+        "answers": answers_obj
+    }
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsStudent])
+def end_exam_session(request):
+    try:
+        exam_id = request.data.get("exam_id")
+        student_id = request.data.get("student_id")
+
+        if not exam_id or not student_id:
+            return Response({"message": "Missing exam_id or student_id"}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            session = StudentExamSession.objects.get(
+                exam_id=exam_id, student_id=student_id)
+        except (StudentExamSession.DoesNotExist):
+            return Response({"message": "Session or Exam not found."}, status=HTTP_404_NOT_FOUND)
+
+        now = timezone.now()
+        session.end_date_time = now
+        session.status = "Complete"
+        session.save()
+
+        return Response({
+            "message": "Session ended successfully.",
+            "session": StudentExamSessionSerializer(session).data
+        }, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error ending exam session: {e}")
+        return Response({"message": "Something went wrong while ending the session."}, status=HTTP_500_INTERNAL_SERVER_ERROR)

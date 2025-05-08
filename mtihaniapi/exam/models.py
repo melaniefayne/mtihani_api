@@ -34,13 +34,12 @@ class Exam(models.Model):
         Teacher, on_delete=models.SET_NULL, null=True, related_name='exams')
 
     def save(self, *args, **kwargs):
-        now = timezone.now()
-
         if self.start_date_time and self.end_date_time:
             delta = self.end_date_time - self.start_date_time
             self.duration_min = int(delta.total_seconds() // 60)
 
             # Automatically update status based on time
+            now = timezone.now()
             if self.status == "Upcoming" and self.start_date_time <= now <= self.end_date_time:
                 self.status = "Ongoing"
             elif self.status == "Ongoing" and now > self.end_date_time:
@@ -79,14 +78,32 @@ class ExamQuestionAnalysis(models.Model):
 
 
 class StudentExamSession(models.Model):
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    STATUSES = [
+        ("Upcoming", "Upcoming"),
+        ("Ongoing", "Ongoing"),
+        ("Complete", "Complete"),
+        ("Graded", "Graded"),
+    ]
+
+    status = models.CharField(
+        max_length=15, choices=STATUSES, default="Upcoming")
+    is_late_submission = models.BooleanField(default=False)
     start_date_time = models.DateTimeField(null=True)
     end_date_time = models.DateTimeField(null=True, blank=True)
     duration_min = models.IntegerField(null=True, blank=True)
     avg_score = models.FloatField(null=True, blank=True)
     expectation_level = models.CharField(max_length=100, blank=True, null=True)
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
     student = models.ForeignKey(
         Student, on_delete=models.CASCADE, related_name='student_exam_session')
+
+    def save(self, *args, **kwargs):
+        if self.start_date_time and self.end_date_time:
+            delta = self.end_date_time - self.start_date_time
+            self.duration_min = int(delta.total_seconds() // 60)
+
+        if self.end_date_time and self.exam.end_date_time:
+            self.is_late_submission = self.end_date_time > self.exam.end_date_time
 
 
 class StudentExamSessionAnswer(models.Model):

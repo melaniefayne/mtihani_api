@@ -83,3 +83,20 @@ def _safe_parse_json(raw):
         return json.loads(raw) if raw else []
     except json.JSONDecodeError:
         return []
+
+
+class StudentExamSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentExamSession
+        fields = '__all__'
+
+
+class StudentExamSessionAnswerSerializer(serializers.ModelSerializer):
+    question_number = serializers.ReadOnlyField(source='question.number')
+    question_description = serializers.ReadOnlyField(
+        source='question.description')
+
+    class Meta:
+        model = StudentExamSessionAnswer
+        fields = ['id', 'question', 'question_number',
+                  'question_description', 'description', 'score', 'tr_score']
