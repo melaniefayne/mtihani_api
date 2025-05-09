@@ -1,11 +1,21 @@
 # curriculum.py
 
+from collections import defaultdict
 import random
 import json
 from typing import List, Dict, Any
 import json
 from itertools import cycle
-from gen.constants import *
+# from gen.constants import *
+
+APP_QUESTION_COUNT = 25
+APP_BLOOM_SKILL_COUNT = 3
+BLOOM_SKILLS = [
+    "Knowledge", "Comprehension", "Application", "Analysis", "Synthesis", "Evaluation"
+]
+QUESTION_LIST_OUTPUT_FILE = "output/question_list.json"
+QUESTION_BRD_OUTPUT_FILE = "output/question_breakdown.json"
+CURRICULUM_FILE = "gen/data/cbc_data.json"
 
 
 def load_curriculum(file_path: str) -> List[Dict[str, Any]]:
@@ -44,22 +54,21 @@ def parse_curriculum(selected_strands: List[int], cbc_data: List[Dict[str, Any]]
 
 
 def generate_question_plan(
-        parsed_curriculum: Dict[str, Any], 
-        question_count: int,
-        bloom_skill_count: int) -> List[Dict[str, Any]]:
+    parsed_curriculum: dict,
+    question_count: int,
+    bloom_skill_count: int,
+) -> list:
     """Plan questions across Bloom skills and strands fairly."""
-    question_plan = []
     selected = parsed_curriculum.get("selected", [])
     current_number = 1
+    question_plan = []
 
-    # Flatten all sub-strands with grade and strand info
-    all_items = []
+    # Group sub-strands by strand name
+    strand_groups = defaultdict(list)
     for item in selected:
         grade = item["grade"]
         strand = item["strand_name"]
-        sub_strands = item.get("sub_strands", [])
-
-        for sub in sub_strands:
+        for sub in item.get("sub_strands", []):
             skills_list = []
             for skill_item in sub.get("skills", []):
                 if isinstance(skill_item, dict) and "skill" in skill_item:
@@ -67,7 +76,7 @@ def generate_question_plan(
                 elif isinstance(skill_item, str):
                     skills_list.append(skill_item)
 
-            all_items.append({
+            strand_groups[strand].append({
                 "grade": grade,
                 "strand": strand,
                 "sub_strand": sub["name"],
@@ -75,16 +84,22 @@ def generate_question_plan(
                 "skills_to_assess": skills_list,
             })
 
-    if not all_items:
+    if not strand_groups:
         return []
 
-    # Cycle through sub-strands to distribute fairly
-    strand_cycle = cycle(all_items)
+    # Create a round-robin cycle of strand keys
+    strand_cycle = cycle(strand_groups.keys())
 
-    for _ in range(question_count):
-        target = next(strand_cycle)
-        bloom_skills = random.sample(BLOOM_SKILLS, min(bloom_skill_count, len(BLOOM_SKILLS)))
-    
+    while len(question_plan) < question_count:
+        strand_key = next(strand_cycle)
+        items = strand_groups[strand_key]
+        if not items:
+            continue
+
+        target = random.choice(items)
+        bloom_skills = random.sample(BLOOM_SKILLS, min(
+            bloom_skill_count, len(BLOOM_SKILLS)))
+
         question_plan.append({
             "number": current_number,
             "grade": target["grade"],
@@ -100,8 +115,8 @@ def generate_question_plan(
 
 
 def build_question_breakdown_json(
-        question_plan: List[Dict[str, Any]], 
-        is_debug: bool, 
+        question_plan: List[Dict[str, Any]],
+        is_debug: bool,
         output_file: str = QUESTION_BRD_OUTPUT_FILE) -> List[Dict[str, Any]]:
     """Build structured JSON from question plan and write to a file."""
     structured_questions = []
@@ -126,12 +141,12 @@ def build_question_breakdown_json(
 
 
 def get_exam_curriculum(
-        strand_ids: List[int],  
-        question_count: int = APP_QUESTION_COUNT, 
-        is_debug: bool = False, 
-        curriculum_file: str = CURRICULUM_FILE,
-        bloom_skill_count: int = APP_BLOOM_SKILL_COUNT,
-    ) -> List[Dict[str, Any]]:
+    strand_ids: List[int],
+    question_count: int = APP_QUESTION_COUNT,
+    is_debug: bool = False,
+    curriculum_file: str = CURRICULUM_FILE,
+    bloom_skill_count: int = APP_BLOOM_SKILL_COUNT,
+) -> List[Dict[str, Any]]:
     cbc_data = load_curriculum(curriculum_file)
 
     parsed = parse_curriculum(strand_ids, cbc_data)
@@ -145,7 +160,6 @@ def get_exam_curriculum(
 
 
 if __name__ == "__main__":
-    selected_strands = [1, 4, 6]
+    selected_strands = [6,9,4]
     question_brd = get_exam_curriculum(
         strand_ids=selected_strands, question_count=10)
-    print(question_brd)

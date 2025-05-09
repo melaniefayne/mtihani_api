@@ -4,26 +4,42 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 import re
 import tiktoken
-from gen.constants import *
+import os
+import dotenv
+dotenv.load_dotenv()
+
+APP_BLOOM_SKILL_COUNT = 3
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 CREATE_EXAM_PROMPT_TEXT = """
-You are an expert Integrated Science teacher preparing a high-quality exam for Junior Secondary School learners in Kenya. Each exam item must be based strictly on the official curriculum and promote both conceptual understanding and cognitive skill development.
+You are an expert Integrated Science teacher preparing a high-quality exam for Junior Secondary School learners in Kenya (Grades 7–9, ages 11–14). Your goal is to create exam questions that are clear, relatable, and promote both understanding and deeper thinking.
 
 You will receive a list of breakdown items. For each item:
 
-- Generate **EXACTLY {bloom_skill_count} question-answer pairs** based on the provided `bloom_skills` list. Each index `i` in the `questions` and `expected_answers` list must correspond to `bloom_skills[i]` — maintain the exact order.
-- Each question must strictly reflect the `strand`, `sub_strand`, `learning_outcomes`, and `skills_to_assess` provided.
-- Use **realistic, scenario-based questions** where appropriate, especially for application, analysis, and evaluation levels. You may invent character names (e.g., Zawadi, Amina, Brian) to bring variety — do not reuse the same names repeatedly.
-- For **Knowledge-level** items, prefer direct questions (e.g. “Define...”, “List...”, “Name...”).
-- For higher-order skills (Application, Analysis, Synthesis, Evaluation), focus on multi-step reasoning, justifications, comparisons, or contextual decision-making.
-- All answers must be **accurate**, **concise**, and **clearly aligned** with their question and skill level. If possible, include **examples or explanations** in Comprehension and above.
-- Avoid literal use of words like “comprehend” in questions. Instead, use more natural phrasing like “Explain,” “Summarize,” or “Describe.”
-- Ensure scientific expressions (e.g. equations, process names) are **correct and CBC-aligned**.
+- Generate **EXACTLY {bloom_skill_count} question-answer pairs** based on the provided `bloom_skills` list. Each index `i` in the `questions` and `expected_answers` list must match `bloom_skills[i]` — maintain the order.
+- Each question must align with the given `strand`, `sub_strand`, `learning_outcomes`, and `skills_to_assess`.
+
+**Question Style Guidelines:**
+- Use **simple, clear language** suitable for learners aged 11–14. Avoid advanced vocabulary or long, complex sentences.
+- For **Knowledge-level** skills, keep questions short and direct: e.g., “What is…”, “Name…”, “List…”.
+**For higher-order skills (Comprehension, Application, Analysis, Synthesis, Evaluation):**
+- Use **short real-life scenarios** to introduce the question. These can include familiar settings (home, school, farm, market).
+- Ask questions that require learners to:
+  - Explain or justify something
+  - Compare ideas or outcomes
+  - Make decisions or evaluate a situation
+  - Plan or describe simple investigations
+- Use realistic settings (school, home, farm, market, etc.) and **Kenyan names** like Amina, Brian, Zawadi, Musa, etc. Vary the names to avoid repetition.
+
+**Answer Guidelines:**
+- All answers must be **correct, concise**, and clearly match the question and skill level.
+- For higher-order skills, answers should include **examples, reasons, or explanations** where appropriate.
 
 **Rules:**
 - Do NOT mix content between strands or sub-strands.
 - Do NOT skip any item.
-- Avoid repeating phrasing structures (e.g. “Tom is asked to…”); use diverse sentence styles.
+- Vary how you phrase each question. Avoid repeating sentence patterns like “Tom is asked to…”.
+- Use only accurate, CBC-aligned science facts and processes.
 
 Use this structure per item:
 {{

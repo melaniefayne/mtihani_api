@@ -1,87 +1,134 @@
 [
     {
         "number": 1,
-        "grade": 7,
-        "strand": "Scientific Investigation",
-        "sub_strand": "Introduction to Integrated Science",
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Metals and Alloys",
         "bloom_skills": [
-            "Evaluation",
-            "Comprehension"
+            "Analysis",
+            "Knowledge"
         ],
         "learning_outcomes": [
-            "Outline the components of Integrated Science as a field of study",
-            "Explain the importance of science in daily life",
-            "Show interest in learning Integrated Science at junior school"
+            "Describe physical properties of metals",
+            "Identify the composition of common alloys",
+            "State the uses of metals and alloys in day-to-day life",
+            "Explain causes, effects and prevention of rusting",
+            "Appreciate the importance of proper use and maintenance of metallic materials"
         ],
         "skills_to_assess": [
-            "Ability to explain the importance of science in daily life"
+            "Ability to explain the effect of rusting on metals",
+            "Ability to outline uses of metals and alloys"
         ]
     },
     {
         "number": 2,
         "grade": 7,
-        "strand": "Scientific Investigation",
-        "sub_strand": "Laboratory Safety",
+        "strand": "Force and Energy",
+        "sub_strand": "Electrical Energy",
         "bloom_skills": [
             "Synthesis",
             "Comprehension"
         ],
         "learning_outcomes": [
-            "Identify common hazards and their symbols in the laboratory",
-            "Explain causes of common accidents in the laboratory",
-            "Demonstrate First Aid measures for common laboratory accidents",
-            "Appreciate the importance of safety in the laboratory and access to a healthy working environment"
+            "Identify sources of electricity in the environment",
+            "Demonstrate flow of electric current using simple electric circuits",
+            "Identify common electrical appliances used in day-to-day life",
+            "Identify safety measures observed when handling electrical appliances",
+            "Appreciate the use of electricity in day-to-day life"
         ],
         "skills_to_assess": [
-            "Ability to demonstrate First Aid measures for common laboratory accidents",
-            "Ability to identify common hazards and their symbols in the laboratory"
+            "Ability to identify common electrical appliances used in day-to-day life",
+            "Ability to identify safety measures observed when handling electrical appliances",
+            "Ability to identify sources of electricity in the environment"
         ]
     },
     {
         "number": 3,
-        "grade": 7,
-        "strand": "Scientific Investigation",
-        "sub_strand": "Laboratory Apparatus and Instruments",
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "The Cell",
         "bloom_skills": [
-            "Evaluation",
-            "Knowledge"
+            "Knowledge",
+            "Application"
         ],
         "learning_outcomes": [
-            "Describe the basic skills in science",
-            "Use and care for apparatus and instruments in the laboratory",
-            "Use the SI units for basic and derived quantities in science",
-            "Appreciate consumer protection when handling different apparatus, instruments and other materials in day-to-day life"
+            "Describe the structure and functions of parts of plant and animal cells",
+            "Differentiate between plant and animal cells",
+            "Appreciate the role of cells in living organisms"
         ],
         "skills_to_assess": [
-            "Ability to use and care for apparatus and instruments in the laboratory"
+            "Ability to identify and describe parts of plant and animal cells"
         ]
     },
     {
         "number": 4,
-        "grade": 7,
+        "grade": 9,
         "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Mixtures",
+        "sub_strand": "Metals and Alloys",
         "bloom_skills": [
             "Analysis",
-            "Application"
+            "Knowledge"
         ],
         "learning_outcomes": [
-            "Separate homogeneous mixtures using appropriate methods",
-            "Outline applications of separating homogeneous mixtures in day-to-day life",
-            "Appreciate the use of different methods of separating mixtures in day-to-day life"
+            "Describe physical properties of metals",
+            "Identify the composition of common alloys",
+            "State the uses of metals and alloys in day-to-day life",
+            "Explain causes, effects and prevention of rusting",
+            "Appreciate the importance of proper use and maintenance of metallic materials"
         ],
         "skills_to_assess": [
-            "Ability to separate homogeneous mixtures using appropriate method"
+            "Ability to explain the effect of rusting on metals",
+            "Ability to outline uses of metals and alloys"
         ]
     },
     {
         "number": 5,
         "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Magnetism",
+        "bloom_skills": [
+            "Synthesis",
+            "Comprehension"
+        ],
+        "learning_outcomes": [
+            "Demonstrate the properties of a magnet",
+            "Classify materials as magnetic or non-magnetic",
+            "Identify the uses of magnets in day-to-day life",
+            "Appreciate the applications of magnets in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to demonstrate the properties of a magnet",
+            "Ability to identify the uses of magnets in day-to-day life"
+        ]
+    },
+    {
+        "number": 6,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "Reproduction in Human Beings",
+        "bloom_skills": [
+            "Evaluation",
+            "Comprehension"
+        ],
+        "learning_outcomes": [
+            "Describe the parts and functions of the human reproductive system",
+            "Explain the process of fertilisation and development of the embryo",
+            "Practise appropriate hygiene and care during puberty",
+            "Demonstrate responsible behaviour regarding sexuality",
+            "Appreciate the importance of reproductive health and responsibility"
+        ],
+        "skills_to_assess": [
+            "Ability to describe parts of the reproductive system and their functions"
+        ]
+    },
+    {
+        "number": 7,
+        "grade": 7,
         "strand": "Mixtures, Elements and Compounds",
         "sub_strand": "Acids, Bases and Indicators",
         "bloom_skills": [
-            "Comprehension",
-            "Synthesis"
+            "Analysis",
+            "Application"
         ],
         "learning_outcomes": [
             "Identify acids and bases using a litmus paper",
@@ -93,6 +140,65 @@
         "skills_to_assess": [
             "Ability to identify acids and bases",
             "Ability to outline applications of acids and bases in real life"
+        ]
+    },
+    {
+        "number": 8,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Magnetism",
+        "bloom_skills": [
+            "Application",
+            "Analysis"
+        ],
+        "learning_outcomes": [
+            "Demonstrate the properties of a magnet",
+            "Classify materials as magnetic or non-magnetic",
+            "Identify the uses of magnets in day-to-day life",
+            "Appreciate the applications of magnets in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to demonstrate the properties of a magnet",
+            "Ability to identify the uses of magnets in day-to-day life"
+        ]
+    },
+    {
+        "number": 9,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "The Cell",
+        "bloom_skills": [
+            "Analysis",
+            "Comprehension"
+        ],
+        "learning_outcomes": [
+            "Describe the structure and functions of parts of plant and animal cells",
+            "Differentiate between plant and animal cells",
+            "Appreciate the role of cells in living organisms"
+        ],
+        "skills_to_assess": [
+            "Ability to identify and describe parts of plant and animal cells"
+        ]
+    },
+    {
+        "number": 10,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Metals and Alloys",
+        "bloom_skills": [
+            "Synthesis",
+            "Comprehension"
+        ],
+        "learning_outcomes": [
+            "Describe physical properties of metals",
+            "Identify the composition of common alloys",
+            "State the uses of metals and alloys in day-to-day life",
+            "Explain causes, effects and prevention of rusting",
+            "Appreciate the importance of proper use and maintenance of metallic materials"
+        ],
+        "skills_to_assess": [
+            "Ability to explain the effect of rusting on metals",
+            "Ability to outline uses of metals and alloys"
         ]
     }
 ]

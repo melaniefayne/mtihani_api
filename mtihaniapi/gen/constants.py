@@ -14,8 +14,6 @@ FLOWISE_API_KEY = os.getenv("FLOWISE_MTIHANI_API_KEY")
 FLOWISE_HEADERS = {"Authorization": f"Bearer {FLOWISE_API_KEY}"}
 
 CURRICULUM_FILE = "gen/data/cbc_data.json"
-QUESTION_LIST_OUTPUT_FILE = "output/question_list.json"
-QUESTION_BRD_OUTPUT_FILE = "output/question_breakdown.json"
 
 JSS_SCIENCE_STRANDS = [
     {

@@ -241,7 +241,7 @@ def get_students(request):
         if not classroom_id:
             return Response({"message": "Missing classroom_id in request."}, status=HTTP_400_BAD_REQUEST)
 
-        students = Student.objects.filter(classroom_id=classroom_id)
+        students = Student.objects.filter(classroom_id=classroom_id).order_by('name')
 
         # Filtering
         search = request.GET.get("search")
