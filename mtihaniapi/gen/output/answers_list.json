@@ -1,64 +1,106 @@
 [
     {
-        "id": 1,
+        "id": 7,
         "answers": [
             {
-                "question_id": "1",
-                "answer": "Phones are made using science, so they help us talk to friends and learn."
+                "question_id": "51",
+                "answer": "Amina should tell the teacher right away and make sure no one steps on the broken glass."
             },
             {
-                "question_id": "2",
-                "answer": "Maybe he can just let the water dry up and the salt will stay."
+                "question_id": "52",
+                "answer": "Zawadi should check what kind of fire it is, like if it's from oil or electricity, and use the right extinguisher."
             },
             {
-                "question_id": "3",
-                "answer": "Kidneys clean the blood and make urine."
+                "question_id": "53",
+                "answer": "The kidneys clean the blood by removing waste, and the skin helps by sweating out some waste."
             },
             {
-                "question_id": "4",
-                "answer": "Magnets stick to metal, so it can hold the poster."
-            }
-        ]
-    },
-    {
-        "id": 2,
-        "answers": [
-            {
-                "question_id": "1",
-                "answer": "Science is used to create the technology in phones, allowing us to communicate and learn easily."
+                "question_id": "54",
+                "answer": "Brian needs a battery, some wires, and a bulb to show how electricity flows."
             },
             {
-                "question_id": "2",
-                "answer": "Brian can heat the mixture so the water evaporates, leaving the salt behind."
+                "question_id": "55",
+                "answer": "The symbol for corrosive hazard is a test tube pouring liquid on a hand and a surface."
             },
             {
-                "question_id": "3",
-                "answer": "The kidneys filter out waste and extra water from the blood, creating urine to be excreted."
+                "question_id": "56",
+                "answer": "An element is made of one type of atom, like hydrogen. A compound has two or more elements, like water which is hydrogen and oxygen."
             },
             {
-                "question_id": "4",
-                "answer": "A magnet is suitable because it attracts the metal locker, holding the poster without damage."
-            }
-        ]
-    },
-    {
-        "id": 3,
-        "answers": [
-            {
-                "question_id": "1",
-                "answer": "Science helps make phones that we use to talk and learn."
+                "question_id": "57",
+                "answer": "The kidneys filter waste from the blood, and the skin removes waste through sweat, keeping the body balanced."
             },
             {
-                "question_id": "2",
-                "answer": "He can heat the water so it evaporates and leaves the salt."
+                "question_id": "58",
+                "answer": "Zawadi should use a battery, wires, and a bulb to make a simple electric circuit."
             },
             {
-                "question_id": "3",
-                "answer": "Kidneys take out waste from blood and make urine."
+                "question_id": "59",
+                "answer": "Checking the condition of lab equipment ensures they are safe to use and work properly, preventing accidents."
             },
             {
-                "question_id": "4",
-                "answer": "Magnets can stick to metal, so they hold the poster."
+                "question_id": "60",
+                "answer": "Litmus paper turns red when it is dipped in an acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Musa should drink lots of water, eat a balanced diet, and exercise regularly to keep his kidneys healthy."
+            },
+            {
+                "question_id": "62",
+                "answer": "Zawadi needs a battery, wires, and a bulb to create a simple electric circuit."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps us understand the world, improve technology, and solve problems like health and environmental issues."
+            },
+            {
+                "question_id": "64",
+                "answer": "Evaluating these changes helps us understand their impact on the environment and find ways to reduce negative effects."
+            },
+            {
+                "question_id": "65",
+                "answer": "Understanding the reproductive system helps adolescents manage changes, stay healthy, and make informed choices."
+            },
+            {
+                "question_id": "66",
+                "answer": "You can use a magnet to pick up paper clips or iron filings to show how magnets attract certain metals."
+            },
+            {
+                "question_id": "67",
+                "answer": "Analyzing causes of lab accidents helps prevent them and keeps the lab a safe place to work."
+            },
+            {
+                "question_id": "68",
+                "answer": "Evaluating these changes helps us understand their impact on the environment and find ways to reduce negative effects."
+            },
+            {
+                "question_id": "69",
+                "answer": "The kidneys filter waste from the blood, and the skin removes waste through sweat, keeping the body balanced."
+            },
+            {
+                "question_id": "70",
+                "answer": "Using renewable energy reduces pollution, saves resources, and provides sustainable power for the future."
+            },
+            {
+                "question_id": "71",
+                "answer": "A thermometer is used to measure temperature in the lab."
+            },
+            {
+                "question_id": "72",
+                "answer": "A fire safety plan should have evacuation routes, regular fire drills, and locations of fire extinguishers."
+            },
+            {
+                "question_id": "73",
+                "answer": "The main parts of the urinary system are the kidneys, ureters, bladder, and urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "You need a battery, wires, and a bulb to design a simple electric circuit."
+            },
+            {
+                "question_id": "75",
+                "answer": "Using lab equipment correctly ensures accurate results and prevents accidents."
             }
         ]
     },
@@ -66,20 +108,944 @@
         "id": 4,
         "answers": [
             {
-                "question_id": "1",
-                "answer": "Science helps in making phones that we use for communication and learning."
+                "question_id": "51",
+                "answer": "Amina should tell the teacher and make sure no one steps on it."
             },
             {
-                "question_id": "2",
-                "answer": "He can use evaporation by heating the mixture to get the salt."
+                "question_id": "52",
+                "answer": "Zawadi should know the type of fire and use the right extinguisher."
             },
             {
-                "question_id": "3",
-                "answer": "The kidneys filter waste from the blood and make urine."
+                "question_id": "53",
+                "answer": "Kidneys clean blood and skin sweats out waste."
             },
             {
-                "question_id": "4",
-                "answer": "A magnet can hold the poster because it sticks to metal."
+                "question_id": "54",
+                "answer": "Brian needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "55",
+                "answer": "The symbol is a test tube pouring on a hand."
+            },
+            {
+                "question_id": "56",
+                "answer": "An element is one type of atom, a compound is two or more. Water is hydrogen and oxygen."
+            },
+            {
+                "question_id": "57",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "58",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "59",
+                "answer": "To make sure they are safe and work well."
+            },
+            {
+                "question_id": "60",
+                "answer": "Litmus paper turns red in acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Musa should drink water, eat well, and exercise."
+            },
+            {
+                "question_id": "62",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps solve problems and improve life."
+            },
+            {
+                "question_id": "64",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "65",
+                "answer": "It helps in understanding changes and staying healthy."
+            },
+            {
+                "question_id": "66",
+                "answer": "Use a magnet to pick up paper clips."
+            },
+            {
+                "question_id": "67",
+                "answer": "To prevent accidents in the lab."
+            },
+            {
+                "question_id": "68",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "69",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "70",
+                "answer": "Renewable energy is clean and saves resources."
+            },
+            {
+                "question_id": "71",
+                "answer": "A thermometer measures temperature."
+            },
+            {
+                "question_id": "72",
+                "answer": "Include evacuation routes and fire drills."
+            },
+            {
+                "question_id": "73",
+                "answer": "Kidneys, ureters, bladder, and urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "You need a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "75",
+                "answer": "To get correct results and avoid accidents."
+            }
+        ]
+    },
+    {
+        "id": 10,
+        "answers": [
+            {
+                "question_id": "51",
+                "answer": "Amina should tell the teacher."
+            },
+            {
+                "question_id": "52",
+                "answer": "Zawadi should use the right extinguisher for the fire."
+            },
+            {
+                "question_id": "53",
+                "answer": "Kidneys clean blood, skin sweats."
+            },
+            {
+                "question_id": "54",
+                "answer": "Battery, wires, bulb."
+            },
+            {
+                "question_id": "55",
+                "answer": "A test tube pouring on a hand."
+            },
+            {
+                "question_id": "56",
+                "answer": "Element is one atom, compound is more. Water is a compound."
+            },
+            {
+                "question_id": "57",
+                "answer": "Kidneys clean blood, skin sweats."
+            },
+            {
+                "question_id": "58",
+                "answer": "Battery, wires, bulb."
+            },
+            {
+                "question_id": "59",
+                "answer": "To make sure they work."
+            },
+            {
+                "question_id": "60",
+                "answer": "Turns red in acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Drink water, eat well, exercise."
+            },
+            {
+                "question_id": "62",
+                "answer": "Battery, wires, bulb."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps solve problems."
+            },
+            {
+                "question_id": "64",
+                "answer": "To know the effects on the environment."
+            },
+            {
+                "question_id": "65",
+                "answer": "Helps understand changes."
+            },
+            {
+                "question_id": "66",
+                "answer": "Use a magnet to pick up clips."
+            },
+            {
+                "question_id": "67",
+                "answer": "To prevent accidents."
+            },
+            {
+                "question_id": "68",
+                "answer": "To know the effects on the environment."
+            },
+            {
+                "question_id": "69",
+                "answer": "Kidneys clean blood, skin sweats."
+            },
+            {
+                "question_id": "70",
+                "answer": "Renewable energy is clean."
+            },
+            {
+                "question_id": "71",
+                "answer": "Measures temperature."
+            },
+            {
+                "question_id": "72",
+                "answer": "Evacuation routes and drills."
+            },
+            {
+                "question_id": "73",
+                "answer": "Kidneys, ureters, bladder, urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "Battery, wires, bulb."
+            },
+            {
+                "question_id": "75",
+                "answer": "To avoid accidents."
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "answers": [
+            {
+                "question_id": "51",
+                "answer": "Amina should inform the teacher immediately and make sure no one steps on the glass."
+            },
+            {
+                "question_id": "52",
+                "answer": "Zawadi should identify the type of fire, like grease or electrical, and use the correct extinguisher."
+            },
+            {
+                "question_id": "53",
+                "answer": "The kidneys filter waste from the blood, and the skin helps remove waste through sweat."
+            },
+            {
+                "question_id": "54",
+                "answer": "Brian needs a battery, wires, and a bulb to make a simple electric circuit."
+            },
+            {
+                "question_id": "55",
+                "answer": "The symbol for a corrosive hazard is a test tube pouring liquid onto a hand and a surface."
+            },
+            {
+                "question_id": "56",
+                "answer": "An element is made of one type of atom, while a compound is made of two or more elements. Water is a compound of hydrogen and oxygen."
+            },
+            {
+                "question_id": "57",
+                "answer": "The kidneys filter waste from the blood, and the skin removes waste through sweat, helping maintain balance."
+            },
+            {
+                "question_id": "58",
+                "answer": "Zawadi should use a battery, wires, and a bulb to make a simple electric circuit."
+            },
+            {
+                "question_id": "59",
+                "answer": "Evaluating ensures the apparatus is safe and functional, preventing accidents and ensuring accurate results."
+            },
+            {
+                "question_id": "60",
+                "answer": "Litmus paper turns red when dipped in an acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Musa should drink plenty of water, eat a balanced diet, and exercise regularly to promote kidney health."
+            },
+            {
+                "question_id": "62",
+                "answer": "Zawadi needs a battery, wires, and a bulb to create a simple electric circuit."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps us understand natural phenomena, improve technology, and solve health and environmental issues."
+            },
+            {
+                "question_id": "64",
+                "answer": "Evaluating helps us understand environmental impacts and find ways to mitigate negative effects."
+            },
+            {
+                "question_id": "65",
+                "answer": "Understanding helps in managing changes, promoting health, and making informed decisions."
+            },
+            {
+                "question_id": "66",
+                "answer": "Use a magnet to attract paper clips or iron filings to show magnetic properties."
+            },
+            {
+                "question_id": "67",
+                "answer": "Analyzing helps in preventing accidents and ensuring a safe working environment."
+            },
+            {
+                "question_id": "68",
+                "answer": "Evaluating helps us understand environmental impacts and find ways to mitigate negative effects."
+            },
+            {
+                "question_id": "69",
+                "answer": "The kidneys filter waste from the blood, and the skin removes waste through sweat, helping maintain balance."
+            },
+            {
+                "question_id": "70",
+                "answer": "Renewable sources reduce pollution, conserve resources, and provide sustainable energy."
+            },
+            {
+                "question_id": "71",
+                "answer": "A thermometer measures temperature."
+            },
+            {
+                "question_id": "72",
+                "answer": "Include evacuation routes, fire drills, and locations of fire extinguishers."
+            },
+            {
+                "question_id": "73",
+                "answer": "The main parts are the kidneys, ureters, bladder, and urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "You need a battery, wires, and a bulb to design a simple electric circuit."
+            },
+            {
+                "question_id": "75",
+                "answer": "Correct use ensures accurate results and prevents accidents."
+            }
+        ]
+    },
+    {
+        "id": 1,
+        "answers": [
+            {
+                "question_id": "51",
+                "answer": "Amina should tell the teacher and make sure no one steps on the glass."
+            },
+            {
+                "question_id": "52",
+                "answer": "Zawadi should know the type of fire and use the right extinguisher."
+            },
+            {
+                "question_id": "53",
+                "answer": "Kidneys clean blood and skin sweats out waste."
+            },
+            {
+                "question_id": "54",
+                "answer": "Brian needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "55",
+                "answer": "The symbol is a test tube pouring on a hand."
+            },
+            {
+                "question_id": "56",
+                "answer": "An element is one type of atom, a compound is two or more. Water is hydrogen and oxygen."
+            },
+            {
+                "question_id": "57",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "58",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "59",
+                "answer": "To make sure they are safe and work well."
+            },
+            {
+                "question_id": "60",
+                "answer": "Litmus paper turns red in acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Musa should drink water, eat well, and exercise."
+            },
+            {
+                "question_id": "62",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps solve problems and improve life."
+            },
+            {
+                "question_id": "64",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "65",
+                "answer": "It helps in understanding changes and staying healthy."
+            },
+            {
+                "question_id": "66",
+                "answer": "Use a magnet to pick up paper clips."
+            },
+            {
+                "question_id": "67",
+                "answer": "To prevent accidents in the lab."
+            },
+            {
+                "question_id": "68",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "69",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "70",
+                "answer": "Renewable energy is clean and saves resources."
+            },
+            {
+                "question_id": "71",
+                "answer": "A thermometer measures temperature."
+            },
+            {
+                "question_id": "72",
+                "answer": "Include evacuation routes and fire drills."
+            },
+            {
+                "question_id": "73",
+                "answer": "Kidneys, ureters, bladder, and urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "You need a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "75",
+                "answer": "To get correct results and avoid accidents."
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "answers": [
+            {
+                "question_id": "51",
+                "answer": "Amina should tell the teacher and make sure no one steps on it."
+            },
+            {
+                "question_id": "52",
+                "answer": "Zawadi should know the type of fire and use the right extinguisher."
+            },
+            {
+                "question_id": "53",
+                "answer": "Kidneys clean blood and skin sweats out waste."
+            },
+            {
+                "question_id": "54",
+                "answer": "Brian needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "55",
+                "answer": "The symbol is a test tube pouring on a hand."
+            },
+            {
+                "question_id": "56",
+                "answer": "An element is one type of atom, a compound is two or more. Water is hydrogen and oxygen."
+            },
+            {
+                "question_id": "57",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "58",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "59",
+                "answer": "To make sure they are safe and work well."
+            },
+            {
+                "question_id": "60",
+                "answer": "Litmus paper turns red in acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Musa should drink water, eat well, and exercise."
+            },
+            {
+                "question_id": "62",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps solve problems and improve life."
+            },
+            {
+                "question_id": "64",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "65",
+                "answer": "It helps in understanding changes and staying healthy."
+            },
+            {
+                "question_id": "66",
+                "answer": "Use a magnet to pick up paper clips."
+            },
+            {
+                "question_id": "67",
+                "answer": "To prevent accidents in the lab."
+            },
+            {
+                "question_id": "68",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "69",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "70",
+                "answer": "Renewable energy is clean and saves resources."
+            },
+            {
+                "question_id": "71",
+                "answer": "A thermometer measures temperature."
+            },
+            {
+                "question_id": "72",
+                "answer": "Include evacuation routes and fire drills."
+            },
+            {
+                "question_id": "73",
+                "answer": "Kidneys, ureters, bladder, and urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "You need a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "75",
+                "answer": "To get correct results and avoid accidents."
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "answers": [
+            {
+                "question_id": "51",
+                "answer": "Amina should tell the teacher and make sure no one steps on the glass."
+            },
+            {
+                "question_id": "52",
+                "answer": "Zawadi should know the type of fire and use the right extinguisher."
+            },
+            {
+                "question_id": "53",
+                "answer": "Kidneys clean blood and skin sweats out waste."
+            },
+            {
+                "question_id": "54",
+                "answer": "Brian needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "55",
+                "answer": "The symbol is a test tube pouring on a hand."
+            },
+            {
+                "question_id": "56",
+                "answer": "An element is one type of atom, a compound is two or more. Water is hydrogen and oxygen."
+            },
+            {
+                "question_id": "57",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "58",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "59",
+                "answer": "To make sure they are safe and work well."
+            },
+            {
+                "question_id": "60",
+                "answer": "Litmus paper turns red in acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Musa should drink water, eat well, and exercise."
+            },
+            {
+                "question_id": "62",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps solve problems and improve life."
+            },
+            {
+                "question_id": "64",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "65",
+                "answer": "It helps in understanding changes and staying healthy."
+            },
+            {
+                "question_id": "66",
+                "answer": "Use a magnet to pick up paper clips."
+            },
+            {
+                "question_id": "67",
+                "answer": "To prevent accidents in the lab."
+            },
+            {
+                "question_id": "68",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "69",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "70",
+                "answer": "Renewable energy is clean and saves resources."
+            },
+            {
+                "question_id": "71",
+                "answer": "A thermometer measures temperature."
+            },
+            {
+                "question_id": "72",
+                "answer": "Include evacuation routes and fire drills."
+            },
+            {
+                "question_id": "73",
+                "answer": "Kidneys, ureters, bladder, and urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "You need a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "75",
+                "answer": "To get correct results and avoid accidents."
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "answers": [
+            {
+                "question_id": "51",
+                "answer": "Amina should tell the teacher and make sure no one steps on it."
+            },
+            {
+                "question_id": "52",
+                "answer": "Zawadi should know the type of fire and use the right extinguisher."
+            },
+            {
+                "question_id": "53",
+                "answer": "Kidneys clean blood and skin sweats out waste."
+            },
+            {
+                "question_id": "54",
+                "answer": "Brian needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "55",
+                "answer": "The symbol is a test tube pouring on a hand."
+            },
+            {
+                "question_id": "56",
+                "answer": "An element is one type of atom, a compound is two or more. Water is hydrogen and oxygen."
+            },
+            {
+                "question_id": "57",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "58",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "59",
+                "answer": "To make sure they are safe and work well."
+            },
+            {
+                "question_id": "60",
+                "answer": "Litmus paper turns red in acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Musa should drink water, eat well, and exercise."
+            },
+            {
+                "question_id": "62",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps solve problems and improve life."
+            },
+            {
+                "question_id": "64",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "65",
+                "answer": "It helps in understanding changes and staying healthy."
+            },
+            {
+                "question_id": "66",
+                "answer": "Use a magnet to pick up paper clips."
+            },
+            {
+                "question_id": "67",
+                "answer": "To prevent accidents in the lab."
+            },
+            {
+                "question_id": "68",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "69",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "70",
+                "answer": "Renewable energy is clean and saves resources."
+            },
+            {
+                "question_id": "71",
+                "answer": "A thermometer measures temperature."
+            },
+            {
+                "question_id": "72",
+                "answer": "Include evacuation routes and fire drills."
+            },
+            {
+                "question_id": "73",
+                "answer": "Kidneys, ureters, bladder, and urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "You need a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "75",
+                "answer": "To get correct results and avoid accidents."
+            }
+        ]
+    },
+    {
+        "id": 9,
+        "answers": [
+            {
+                "question_id": "51",
+                "answer": "Amina should tell the teacher and make sure no one steps on it."
+            },
+            {
+                "question_id": "52",
+                "answer": "Zawadi should know the type of fire and use the right extinguisher."
+            },
+            {
+                "question_id": "53",
+                "answer": "Kidneys clean blood and skin sweats out waste."
+            },
+            {
+                "question_id": "54",
+                "answer": "Brian needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "55",
+                "answer": "The symbol is a test tube pouring on a hand."
+            },
+            {
+                "question_id": "56",
+                "answer": "An element is one type of atom, a compound is two or more. Water is hydrogen and oxygen."
+            },
+            {
+                "question_id": "57",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "58",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "59",
+                "answer": "To make sure they are safe and work well."
+            },
+            {
+                "question_id": "60",
+                "answer": "Litmus paper turns red in acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Musa should drink water, eat well, and exercise."
+            },
+            {
+                "question_id": "62",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps solve problems and improve life."
+            },
+            {
+                "question_id": "64",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "65",
+                "answer": "It helps in understanding changes and staying healthy."
+            },
+            {
+                "question_id": "66",
+                "answer": "Use a magnet to pick up paper clips."
+            },
+            {
+                "question_id": "67",
+                "answer": "To prevent accidents in the lab."
+            },
+            {
+                "question_id": "68",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "69",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "70",
+                "answer": "Renewable energy is clean and saves resources."
+            },
+            {
+                "question_id": "71",
+                "answer": "A thermometer measures temperature."
+            },
+            {
+                "question_id": "72",
+                "answer": "Include evacuation routes and fire drills."
+            },
+            {
+                "question_id": "73",
+                "answer": "Kidneys, ureters, bladder, and urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "You need a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "75",
+                "answer": "To get correct results and avoid accidents."
+            }
+        ]
+    },
+    {
+        "id": 8,
+        "answers": [
+            {
+                "question_id": "51",
+                "answer": "Amina should tell the teacher and make sure no one steps on the glass."
+            },
+            {
+                "question_id": "52",
+                "answer": "Zawadi should know the type of fire and use the right extinguisher."
+            },
+            {
+                "question_id": "53",
+                "answer": "Kidneys clean blood and skin sweats out waste."
+            },
+            {
+                "question_id": "54",
+                "answer": "Brian needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "55",
+                "answer": "The symbol is a test tube pouring on a hand."
+            },
+            {
+                "question_id": "56",
+                "answer": "An element is one type of atom, a compound is two or more. Water is hydrogen and oxygen."
+            },
+            {
+                "question_id": "57",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "58",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "59",
+                "answer": "To make sure they are safe and work well."
+            },
+            {
+                "question_id": "60",
+                "answer": "Litmus paper turns red in acid."
+            },
+            {
+                "question_id": "61",
+                "answer": "Musa should drink water, eat well, and exercise."
+            },
+            {
+                "question_id": "62",
+                "answer": "Zawadi needs a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "63",
+                "answer": "Science helps solve problems and improve life."
+            },
+            {
+                "question_id": "64",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "65",
+                "answer": "It helps in understanding changes and staying healthy."
+            },
+            {
+                "question_id": "66",
+                "answer": "Use a magnet to pick up paper clips."
+            },
+            {
+                "question_id": "67",
+                "answer": "To prevent accidents in the lab."
+            },
+            {
+                "question_id": "68",
+                "answer": "To know how they affect the environment."
+            },
+            {
+                "question_id": "69",
+                "answer": "Kidneys filter blood and skin sweats waste."
+            },
+            {
+                "question_id": "70",
+                "answer": "Renewable energy is clean and saves resources."
+            },
+            {
+                "question_id": "71",
+                "answer": "A thermometer measures temperature."
+            },
+            {
+                "question_id": "72",
+                "answer": "Include evacuation routes and fire drills."
+            },
+            {
+                "question_id": "73",
+                "answer": "Kidneys, ureters, bladder, and urethra."
+            },
+            {
+                "question_id": "74",
+                "answer": "You need a battery, wires, and a bulb."
+            },
+            {
+                "question_id": "75",
+                "answer": "To get correct results and avoid accidents."
             }
         ]
     }

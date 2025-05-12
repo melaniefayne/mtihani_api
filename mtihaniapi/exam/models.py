@@ -38,15 +38,18 @@ class Exam(models.Model):
         if self.start_date_time and self.end_date_time:
             delta = self.end_date_time - self.start_date_time
             self.duration_min = int(delta.total_seconds() // 60)
-
-        # Automatically update status based on time
-        now = timezone.now()
-        if self.status == "Upcoming" and self.start_date_time <= now <= self.end_date_time:
-            self.status = "Ongoing"
-        elif self.status == "Ongoing" and now > self.end_date_time:
-            self.status = "Grading"
-
         super().save(*args, **kwargs)
+
+    def refresh_status(self):
+        now = timezone.now()
+
+        if now < self.start_date_time:
+            self.status = "Upcoming"
+        elif self.start_date_time <= now <= self.end_date_time:
+            self.status = "Ongoing"
+        elif now > self.end_date_time:
+            self.status = "Grading"
+        self.save(update_fields=["status"])
 
 
 class ExamQuestion(models.Model):

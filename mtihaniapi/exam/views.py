@@ -10,7 +10,7 @@ from learner.models import Classroom, Student, Teacher
 from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis, StudentExamSession, StudentExamSessionAnswer
 from exam.serializers import ExamQuestionSerializer, ExamSerializer, StudentExamSessionAnswerSerializer, StudentExamSessionSerializer
 from utils import GlobalPagination
-from permissions import IsStudent, IsTeacher, IsTeacherOrStudent
+from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
 from typing import List, Dict, Any, Optional, Union
 from collections import Counter
@@ -272,6 +272,12 @@ def edit_classroom_exam(request) -> Response:
                 return Response({
                     "message": "Invalid date format. Use ISO 8601 format (e.g. 2025-05-10T09:00:00Z)."
                 }, status=HTTP_400_BAD_REQUEST)
+
+            if timezone.is_naive(start_dt):
+                start_dt = timezone.make_aware(start_dt)
+            if timezone.is_naive(end_dt):
+                end_dt = timezone.make_aware(end_dt)
+
             exam.start_date_time = start_dt
             exam.end_date_time = end_dt
 
@@ -415,8 +421,9 @@ def get_user_exams(request):
             Q(status="Upcoming", start_date_time__lte=now, end_date_time__gte=now) |
             Q(status="Ongoing", end_date_time__lt=now)
         )
+        print(f"Updating {len(possibly_stale_exams)} exams")
         for exam in possibly_stale_exams:
-            exam.save()
+            exam.refresh_status()
 
         # === FETCH STUDENT SESSION MAPPING ===
         if user.groups.filter(name="student").exists():
@@ -663,3 +670,59 @@ def end_exam_session(request):
     except Exception as e:
         print(f"Error ending exam session: {e}")
         return Response({"message": "Something went wrong while ending the session."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def mock_exam_answers(request):
+    try:
+        exam_id = request.GET.get("exam_id")
+        answers_list = request.data.get("answers_list")
+
+        if not exam_id or not answers_list:
+            return Response({"message": "exam_id and answers_list are required."}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            exam = Exam.objects.get(id=exam_id)
+        except (Exam.DoesNotExist):
+            return Response({"message": "Exam not found."}, status=HTTP_404_NOT_FOUND)
+
+        for student_answers in answers_list:
+            student_id = student_answers.get("id")
+            answers = student_answers.get("answers", [])
+
+            student = Student.objects.get(id=student_id)
+            now = timezone.now()
+
+            session, _ = StudentExamSession.objects.get_or_create(
+                exam=exam, student=student,
+                defaults={"start_date_time": now, "end_date_time": now,
+                          "status": "Grading"}
+            )
+
+            # Optionally update session end time if it was previously blank
+            if not session.duration_min:
+                session.start_date_time = now
+                session.end_date_time = now
+                session.status = "Grading"
+                session.save()
+
+            for ans in answers:
+                question_id = ans.get("question_id")
+                answer_text = ans.get("answer")
+
+                question = ExamQuestion.objects.get(id=question_id)
+
+                session_answer, _ = StudentExamSessionAnswer.objects.update_or_create(
+                    session=session,
+                    question=question,
+                    defaults={"description": answer_text}
+                )
+
+        return Response({
+            "message": f"Successfully mocked exam answers for exam id {exam_id}"
+        }, status=HTTP_201_CREATED)
+
+    except Exception as e:
+        print(f"Error ending exam session: {e}")
+        return Response({"message": "Something went wrong while mocking answers."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
