@@ -8,7 +8,7 @@ from gen.curriculum import get_exam_curriculum
 from gen.utils import generate_llm_question_list
 from learner.models import Classroom, Student, Teacher
 from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis, StudentExamSession, StudentExamSessionAnswer
-from exam.serializers import ExamQuestionSerializer, ExamSerializer, StudentExamSessionAnswerSerializer, StudentExamSessionSerializer
+from exam.serializers import ExamQuestionSerializer, ExamSerializer, FullStudentExamSessionAnswerSerializer, StudentExamSessionAnswerSerializer, StudentExamSessionSerializer
 from utils import GlobalPagination
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
@@ -432,8 +432,28 @@ def get_user_exams(request):
                 exam__in=exams
             )
             student_exam_session_map = {
-                s.exam_id: s.id for s in student_exam_sessions
+                s.exam_id: s.student_id for s in student_exam_sessions
             }
+        
+        elif hasattr(user, 'teacher'):
+            student_id = request.GET.get("student_id")
+            if student_id:
+                try:
+                    student = Student.objects.select_related('classroom').get(id=student_id)
+
+                    # Ensure teacher is authorized to view this student's exams
+                    if student.classroom not in classrooms:
+                        return Response({"message": "You are not authorized to view this student's exams."}, status=HTTP_403_FORBIDDEN)
+
+                    student_exam_sessions = StudentExamSession.objects.filter(
+                        student=student,
+                        exam__in=exams
+                    )
+                    student_exam_session_map = {
+                        s.exam_id: s.student_id for s in student_exam_sessions
+                    }
+                except Student.DoesNotExist:
+                    return Response({"message": "Student not found."}, status=HTTP_404_NOT_FOUND)
 
         # === PAGINATION ===
         paginator = GlobalPagination()
@@ -575,6 +595,7 @@ def start_exam_session(request):
 def get_exam_session(request):
     try:
         exam_id = request.GET.get("exam_id")
+        is_detailed = request.GET.get("is_detailed")
         student_id = request.GET.get("student_id")
 
         if not exam_id or not student_id:
@@ -588,7 +609,7 @@ def get_exam_session(request):
 
         session = StudentExamSession.objects.get(student=student, exam=exam)
 
-        res = get_exam_session_data(session)
+        res = get_exam_session_data(session, is_detailed)
         return Response(res, status=HTTP_200_OK)
 
     except StudentExamSession.DoesNotExist:
@@ -630,10 +651,11 @@ def update_exam_answer(request):
         return Response({"message": "Something went wrong while updating the answer."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def get_exam_session_data(session) -> Dict[str, Any]:
+def get_exam_session_data(session, is_detailed: bool = False) -> Dict[str, Any]:
     answers = StudentExamSessionAnswer.objects.filter(session=session)
     session_obj = StudentExamSessionSerializer(session).data
-    answers_obj = StudentExamSessionAnswerSerializer(
+    answers_obj = FullStudentExamSessionAnswerSerializer(
+        answers, many=True).data if is_detailed else StudentExamSessionAnswerSerializer(
         answers, many=True).data
     return {
         "session": session_obj,

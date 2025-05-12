@@ -45,7 +45,7 @@ class ExamSerializer(serializers.ModelSerializer):
     classroom_id = serializers.IntegerField(source='classroom.id')
     classroom_name = serializers.CharField(source='classroom.name')
     analysis = ExamQuestionAnalysisSerializer()
-    student_session_id = serializers.SerializerMethodField()
+    student_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Exam
@@ -53,12 +53,12 @@ class ExamSerializer(serializers.ModelSerializer):
             'id', 'start_date_time', 'end_date_time', 'status', 'is_published',
             'code', 'duration_min', 'generation_error',
             'classroom_id', 'classroom_name', 'analysis', 'created_at',
-            'student_session_id'  # << only shows for students
+            'student_id'  # << shows only when relevant
         ]
 
-    def get_student_session_id(self, exam):
-        student_exam_sessions = self.context.get("student_exam_sessions", {})
-        return student_exam_sessions.get(exam.id)
+    def get_student_id(self, exam):
+        student_map = self.context.get("student_exam_sessions", {})
+        return student_map.get(exam.id)
 
 
 class ExamQuestionSerializer(serializers.ModelSerializer):
@@ -116,3 +116,15 @@ class StudentExamSessionAnswerSerializer(serializers.ModelSerializer):
         fields = ['id', 'question_id', 'question_number',
                   'question_description', 'description', 'score', 'tr_score',
                   'strand', 'grade']
+
+
+class FullStudentExamSessionAnswerSerializer(StudentExamSessionAnswerSerializer):
+    sub_strand = serializers.ReadOnlyField(source='question.sub_strand')
+    bloom_skill = serializers.ReadOnlyField(source='question.bloom_skill')
+    expected_answer = serializers.ReadOnlyField(
+        source='question.expected_answer')
+
+    class Meta(StudentExamSessionAnswerSerializer.Meta):
+        fields = StudentExamSessionAnswerSerializer.Meta.fields + [
+            'sub_strand', 'bloom_skill', 'expected_answer'
+        ]
