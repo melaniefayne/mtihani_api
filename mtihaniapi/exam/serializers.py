@@ -93,13 +93,14 @@ def _safe_parse_json(raw):
 
 class StudentExamSessionSerializer(serializers.ModelSerializer):
     exam_id = serializers.IntegerField(source='exam.id')
-    student_id = serializers.ReadOnlyField(source='student.number')
+    student_id = serializers.ReadOnlyField(source='student.id')
+    student_name = serializers.ReadOnlyField(source='student.name')
 
     class Meta:
         model = StudentExamSession
         fields = ['id', 'is_late_submission', 'start_date_time', 'status',
                   'end_date_time', 'duration_min', 'avg_score', 'expectation_level',
-                  'exam_id', 'student_id']
+                  'exam_id', 'student_id', 'student_name']
 
 
 class StudentExamSessionAnswerSerializer(serializers.ModelSerializer):

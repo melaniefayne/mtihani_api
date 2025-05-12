@@ -496,7 +496,7 @@ def get_exam_questions(request) -> Response:
 
     except Exception as e:
         print(f"Error fetching exam questions: {e}")
-        return Response({"message": "Something went wrong while fetching questions."}, status=500)
+        return Response({"message": "Something went wrong while fetching questions."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -571,7 +571,7 @@ def start_exam_session(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsStudent])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
 def get_exam_session(request):
     try:
         exam_id = request.GET.get("exam_id")
@@ -726,3 +726,32 @@ def mock_exam_answers(request):
     except Exception as e:
         print(f"Error ending exam session: {e}")
         return Response({"message": "Something went wrong while mocking answers."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_student_exam_sessions(request) -> Response:
+    try:
+        expectation_level = request.GET.get('expectation_level')
+        search_query = request.GET.get('search')
+
+        sessions = StudentExamSession.objects.select_related('student', 'exam')
+
+        if expectation_level:
+            sessions = sessions.filter(expectation_level=expectation_level)
+
+        if search_query:
+            sessions = sessions.filter(student__name__icontains=search_query)
+
+        sessions = sessions.order_by('-start_date_time')
+
+        # Pagination
+        paginator = GlobalPagination()
+        paginated_qs = paginator.paginate_queryset(sessions, request)
+        serialized = StudentExamSessionSerializer(paginated_qs, many=True)
+
+        return paginator.get_paginated_response(serialized.data)
+
+    except Exception as e:
+        print(f"Error fetching exam questions: {e}")
+        return Response({"message": "Something went wrong while fetching sessions."}, status=HTTP_500_INTERNAL_SERVER_ERROR)

@@ -14,4 +14,5 @@ urlpatterns = [
     path('update-exam-answer', update_exam_answer),
     path('end-exam-session', end_exam_session),
     path('mock-exam-answers', mock_exam_answers),
+    path('get-student-exam-sessions', get_student_exam_sessions),
 ]
