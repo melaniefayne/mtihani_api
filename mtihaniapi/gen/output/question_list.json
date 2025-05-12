@@ -1,102 +1,18 @@
 [
     {
-        "questions": [
-            "Amina noticed that her bicycle chain has started to rust. Explain how rusting affects the strength and appearance of the metal.",
-            "List two common uses of aluminum in everyday life."
-        ],
-        "expected_answers": [
-            "Rusting weakens the metal by forming a flaky, reddish-brown layer that can cause the metal to break or crumble. It also makes the metal look unattractive.",
-            "Aluminum is commonly used for making kitchen utensils and window frames."
-        ]
+        "questions": "Amina notices that her phone helps her communicate with friends and learn new things. How does science play a role in making her phone useful in daily life?",
+        "expected_answers": "Science contributes to the development of technology like phones, which help in communication, learning, and accessing information."
     },
     {
-        "questions": [
-            "Brian wants to create a simple electric circuit to light a bulb using a battery, wires, and a switch. Describe how he can connect these components to make the bulb light up.",
-            "Explain why it is important to keep electrical appliances away from water."
-        ],
-        "expected_answers": [
-            "Brian should connect one end of the wire to the positive terminal of the battery and the other end to one terminal of the switch. Then, connect another wire from the other terminal of the switch to one terminal of the bulb. Finally, connect a wire from the other terminal of the bulb back to the negative terminal of the battery.",
-            "Water is a good conductor of electricity, and if it comes into contact with electrical appliances, it can cause short circuits or electric shocks, which can be dangerous."
-        ]
+        "questions": "Brian has a mixture of salt and water. Describe a method he can use to separate the salt from the water.",
+        "expected_answers": "Brian can use evaporation to separate the salt from the water. By heating the mixture, the water will evaporate, leaving the salt behind."
     },
     {
-        "questions": [
-            "Name the part of the plant cell that is responsible for photosynthesis.",
-            "Zawadi is looking at a diagram of a cell. How can she tell if it is a plant cell or an animal cell?"
-        ],
-        "expected_answers": [
-            "The chloroplast is responsible for photosynthesis in a plant cell.",
-            "Zawadi can identify a plant cell by looking for a cell wall and chloroplasts, which are not present in animal cells."
-        ]
+        "questions": "Zawadi is learning about the human excretory system. Explain the function of the kidneys in this system.",
+        "expected_answers": "The kidneys filter waste products and excess water from the blood to form urine, which is then excreted from the body."
     },
     {
-        "questions": [
-            "Musa left his metal tools outside in the rain, and they started to rust. Explain how rusting affects the tools and what Musa can do to prevent it in the future.",
-            "Name two uses of copper in everyday life."
-        ],
-        "expected_answers": [
-            "Rusting causes the tools to become weak and brittle, making them less effective and more likely to break. To prevent rusting, Musa can store the tools in a dry place and apply a protective coating like oil or paint.",
-            "Copper is used in electrical wiring and plumbing pipes."
-        ]
-    },
-    {
-        "questions": [
-            "Amina wants to create a simple compass using a needle and a magnet. Describe the steps she should follow to make the needle act like a compass.",
-            "Explain why magnets are used in refrigerator doors."
-        ],
-        "expected_answers": [
-            "Amina should rub the needle with a magnet in one direction several times to magnetize it. Then, she can place the needle on a piece of cork or foam and float it in a bowl of water. The needle will align itself with the Earth's magnetic field, pointing north-south.",
-            "Magnets are used in refrigerator doors to create a tight seal, keeping the door closed and preventing cold air from escaping."
-        ]
-    },
-    {
-        "questions": [
-            "Evaluate the importance of teaching adolescents about reproductive health and responsible behavior.",
-            "Explain the function of the uterus in the human reproductive system."
-        ],
-        "expected_answers": [
-            "Teaching adolescents about reproductive health and responsible behavior is crucial as it helps them make informed decisions, understand bodily changes, and prevent health issues such as sexually transmitted infections and unintended pregnancies.",
-            "The uterus is where a fertilized egg implants and develops into a fetus during pregnancy."
-        ]
-    },
-    {
-        "questions": [
-            "Zawadi is testing different household liquids with litmus paper. She notices that lemon juice turns blue litmus paper red. Analyze what this indicates about lemon juice.",
-            "Describe one real-life application of acids and one of bases."
-        ],
-        "expected_answers": [
-            "The change of blue litmus paper to red indicates that lemon juice is acidic.",
-            "Acids are used in cleaning products like vinegar for removing stains, while bases are used in baking, such as baking soda, to help dough rise."
-        ]
-    },
-    {
-        "questions": [
-            "Brian wants to demonstrate how a magnet can attract certain materials. Describe a simple experiment he can conduct to show this property.",
-            "Analyze why magnets are used in speakers."
-        ],
-        "expected_answers": [
-            "Brian can gather various small objects like paper clips, coins, and plastic buttons. He can then bring a magnet close to these objects to see which ones are attracted to the magnet, demonstrating that only magnetic materials like paper clips are attracted.",
-            "Magnets are used in speakers to create a magnetic field that interacts with the voice coil, causing it to move and produce sound by vibrating the speaker cone."
-        ]
-    },
-    {
-        "questions": [
-            "Amina is looking at a diagram of a cell. How can she analyze the differences between a plant cell and an animal cell?",
-            "Explain the role of the cell membrane in both plant and animal cells."
-        ],
-        "expected_answers": [
-            "Amina can look for the presence of a cell wall and chloroplasts, which are found in plant cells but not in animal cells. Plant cells also have a larger central vacuole compared to animal cells.",
-            "The cell membrane controls the movement of substances in and out of the cell, providing protection and maintaining the cell's environment."
-        ]
-    },
-    {
-        "questions": [
-            "Design a simple plan to prevent rusting of a metal gate exposed to rain.",
-            "Explain why iron is commonly used in construction."
-        ],
-        "expected_answers": [
-            "To prevent rusting, the metal gate can be painted with a rust-resistant paint, regularly cleaned to remove moisture and dirt, and coated with oil or grease to create a protective barrier.",
-            "Iron is strong, durable, and relatively inexpensive, making it ideal for use in construction for structures like beams and frames."
-        ]
+        "questions": "Musa wants to hang a poster on his metal locker using a magnet. Explain why a magnet is suitable for this task.",
+        "expected_answers": "A magnet is suitable because it can attract and hold onto the metal surface of the locker, keeping the poster in place without damaging it."
     }
 ]

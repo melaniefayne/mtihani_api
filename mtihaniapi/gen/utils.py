@@ -10,6 +10,72 @@ dotenv.load_dotenv()
 
 APP_BLOOM_SKILL_COUNT = 3
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_LLM_4O = ChatOpenAI(
+    model_name="gpt-4o",
+    temperature=0.1,
+    max_tokens=10240,
+    openai_api_key=OPENAI_API_KEY,
+)
+
+# ================================================================== UTILS
+
+
+def get_token_count_from_str(text: str, llm_model: str) -> int:
+    encoding = tiktoken.encoding_for_model(llm_model)
+    return len(encoding.encode(text))
+
+
+def clean_llm_response(raw_response: str) -> str:
+    cleaned = raw_response.strip()
+
+    # Only remove code block markers if they exist
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\n?", "", cleaned)
+        cleaned = re.sub(r"\n?```$", "", cleaned)
+
+    return cleaned.strip()
+
+
+def run_llm_function(
+        invoke_param: Dict[str, Any],
+        prompt_template: PromptTemplate,
+        formatted_prompt: str,
+        llm: Any = OPENAI_LLM_4O,
+        is_debug: bool = False) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    try:
+        # LCEL-style prompt-to-LLM pipe
+        runnable = prompt_template | llm
+        llm_model = llm.model_name
+
+        if (is_debug):
+            input_tokens = get_token_count_from_str(
+                formatted_prompt, llm_model)
+            print(f"📝 Input token count ({llm_model}): {input_tokens}")
+
+        # Invoke model
+        response = runnable.invoke(invoke_param)
+        if (is_debug):
+            print("📦 Raw LLM output:\n", response)
+
+        # Clean and count output tokens
+        cleaned = clean_llm_response(response.content)
+
+        if (is_debug):
+            output_tokens = get_token_count_from_str(cleaned, llm_model)
+            print(f"📤 Output token count ({llm_model}): {output_tokens}")
+            print(f"🔢 Total token usage: {input_tokens + output_tokens}")
+
+        try:
+            parsed = json.loads(cleaned)
+            return parsed
+        except json.JSONDecodeError as e:
+            return {"error": f"Failed to parse LLM response: {e}", "raw": cleaned}
+
+    except Exception as e:
+        return {"error": f"Error: {e}"}
+
+# ================================================================== CREATE EXAM
+
 
 CREATE_EXAM_PROMPT_TEXT = """
 You are an expert Integrated Science teacher preparing a high-quality exam for Junior Secondary School learners in Kenya (Grades 7–9, ages 11–14). Your goal is to create exam questions that are clear, relatable, and promote both understanding and deeper thinking.
@@ -58,66 +124,108 @@ CREATE_EXAM_LLM_PROMPT = PromptTemplate(
     template=CREATE_EXAM_PROMPT_TEXT
 )
 
-OPENAI_LLM_4O = ChatOpenAI(
-    model_name="gpt-4o",
-    temperature=0.1,
-    max_tokens=10240,
-    openai_api_key=OPENAI_API_KEY,
-)
-
 
 def generate_llm_question_list(
-        input_data: Dict[str, Any],
-        llm_model: str = "gpt-4o",
+        input_data: List[Dict[str, Any]],
         is_debug: bool = False,
         llm: Any = OPENAI_LLM_4O,
         bloom_skill_count: int = APP_BLOOM_SKILL_COUNT) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
-    try:
-        # LCEL-style prompt-to-LLM pipe
-        runnable = CREATE_EXAM_LLM_PROMPT | llm
 
-        # Format and count input
-        formatted_prompt = CREATE_EXAM_LLM_PROMPT.format(
-            question_breakdown=json.dumps(input_data), bloom_skill_count=bloom_skill_count)
+    prompt_template = CREATE_EXAM_LLM_PROMPT
+    questions_str = json.dumps(input_data)
+    formatted_prompt = prompt_template.format(
+        question_breakdown=questions_str, bloom_skill_count=bloom_skill_count)
+    invoke_param = {
+        "question_breakdown": questions_str,
+        "bloom_skill_count": bloom_skill_count
+    }
 
-        if (is_debug):
-            input_tokens = get_token_count_from_str(
-                formatted_prompt, llm_model)
-            print(f"📝 Input token count ({llm_model}): {input_tokens}")
+    res = run_llm_function(
+        invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
 
-        # Invoke model
-        response = runnable.invoke(
-            {
-                "question_breakdown": json.dumps(input_data),
-                "bloom_skill_count": bloom_skill_count})
-        if (is_debug):
-            print("📦 Raw LLM output:\n", response)
-
-        # Clean and count output tokens
-        cleaned = clean_llm_response(response.content)
-
-        if (is_debug):
-            output_tokens = get_token_count_from_str(cleaned, llm_model)
-            print(f"📤 Output token count ({llm_model}): {output_tokens}")
-            print(f"🔢 Total token usage: {input_tokens + output_tokens}")
-
-        try:
-            parsed = json.loads(cleaned)
-            return parsed
-        except json.JSONDecodeError as e:
-            return {"error": f"Failed to parse LLM response: {e}", "raw": cleaned}
-
-    except Exception as e:
-        return {"error": f"Error: {e}"}
+    return res
 
 
-def get_token_count_from_str(text: str, llm_model: str) -> int:
-    encoding = tiktoken.encoding_for_model(llm_model)
-    return len(encoding.encode(text))
+# ================================================================== MOCK EXAM ANSWERS
+MOCK_EXAM_ANSWERS_PROMPT_TEXT = """
+You are an AI trained to simulate how students from Junior Secondary School in Kenya (Grades 7–9, ages 11–14) would answer science exam questions in a real test environment.
+
+Each student has an average term score, which reflects their general academic performance and ability to understand and express scientific ideas. Use this score to determine how well they are likely to answer each question.
+
+Scoring guidance:
+- **Below 50% (Basic Understanding)**: Responses may be short, unclear, contain misconceptions, or lack depth.
+- **50% to 74% (Moderate Understanding)**: Responses should be mostly correct but may include minor errors, limited explanation, or simple phrasing.
+- **75% and above (High Understanding)**: Responses should be clear, accurate, well-explained, and demonstrate logical thinking with vocabulary suitable for a Kenyan learner aged 11–14.
+
+**Rules for Responses**
+- Write in a **natural and authentic tone**, like a real student from Kenya would.
+- Avoid overly polished textbook definitions or technical jargon.
+- Each student's answer should **feel different** based on their score, especially for open-ended or evaluative questions.
+- Do not copy expected answers directly. Use them to guide the correctness level.
+
+You will be given:
+- A list of exam questions, each with an `id`, `question`, and `expected_answer` (for your internal use only),
+- A list of students, each with an `id` and `avg_score`.
+
+**Your task:** Simulate how each student might answer each question.
+
+Return ONLY a valid JSON array (no explanation, no markdown)
+**Return Format (strictly):**
+A valid **JSON array**. Each item in the array must have the structure:
+```json
+{{
+  "id": [student_id],
+  "answers": [
+    {{
+      "question_id": "[question_id]",
+      "answer": "[the student's simulated answer]"
+    }},
+    ...
+  ]
+}}
+
+Here is the exam:
+{exam}
+
+And here's the list of students:
+{student_list}
+
+"""
+
+MOCK_EXAM_ANSWERS_LLM_PROMPT = PromptTemplate(
+    input_variables=["exam", "student_list"],
+    template=MOCK_EXAM_ANSWERS_PROMPT_TEXT
+)
 
 
-def clean_llm_response(raw_response: str) -> str:
-    # Remove markdown-style code blocks
-    cleaned = re.sub(r"^```(?:json)?\n?", "", raw_response.strip())
-    cleaned = re.sub(r"\n?```$", "", cleaned)
-    return cleaned.strip()
+def generate_llm_exam_answers_list(
+        exam_data: List[Dict[str, Any]],
+        student_data: List[Dict[str, Any]],
+        llm_model: str = "gpt-4o",
+        is_debug: bool = False,
+        llm: Any = OPENAI_LLM_4O) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+
+    prompt_template = MOCK_EXAM_ANSWERS_LLM_PROMPT
+    exam_str = json.dumps(exam_data, indent=2)
+    student_str = json.dumps(student_data, indent=2)
+    formatted_prompt = prompt_template.format(
+        exam=exam_str, student_list=student_str)
+    invoke_param = {
+        "exam": exam_data,
+        "student_list": student_data
+    }
+
+    res = run_llm_function(
+        invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
+
+    return res

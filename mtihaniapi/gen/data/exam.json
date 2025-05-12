@@ -2,126 +2,126 @@
     {
         "id": "51",
         "question": "Amina noticed a broken glass beaker on the laboratory floor. What should she do to ensure safety?",
-        "answer": "Amina should inform the teacher immediately and ensure no one steps on the broken glass."
+        "expected_answer": "Amina should inform the teacher immediately and ensure no one steps on the broken glass."
     },
     {
         "id": "52",
         "question": "Zawadi is at home and notices a fire starting in the kitchen. How should she decide which fire extinguisher to use?",
-        "answer": "Zawadi should identify the type of fire (e.g., grease, electrical) and use the appropriate extinguisher for that class."
+        "expected_answer": "Zawadi should identify the type of fire (e.g., grease, electrical) and use the appropriate extinguisher for that class."
     },
     {
         "id": "53",
         "question": "Musa is studying the human excretory system. How do the kidneys and skin work together to remove waste from the body?",
-        "answer": "The kidneys filter waste from the blood, while the skin removes waste through sweat."
+        "expected_answer": "The kidneys filter waste from the blood, while the skin removes waste through sweat."
     },
     {
         "id": "54",
         "question": "Brian wants to make a simple electric circuit at home. What materials does he need to demonstrate the flow of electric current?",
-        "answer": "Brian needs a battery, wires, and a small bulb to make a simple electric circuit."
+        "expected_answer": "Brian needs a battery, wires, and a small bulb to make a simple electric circuit."
     },
     {
         "id": "55",
         "question": "What is the symbol for a corrosive hazard in the laboratory?",
-        "answer": "The symbol for a corrosive hazard is a test tube pouring liquid onto a hand and a surface."
+        "expected_answer": "The symbol for a corrosive hazard is a test tube pouring liquid onto a hand and a surface."
     },
     {
         "id": "56",
         "question": "Explain the difference between an element and a compound using water as an example.",
-        "answer": "An element is a pure substance made of one type of atom, while a compound is made of two or more elements chemically combined. Water is a compound of hydrogen and oxygen."
+        "expected_answer": "An element is a pure substance made of one type of atom, while a compound is made of two or more elements chemically combined. Water is a compound of hydrogen and oxygen."
     },
     {
         "id": "57",
         "question": "How do the kidneys and skin work together to maintain a healthy body?",
-        "answer": "The kidneys filter waste from the blood, while the skin removes waste through sweat, both helping to maintain balance."
+        "expected_answer": "The kidneys filter waste from the blood, while the skin removes waste through sweat, both helping to maintain balance."
     },
     {
         "id": "58",
         "question": "Zawadi wants to make a simple electric circuit. What components should she use to demonstrate the flow of electricity?",
-        "answer": "Zawadi should use a battery, wires, and a bulb to make a simple electric circuit."
+        "expected_answer": "Zawadi should use a battery, wires, and a bulb to make a simple electric circuit."
     },
     {
         "id": "59",
         "question": "Why is it important to evaluate the condition of laboratory apparatus before use?",
-        "answer": "Evaluating ensures the apparatus is safe and functional, preventing accidents and ensuring accurate results."
+        "expected_answer": "Evaluating ensures the apparatus is safe and functional, preventing accidents and ensuring accurate results."
     },
     {
         "id": "60",
         "question": "What is the color change of litmus paper when it is dipped in an acid?",
-        "answer": "Litmus paper turns red when dipped in an acid."
+        "expected_answer": "Litmus paper turns red when dipped in an acid."
     },
     {
         "id": "61",
         "question": "Musa is planning his daily activities to promote kidney health. What should he include?",
-        "answer": "Musa should include drinking plenty of water, eating a balanced diet, and regular exercise."
+        "expected_answer": "Musa should include drinking plenty of water, eating a balanced diet, and regular exercise."
     },
     {
         "id": "62",
         "question": "Zawadi wants to create a simple electric circuit. What materials does she need?",
-        "answer": "Zawadi needs a battery, wires, and a bulb to create a simple electric circuit."
+        "expected_answer": "Zawadi needs a battery, wires, and a bulb to create a simple electric circuit."
     },
     {
         "id": "63",
         "question": "Evaluate the importance of science in solving everyday problems.",
-        "answer": "Science helps in understanding natural phenomena, improving technology, and solving health and environmental issues."
+        "expected_answer": "Science helps in understanding natural phenomena, improving technology, and solving health and environmental issues."
     },
     {
         "id": "64",
         "question": "Why is it important to evaluate the effects of physical and chemical changes in the environment?",
-        "answer": "Evaluating helps in understanding environmental impacts and finding ways to mitigate negative effects."
+        "expected_answer": "Evaluating helps in understanding environmental impacts and finding ways to mitigate negative effects."
     },
     {
         "id": "65",
         "question": "Evaluate the importance of understanding the functions of the reproductive system during adolescence.",
-        "answer": "Understanding helps in managing changes, promoting health, and making informed decisions."
+        "expected_answer": "Understanding helps in managing changes, promoting health, and making informed decisions."
     },
     {
         "id": "66",
         "question": "Create a simple experiment to demonstrate the properties of a magnet.",
-        "answer": "Use a magnet to attract paper clips or iron filings to show magnetic properties."
+        "expected_answer": "Use a magnet to attract paper clips or iron filings to show magnetic properties."
     },
     {
         "id": "67",
         "question": "Why is it important to analyze the causes of common laboratory accidents?",
-        "answer": "Analyzing helps in preventing accidents and ensuring a safe working environment."
+        "expected_answer": "Analyzing helps in preventing accidents and ensuring a safe working environment."
     },
     {
         "id": "68",
         "question": "Why is it important to evaluate the effects of physical and chemical changes on the environment?",
-        "answer": "Evaluating helps in understanding environmental impacts and finding ways to mitigate negative effects."
+        "expected_answer": "Evaluating helps in understanding environmental impacts and finding ways to mitigate negative effects."
     },
     {
         "id": "69",
         "question": "How do the kidneys and skin work together to maintain a healthy body?",
-        "answer": "The kidneys filter waste from the blood, while the skin removes waste through sweat, both helping to maintain balance."
+        "expected_answer": "The kidneys filter waste from the blood, while the skin removes waste through sweat, both helping to maintain balance."
     },
     {
         "id": "70",
         "question": "Evaluate the importance of using renewable sources of electricity in Kenya.",
-        "answer": "Renewable sources reduce pollution, conserve resources, and provide sustainable energy."
+        "expected_answer": "Renewable sources reduce pollution, conserve resources, and provide sustainable energy."
     },
     {
         "id": "71",
         "question": "What is the function of a thermometer in the laboratory?",
-        "answer": "A thermometer measures temperature."
+        "expected_answer": "A thermometer measures temperature."
     },
     {
         "id": "72",
         "question": "Design a fire safety plan for your school. What should it include?",
-        "answer": "Include evacuation routes, fire drills, and locations of fire extinguishers."
+        "expected_answer": "Include evacuation routes, fire drills, and locations of fire extinguishers."
     },
     {
         "id": "73",
         "question": "What are the main parts of the human urinary system?",
-        "answer": "The main parts are the kidneys, ureters, bladder, and urethra."
+        "expected_answer": "The main parts are the kidneys, ureters, bladder, and urethra."
     },
     {
         "id": "74",
         "question": "Design a simple electric circuit to light a bulb. What components do you need?",
-        "answer": "You need a battery, wires, and a bulb to design a simple electric circuit."
+        "expected_answer": "You need a battery, wires, and a bulb to design a simple electric circuit."
     },
     {
         "id": "75",
         "question": "Evaluate the importance of using laboratory apparatus correctly.",
-        "answer": "Correct use ensures accurate results and prevents accidents."
+        "expected_answer": "Correct use ensures accurate results and prevents accidents."
     }
 ]

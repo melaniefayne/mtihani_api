@@ -1,133 +1,29 @@
 [
     {
         "number": 1,
-        "grade": 9,
-        "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Metals and Alloys",
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Laboratory Safety",
         "bloom_skills": [
-            "Analysis",
-            "Knowledge"
+            "Comprehension"
         ],
         "learning_outcomes": [
-            "Describe physical properties of metals",
-            "Identify the composition of common alloys",
-            "State the uses of metals and alloys in day-to-day life",
-            "Explain causes, effects and prevention of rusting",
-            "Appreciate the importance of proper use and maintenance of metallic materials"
+            "Identify common hazards and their symbols in the laboratory",
+            "Explain causes of common accidents in the laboratory",
+            "Demonstrate First Aid measures for common laboratory accidents",
+            "Appreciate the importance of safety in the laboratory and access to a healthy working environment"
         ],
         "skills_to_assess": [
-            "Ability to explain the effect of rusting on metals",
-            "Ability to outline uses of metals and alloys"
+            "Ability to demonstrate First Aid measures for common laboratory accidents",
+            "Ability to identify common hazards and their symbols in the laboratory"
         ]
     },
     {
         "number": 2,
         "grade": 7,
-        "strand": "Force and Energy",
-        "sub_strand": "Electrical Energy",
-        "bloom_skills": [
-            "Synthesis",
-            "Comprehension"
-        ],
-        "learning_outcomes": [
-            "Identify sources of electricity in the environment",
-            "Demonstrate flow of electric current using simple electric circuits",
-            "Identify common electrical appliances used in day-to-day life",
-            "Identify safety measures observed when handling electrical appliances",
-            "Appreciate the use of electricity in day-to-day life"
-        ],
-        "skills_to_assess": [
-            "Ability to identify common electrical appliances used in day-to-day life",
-            "Ability to identify safety measures observed when handling electrical appliances",
-            "Ability to identify sources of electricity in the environment"
-        ]
-    },
-    {
-        "number": 3,
-        "grade": 8,
-        "strand": "Living Things and the Environment",
-        "sub_strand": "The Cell",
-        "bloom_skills": [
-            "Knowledge",
-            "Application"
-        ],
-        "learning_outcomes": [
-            "Describe the structure and functions of parts of plant and animal cells",
-            "Differentiate between plant and animal cells",
-            "Appreciate the role of cells in living organisms"
-        ],
-        "skills_to_assess": [
-            "Ability to identify and describe parts of plant and animal cells"
-        ]
-    },
-    {
-        "number": 4,
-        "grade": 9,
-        "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Metals and Alloys",
-        "bloom_skills": [
-            "Analysis",
-            "Knowledge"
-        ],
-        "learning_outcomes": [
-            "Describe physical properties of metals",
-            "Identify the composition of common alloys",
-            "State the uses of metals and alloys in day-to-day life",
-            "Explain causes, effects and prevention of rusting",
-            "Appreciate the importance of proper use and maintenance of metallic materials"
-        ],
-        "skills_to_assess": [
-            "Ability to explain the effect of rusting on metals",
-            "Ability to outline uses of metals and alloys"
-        ]
-    },
-    {
-        "number": 5,
-        "grade": 7,
-        "strand": "Force and Energy",
-        "sub_strand": "Magnetism",
-        "bloom_skills": [
-            "Synthesis",
-            "Comprehension"
-        ],
-        "learning_outcomes": [
-            "Demonstrate the properties of a magnet",
-            "Classify materials as magnetic or non-magnetic",
-            "Identify the uses of magnets in day-to-day life",
-            "Appreciate the applications of magnets in day-to-day life"
-        ],
-        "skills_to_assess": [
-            "Ability to demonstrate the properties of a magnet",
-            "Ability to identify the uses of magnets in day-to-day life"
-        ]
-    },
-    {
-        "number": 6,
-        "grade": 8,
-        "strand": "Living Things and the Environment",
-        "sub_strand": "Reproduction in Human Beings",
-        "bloom_skills": [
-            "Evaluation",
-            "Comprehension"
-        ],
-        "learning_outcomes": [
-            "Describe the parts and functions of the human reproductive system",
-            "Explain the process of fertilisation and development of the embryo",
-            "Practise appropriate hygiene and care during puberty",
-            "Demonstrate responsible behaviour regarding sexuality",
-            "Appreciate the importance of reproductive health and responsibility"
-        ],
-        "skills_to_assess": [
-            "Ability to describe parts of the reproductive system and their functions"
-        ]
-    },
-    {
-        "number": 7,
-        "grade": 7,
         "strand": "Mixtures, Elements and Compounds",
         "sub_strand": "Acids, Bases and Indicators",
         "bloom_skills": [
-            "Analysis",
             "Application"
         ],
         "learning_outcomes": [
@@ -143,62 +39,44 @@
         ]
     },
     {
-        "number": 8,
+        "number": 3,
+        "grade": 7,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Human Reproductive System",
+        "bloom_skills": [
+            "Comprehension"
+        ],
+        "learning_outcomes": [
+            "Identify parts of the human male and female reproductive systems",
+            "Describe functions of parts of the male and female reproductive system",
+            "Describe the physical changes that take place in boys and girls during adolescence",
+            "Develop a plan to manage developmental challenges during adolescence",
+            "Appreciate that physical changes in boys and girls during adolescence have social and reproductive implications"
+        ],
+        "skills_to_assess": [
+            "Ability to describe functions of parts of the male and female reproductive system",
+            "Ability to develop a plan to manage developmental challenges during adolescence"
+        ]
+    },
+    {
+        "number": 4,
         "grade": 7,
         "strand": "Force and Energy",
-        "sub_strand": "Magnetism",
+        "sub_strand": "Electrical Energy",
         "bloom_skills": [
-            "Application",
-            "Analysis"
+            "Synthesis"
         ],
         "learning_outcomes": [
-            "Demonstrate the properties of a magnet",
-            "Classify materials as magnetic or non-magnetic",
-            "Identify the uses of magnets in day-to-day life",
-            "Appreciate the applications of magnets in day-to-day life"
+            "Identify sources of electricity in the environment",
+            "Demonstrate flow of electric current using simple electric circuits",
+            "Identify common electrical appliances used in day-to-day life",
+            "Identify safety measures observed when handling electrical appliances",
+            "Appreciate the use of electricity in day-to-day life"
         ],
         "skills_to_assess": [
-            "Ability to demonstrate the properties of a magnet",
-            "Ability to identify the uses of magnets in day-to-day life"
-        ]
-    },
-    {
-        "number": 9,
-        "grade": 8,
-        "strand": "Living Things and the Environment",
-        "sub_strand": "The Cell",
-        "bloom_skills": [
-            "Analysis",
-            "Comprehension"
-        ],
-        "learning_outcomes": [
-            "Describe the structure and functions of parts of plant and animal cells",
-            "Differentiate between plant and animal cells",
-            "Appreciate the role of cells in living organisms"
-        ],
-        "skills_to_assess": [
-            "Ability to identify and describe parts of plant and animal cells"
-        ]
-    },
-    {
-        "number": 10,
-        "grade": 9,
-        "strand": "Mixtures, Elements and Compounds",
-        "sub_strand": "Metals and Alloys",
-        "bloom_skills": [
-            "Synthesis",
-            "Comprehension"
-        ],
-        "learning_outcomes": [
-            "Describe physical properties of metals",
-            "Identify the composition of common alloys",
-            "State the uses of metals and alloys in day-to-day life",
-            "Explain causes, effects and prevention of rusting",
-            "Appreciate the importance of proper use and maintenance of metallic materials"
-        ],
-        "skills_to_assess": [
-            "Ability to explain the effect of rusting on metals",
-            "Ability to outline uses of metals and alloys"
+            "Ability to identify common electrical appliances used in day-to-day life",
+            "Ability to identify safety measures observed when handling electrical appliances",
+            "Ability to identify sources of electricity in the environment"
         ]
     }
 ]
