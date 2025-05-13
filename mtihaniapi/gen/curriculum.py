@@ -159,7 +159,27 @@ def get_exam_curriculum(
     return question_brd
 
 
+def get_rubrics_by_sub_strand(
+        sub_strand_name: str,
+        curriculum_file: str = CURRICULUM_FILE,
+) -> List[Dict[str, str]]:
+    cbc_data = load_curriculum(curriculum_file)
+
+    for grade_data in cbc_data:
+        for strand in grade_data.get("strands", []):
+            for sub_strand in strand.get("sub_strands", []):
+                if sub_strand.get("name") == sub_strand_name:
+                    all_rubrics = []
+                    for skill in sub_strand.get("skills", []):
+                        all_rubrics.append({
+                            "skill": skill.get("skill"),
+                            "rubrics": skill.get("rubrics", [])
+                        })
+                    return all_rubrics
+    return []
+
+
 if __name__ == "__main__":
-    selected_strands = [6,9,4]
+    selected_strands = [6, 9, 4]
     question_brd = get_exam_curriculum(
         strand_ids=selected_strands, question_count=10)

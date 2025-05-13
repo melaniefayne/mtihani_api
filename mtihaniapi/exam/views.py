@@ -434,12 +434,13 @@ def get_user_exams(request):
             student_exam_session_map = {
                 s.exam_id: s.student_id for s in student_exam_sessions
             }
-        
+
         elif hasattr(user, 'teacher'):
             student_id = request.GET.get("student_id")
             if student_id:
                 try:
-                    student = Student.objects.select_related('classroom').get(id=student_id)
+                    student = Student.objects.select_related(
+                        'classroom').get(id=student_id)
 
                     # Ensure teacher is authorized to view this student's exams
                     if student.classroom not in classrooms:
@@ -777,3 +778,43 @@ def get_student_exam_sessions(request) -> Response:
     except Exception as e:
         print(f"Error fetching exam questions: {e}")
         return Response({"message": "Something went wrong while fetching sessions."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_exam_questions_with_answers(request):
+    exam_id = request.GET.get("exam_id")
+
+    if not exam_id:
+        return Response({"message": "Missing exam_id"}, status=HTTP_400_BAD_REQUEST)
+
+    try:
+        exam = Exam.objects.get(id=exam_id)
+    except Exam.DoesNotExist:
+        return Response({"message": "Exam not found"}, status=HTTP_404_NOT_FOUND)
+
+    questions = ExamQuestion.objects.filter(exam=exam).order_by("number")
+
+    # Prefetch all answers related to questions in this exam
+    answers = StudentExamSessionAnswer.objects.filter(question__exam=exam)
+
+    # Group answers by question ID
+    answer_map = {}
+    for answer in answers:
+        qid = answer.question_id
+        answer_map.setdefault(qid, []).append({
+            "answer_id": answer.id,
+            "description": answer.description
+        })
+
+    data = []
+    for q in questions:
+        data.append({
+            "question_id": q.id,
+            "question_description": q.description,
+            "expected_answer": q.expected_answer,
+            "sub_strand": q.sub_strand,
+            "answers": answer_map.get(q.id, [])
+        })
+
+    return Response(data)

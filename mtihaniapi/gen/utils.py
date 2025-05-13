@@ -17,6 +17,7 @@ OPENAI_LLM_4O = ChatOpenAI(
     openai_api_key=OPENAI_API_KEY,
 )
 
+
 # ================================================================== UTILS
 
 
@@ -73,6 +74,7 @@ def run_llm_function(
 
     except Exception as e:
         return {"error": f"Error: {e}"}
+
 
 # ================================================================== CREATE EXAM
 
@@ -152,6 +154,8 @@ def generate_llm_question_list(
 
 
 # ================================================================== MOCK EXAM ANSWERS
+
+
 MOCK_EXAM_ANSWERS_PROMPT_TEXT = """
 You are an AI trained to simulate how students from Junior Secondary School in Kenya (Grades 7–9, ages 11–14) would answer science exam questions in a real test environment.
 
@@ -222,6 +226,63 @@ def generate_llm_exam_answers_list(
 
     res = run_llm_function(
         invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
+
+    return res
+
+
+# ================================================================== GRADE ANSWERS
+
+
+GRADE_ANSWERS_PROMPT_TEXT = """
+You are an expert Integrated Science teacher grading student answers for a Junior Secondary School science exam in Kenya (Grades 7–9).
+
+You're given a single question, the expected answer, rubric descriptions for the most relevant skill(s), and multiple student answers.
+
+Each student answer has a unique `answer_id`. You must:
+- Evaluate how well each student answered the question
+- Match their response to the best-fitting rubric level
+- Assign a numeric score:
+  - 1 = Below
+  - 2 = Approaches
+  - 3 = Meets
+  - 4 = Exceeds
+
+Your output should use this structure per item:
+{{
+  "answer_id": "[the answer id here]",
+  "score": "[the appropriate score here]"
+}}
+
+Here is the data to grade (as JSON):
+{question_answer_list}
+
+Return ONLY a valid JSON array (no explanation, no markdown). Each object must have exactly two fields: "answer_id" and "score".
+"""
+
+
+GRADE_ANSWERS_LLM_PROMPT = PromptTemplate(
+    input_variables=["question_answer_list"],
+    template=GRADE_ANSWERS_PROMPT_TEXT
+)
+
+
+def generate_llm_answer_grading_list(
+    question_data: Dict[str, Any],
+    is_debug: bool = False,
+    llm: Any = OPENAI_LLM_4O,
+) -> Union[List[List[Any]], Dict[str, Any]]:
+
+    questions_str = json.dumps(question_data)
+    prompt_template = GRADE_ANSWERS_LLM_PROMPT
+    formatted_prompt = prompt_template.format(question_answer_list=questions_str)
+
+    res = run_llm_function(
+        invoke_param={"question_answer_list": questions_str},
         prompt_template=prompt_template,
         formatted_prompt=formatted_prompt,
         llm=llm,
