@@ -2,27 +2,11 @@ from collections import defaultdict
 import json
 from operator import itemgetter
 from typing import List, Dict, Any, Union
-from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 import re
 import tiktoken
-import os
-import dotenv
-from data.prompts import *
-dotenv.load_dotenv()
-
-
-QUESTION_LIST_OUTPUT_FILE = "output/question_list.json"
-ANSWERS_LIST_OUTPUT_FILE = "output/answers_list.json"
-GRADES_LIST_OUTPUT_FILE = "output/grades_list.json"
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_LLM_4O = ChatOpenAI(
-    model_name="gpt-4o",
-    temperature=0.1,
-    max_tokens=10240,
-    openai_api_key=OPENAI_API_KEY,
-)
-
+from gen.prompts import *
+from gen.constants import *
 
 # ================================================================== UTILS
 

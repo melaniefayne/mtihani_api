@@ -1,6 +1,5 @@
 from django.urls import path
 from .views import *
-from exam import create_classroom_exam, retry_exam_llm_function
 
 urlpatterns = [
     path('create-classroom-exam', create_classroom_exam),

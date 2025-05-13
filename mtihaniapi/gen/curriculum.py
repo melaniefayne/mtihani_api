@@ -7,16 +7,7 @@ import json
 from typing import List, Dict, Any
 import json
 from itertools import cycle, groupby
-# from gen.constants import *
-
-APP_QUESTION_COUNT = 25
-APP_BLOOM_SKILL_COUNT = 3
-BLOOM_SKILLS = [
-    "Knowledge", "Comprehension", "Application", "Analysis", "Synthesis", "Evaluation"
-]
-QUESTION_LIST_OUTPUT_FILE = "output/question_list.json"
-QUESTION_BRD_OUTPUT_FILE = "output/question_breakdown.json"
-CURRICULUM_FILE = "gen/data/cbc_data.json"
+from gen.constants import *
 
 
 def load_curriculum(file_path: str) -> List[Dict[str, Any]]:
