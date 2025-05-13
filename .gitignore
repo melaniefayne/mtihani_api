@@ -3,11 +3,10 @@ __pycache__
 *.pyc
 
 # SQLite database files
-*.sqlite3
-*.db
+db.sqlite3
 
 # Redis dump files
-*.rdb
+dump.rdb
 
 mtihaniapi/gen/data/
 mtihaniapi/gen/output/
