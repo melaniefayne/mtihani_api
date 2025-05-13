@@ -1,249 +1,17 @@
 from django.utils import timezone
-import json
-from celery import shared_task
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import *
-from gen.curriculum import get_exam_curriculum
-from gen.utils import generate_llm_question_list
-from learner.models import Classroom, Student, Teacher
-from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis, StudentExamSession, StudentExamSessionAnswer
+from learner.models import Student
+from exam.models import Exam, ExamQuestion, StudentExamSession, StudentExamSessionAnswer
 from exam.serializers import ExamQuestionSerializer, ExamSerializer, FullStudentExamSessionAnswerSerializer, StudentExamSessionAnswerSerializer, StudentExamSessionSerializer
 from utils import GlobalPagination
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
-from typing import List, Dict, Any, Optional, Union
-from collections import Counter
+from typing import Dict, Any
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
-
-APP_QUESTION_COUNT = 25
-APP_BLOOM_SKILL_COUNT = 3
-
-#  ================================================ create-exam
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, IsTeacher])
-def create_classroom_exam(request) -> Response:
-    try:
-        classroom_id = request.GET.get("classroom_id")
-        if not classroom_id:
-            return Response({"message": "Missing classroom_id in request."}, status=HTTP_400_BAD_REQUEST)
-
-        try:
-            classroom = Classroom.objects.get(id=classroom_id)
-        except Classroom.DoesNotExist:
-            return Response({"message": "Classroom not found."}, status=HTTP_400_BAD_REQUEST)
-
-        start_date_time_str = request.data.get("start_date_time")
-        end_date_time_str = request.data.get("end_date_time")
-
-        if not start_date_time_str or not end_date_time_str:
-            return Response({"message": "Missing start or end date time"}, status=HTTP_400_BAD_REQUEST)
-
-        start_date_time = parse_datetime(start_date_time_str)
-        end_date_time = parse_datetime(end_date_time_str)
-
-        if not start_date_time or not end_date_time:
-            return Response({"message": "Invalid date format. Use ISO 8601 (e.g. '2025-05-10T09:00:00Z')"},
-                            status=HTTP_400_BAD_REQUEST)
-
-        strand_ids = request.data.get("strand_ids", [])
-        question_count = request.data.get("question_count", APP_QUESTION_COUNT)
-        bloom_skill_count = request.data.get(
-            "bloom_skill_count", APP_BLOOM_SKILL_COUNT)
-        generation_config = {
-            "strand_ids": strand_ids,
-            "question_count": question_count,
-            "bloom_skill_count": bloom_skill_count
-        }
-
-        # Create the Exam
-        exam = Exam.objects.create(
-            start_date_time=start_date_time,
-            end_date_time=end_date_time,
-            classroom=classroom,
-            teacher=Teacher.objects.get(user=request.user),
-            generation_config=json.dumps(generation_config)
-        )
-
-        # Eagerly create ExamSession entries for each student
-        students = Student.objects.filter(classroom=classroom)
-        StudentExamSession.objects.bulk_create([
-            StudentExamSession(student=s, exam=exam) for s in students
-        ])
-
-        # Trigger background task
-        generate_exam_content.delay(exam.id, generation_config)
-
-        return Response({
-            "message": "Exam generation has been initiated.",
-            "exam_id": exam.id,
-            "status": "Generating"
-        }, status=HTTP_201_CREATED)
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-@shared_task
-def generate_exam_content(exam_id, generation_config):
-    try:
-        exam = Exam.objects.get(id=exam_id)
-
-        exam_res = get_llm_generated_exam(
-            strand_ids=generation_config['strand_ids'],
-            question_count=generation_config['question_count'],
-            bloom_skill_count=generation_config['bloom_skill_count']
-        )
-
-        if not isinstance(exam_res, list):
-            exam.status = "Failed"
-            exam.generation_error = exam_res.get("error", "Unknown LLM error")
-            exam.save()
-            return
-
-        for item in exam_res:
-            ExamQuestion.objects.create(
-                number=item["number"],
-                grade=item["grade"],
-                strand=item["strand"],
-                sub_strand=item["sub_strand"],
-                bloom_skill=item["bloom_skills"][0],
-                description=item["questions"][0],
-                expected_answer=item["answers"][0],
-                bloom_skill_options=json.dumps(item["bloom_skills"]),
-                question_options=json.dumps(item["questions"]),
-                answer_options=json.dumps(item["answers"]),
-                exam=exam
-            )
-
-        calculate_exam_analysis(exam)
-
-        exam.status = "Upcoming"
-        exam.save()
-    except Exception as e:
-        exam.status = "Failed"
-        exam.generation_error = f"Unexpected error: {str(e)}"
-        exam.save()
-        print(f"Background generation failed for Exam ID {exam_id}: {e}")
-
-
-def calculate_exam_analysis(exam):
-    questions = exam.questions.all()
-
-    analysis_data = {
-        "question_count": questions.count(),
-        "grade_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.grade for q in questions).items()]),
-        "bloom_skill_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.bloom_skill for q in questions).items()]),
-        "strand_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.strand for q in questions).items()]),
-        "sub_strand_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.sub_strand for q in questions).items()]),
-    }
-
-    # Update or create the analysis
-    ExamQuestionAnalysis.objects.update_or_create(
-        exam=exam,
-        defaults=analysis_data
-    )
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, IsTeacher])
-def retry_exam_generation(request) -> Response:
-    try:
-        exam_id = request.GET.get("exam_id")
-        try:
-            exam = Exam.objects.get(id=exam_id, teacher__user=request.user)
-        except Exam.DoesNotExist:
-            return Response({"message": "Exam not found or you do not have permission to access it."},
-                            status=HTTP_404_NOT_FOUND)
-
-        if exam.status == "Generating":
-            return Response({"message": "Exam is already being regenerated."}, status=HTTP_400_BAD_REQUEST)
-
-        if exam.status != "Failed":
-            return Response({"message": "Only exams with status 'Failed' can be retried."},
-                            status=HTTP_400_BAD_REQUEST)
-
-        # Clear previous error and set back to Generating
-        exam.status = "Generating"
-        exam.generation_error = None
-        exam.save()
-
-        try:
-            config = json.loads(exam.generation_config or "{}")
-        except json.JSONDecodeError:
-            return Response({"message": "Saved generation config is invalid JSON."},
-                            status=HTTP_400_BAD_REQUEST)
-
-        if not config.get("strand_ids"):
-            return Response({"message": "Exam config is incomplete and cannot be retried."},
-                            status=HTTP_400_BAD_REQUEST)
-
-        # Re-trigger async generation
-        generate_exam_content.delay(exam.id, config)
-
-        return Response({"message": "Exam retry initiated.", "exam_id": exam.id, "status": "Generating"},
-                        status=HTTP_202_ACCEPTED)
-
-    except Exception as e:
-        print(f"Retry failed: {e}")
-        return Response({"message": "Something went wrong during retry. Please try again."},
-                        status=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-def get_llm_generated_exam(
-        strand_ids: List[int],
-        question_count: Optional[int] = None,
-        bloom_skill_count: Optional[int] = None) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
-    if not strand_ids:
-        return []
-
-    try:
-        kwargs = {"strand_ids": strand_ids}
-        if question_count is not None:
-            kwargs["question_count"] = question_count
-        if bloom_skill_count is not None:
-            kwargs["bloom_skill_count"] = bloom_skill_count
-
-        question_brd = get_exam_curriculum(**kwargs)
-
-        kwargs = {"input_data": question_brd}
-        if bloom_skill_count is not None:
-            kwargs["bloom_skill_count"] = bloom_skill_count
-        exam_items = generate_llm_question_list(**kwargs)
-
-        if not isinstance(exam_items, list):
-            return {"error": exam_items["error"], "raw": exam_items}
-
-        response_data = []
-        for i, item in enumerate(question_brd):
-            questions = exam_items[i].get("questions", [])
-            if isinstance(questions, str):
-                questions = [questions]
-
-            answers = exam_items[i].get("expected_answers", [])
-            if isinstance(answers, str):
-                answers = [answers]
-
-            response_data.append({
-                "number": item.get("number"),
-                "grade": item.get("grade"),
-                "strand": item.get("strand"),
-                "sub_strand": item.get("sub_strand"),
-                "bloom_skills": item.get("bloom_skills"),
-                "questions": questions,
-                "answers": answers,
-            })
-
-        return response_data
-
-    except Exception as e:
-        return {"error": f"LLM generation failed: {str(e)}"}
-
-#  ================================================================
+from exam import calculate_exam_analysis, generate_exam_grades
 
 
 @api_view(['POST'])
@@ -389,19 +157,6 @@ def get_user_exams(request):
         if classroom_id:
             filters &= Q(classroom__id=classroom_id)
 
-        # from_date = request.GET.get("from")
-        # to_date = request.GET.get("to")
-
-        # if from_date:
-        #     parsed_from = parse_datetime(from_date)
-        #     if parsed_from:
-        #         filters &= Q(start_date_time__gte=parsed_from)
-
-        # if to_date:
-        #     parsed_to = parse_datetime(to_date)
-        #     if parsed_to:
-        #         filters &= Q(end_date_time__lte=parsed_to)
-
         status = request.GET.get("status")
         if status:
             filters &= Q(status=status)
@@ -424,6 +179,9 @@ def get_user_exams(request):
         print(f"Updating {len(possibly_stale_exams)} exams")
         for exam in possibly_stale_exams:
             exam.refresh_status()
+            if (exam.status == "Grading" and not exam.is_grading):
+                # Trigger background task
+                generate_exam_grades.delay(exam.id)
 
         # === FETCH STUDENT SESSION MAPPING ===
         if user.groups.filter(name="student").exists():

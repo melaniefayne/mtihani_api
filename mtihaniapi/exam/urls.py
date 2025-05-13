@@ -1,9 +1,10 @@
 from django.urls import path
 from .views import *
+from exam import create_classroom_exam, retry_exam_llm_function
 
 urlpatterns = [
     path('create-classroom-exam', create_classroom_exam),
-    path('retry-exam-generation', retry_exam_generation),
+    path('retry-exam-generation', retry_exam_llm_function),
     path('edit-classroom-exam', edit_classroom_exam),
     path('edit-exam-questions', edit_exam_questions),
     path('get-user-exams', get_user_exams),

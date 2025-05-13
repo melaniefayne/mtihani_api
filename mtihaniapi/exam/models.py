@@ -11,6 +11,7 @@ STATUSES = [
     ("Ongoing", "Ongoing"),
     ("Grading", "Grading"),
     ("Complete", "Complete"),
+    ("Analysing", "Analysing"),
     ("Archive", "Archive"),
 ]
 
@@ -25,6 +26,7 @@ class Exam(models.Model):
                             default=generate_unique_code)
     duration_min = models.IntegerField(blank=True)
     is_published = models.BooleanField(default=False)
+    is_grading = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     generation_config = models.TextField(blank=True, null=True)
@@ -50,6 +52,11 @@ class Exam(models.Model):
         elif now > self.end_date_time:
             self.status = "Grading"
         self.save(update_fields=["status"])
+
+    def update_to_grading(self):
+        self.status = "Grading"
+        self.is_grading = True
+        self.save(update_fields=["status", "is_grading"])
 
 
 class ExamQuestion(models.Model):
