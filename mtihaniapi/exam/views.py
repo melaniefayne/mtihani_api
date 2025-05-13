@@ -182,6 +182,8 @@ def get_user_exams(request):
         print(f"Updating {len(possibly_stale_exams)} exams")
         for exam in possibly_stale_exams:
             exam.refresh_status()
+
+        for exam in exams:
             if (exam.status == "Grading" and not exam.is_grading):
                 # Trigger background task
                 generate_exam_grades.delay(exam.id)
@@ -441,10 +443,11 @@ def end_exam_session(request):
         except (StudentExamSession.DoesNotExist):
             return Response({"message": "Session or Exam not found."}, status=HTTP_404_NOT_FOUND)
 
-        now = timezone.now()
-        session.end_date_time = now
-        session.status = "Grading"
-        session.save()
+        if (session.status == "Ongoing"):
+            now = timezone.now()
+            session.end_date_time = now
+            session.status = "Grading"
+            session.save()
 
         return Response({
             "message": "Session ended successfully.",
@@ -754,6 +757,7 @@ def generate_exam_grades(exam_id):
         exam.update_to_grading()
 
         questions = exam.questions.all()
+
         grouped_answers_data = []
         for question in questions:
             answers_qs = StudentExamSessionAnswer.objects.filter(
@@ -766,13 +770,14 @@ def generate_exam_grades(exam_id):
                 for ans in answers_qs
             ]
 
-        grouped_answers_data.append({
-            "question_id": question.id,
-            "question": question.description,
-            "expected_answer": question.expected_answer,
-            "rubrics": get_rubrics_by_sub_strand(question.sub_strand),
-            "student_answers": student_answers
-        })
+            grouped_answers_data.append({
+                "question_id": question.id,
+                "question": question.description,
+                "expected_answer": question.expected_answer,
+                "rubrics": get_rubrics_by_sub_strand(question.sub_strand),
+                "student_answers": student_answers
+            })
+
         grades_res = generate_llm_answer_grades_list(
             grouped_answers_data=grouped_answers_data,
         )
@@ -787,6 +792,7 @@ def generate_exam_grades(exam_id):
         # update answer scores
 
         failed_updates = []
+        sessions_to_complete = set()
         for item in grades_res:
             answer_id = item.get("answer_id")
             score = item.get("score")
@@ -797,8 +803,14 @@ def generate_exam_grades(exam_id):
                 continue
             try:
                 answer = StudentExamSessionAnswer.objects.get(id=answer_id)
+                answer = StudentExamSessionAnswer.objects.get(id=answer_id)
+                # If answer is blank, override score to 0
+                if not answer.description.strip():
+                    score = 0
+                    
                 answer.score = score
                 answer.save()
+                sessions_to_complete.add(answer.session_id)
             except StudentExamSessionAnswer.DoesNotExist:
                 failed_updates.append(
                     {"answer_id": answer_id, "reason": "Answer not found"})
@@ -808,7 +820,8 @@ def generate_exam_grades(exam_id):
             exam.generation_error = f"Some updates failed: {json.dumps(failed_updates)}"
             exam.save()
             return
-
+        
+        StudentExamSession.objects.filter(id__in=sessions_to_complete).update(status="Complete")
         exam.status = "Analysing"
         exam.is_grading = False
         exam.save()

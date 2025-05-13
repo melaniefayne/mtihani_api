@@ -21,11 +21,12 @@ FLOWISE_API_URL = "https://cloud.flowiseai.com/api/v1/prediction/68022f7f-b4f3-4
 FLOWISE_API_KEY = os.getenv("FLOWISE_MTIHANI_API_KEY")
 FLOWISE_HEADERS = {"Authorization": f"Bearer {FLOWISE_API_KEY}"}
 
-CURRICULUM_FILE = "data/cbc_data.json"
-QUESTION_LIST_OUTPUT_FILE = "output/question_list.json"
-QUESTION_BRD_OUTPUT_FILE = "output/question_breakdown.json"
-ANSWERS_LIST_OUTPUT_FILE = "output/answers_list.json"
-GRADES_LIST_OUTPUT_FILE = "output/grades_list.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CURRICULUM_FILE = os.path.join(BASE_DIR, "data", "cbc_data.json")
+QUESTION_LIST_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "question_list.json")
+QUESTION_BRD_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "question_breakdown.json")
+ANSWERS_LIST_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "answers_list.json")
+GRADES_LIST_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "grades_list.json")
 
 JSS_SCIENCE_STRANDS = [
     {
