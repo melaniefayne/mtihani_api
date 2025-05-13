@@ -1,4 +1,6 @@
+from collections import defaultdict
 import json
+from operator import itemgetter
 from typing import List, Dict, Any, Union
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
@@ -6,9 +8,13 @@ import re
 import tiktoken
 import os
 import dotenv
+from data.prompts import *
 dotenv.load_dotenv()
 
-APP_BLOOM_SKILL_COUNT = 3
+
+QUESTION_LIST_OUTPUT_FILE = "output/question_list.json"
+ANSWERS_LIST_OUTPUT_FILE = "output/answers_list.json"
+GRADES_LIST_OUTPUT_FILE = "output/grades_list.json"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_LLM_4O = ChatOpenAI(
     model_name="gpt-4o",
@@ -79,67 +85,35 @@ def run_llm_function(
 # ================================================================== CREATE EXAM
 
 
-CREATE_EXAM_PROMPT_TEXT = """
-You are an expert Integrated Science teacher preparing a high-quality exam for Junior Secondary School learners in Kenya (Grades 7–9, ages 11–14). Your goal is to create exam questions that are clear, relatable, and promote both understanding and deeper thinking.
-
-You will receive a list of breakdown items. For each item:
-
-- Generate **EXACTLY {bloom_skill_count} question-answer pairs** based on the provided `bloom_skills` list. Each index `i` in the `questions` and `expected_answers` list must match `bloom_skills[i]` — maintain the order.
-- Each question must align with the given `strand`, `sub_strand`, `learning_outcomes`, and `skills_to_assess`.
-
-**Question Style Guidelines:**
-- Use **simple, clear language** suitable for learners aged 11–14. Avoid advanced vocabulary or long, complex sentences.
-- For **Knowledge-level** skills, keep questions short and direct: e.g., “What is…”, “Name…”, “List…”.
-**For higher-order skills (Comprehension, Application, Analysis, Synthesis, Evaluation):**
-- Use **short real-life scenarios** to introduce the question. These can include familiar settings (home, school, farm, market).
-- Ask questions that require learners to:
-  - Explain or justify something
-  - Compare ideas or outcomes
-  - Make decisions or evaluate a situation
-  - Plan or describe simple investigations
-- Use realistic settings (school, home, farm, market, etc.) and **Kenyan names** like Amina, Brian, Zawadi, Musa, etc. Vary the names to avoid repetition.
-
-**Answer Guidelines:**
-- All answers must be **correct, concise**, and clearly match the question and skill level.
-- For higher-order skills, answers should include **examples, reasons, or explanations** where appropriate.
-
-**Rules:**
-- Do NOT mix content between strands or sub-strands.
-- Do NOT skip any item.
-- Vary how you phrase each question. Avoid repeating sentence patterns like “Tom is asked to…”.
-- Use only accurate, CBC-aligned science facts and processes.
-
-Use this structure per item:
-{{
-  "questions": "[your generated questions here]",
-  "expected_answers": "[concise but accurate answers here]"
-}}
-
-Here are the breakdown items:
-{question_breakdown}
-
-Return ONLY a valid JSON array (no explanation, no markdown). Each object must have exactly two fields: "questions" and "expected_answers".
-"""
-
 CREATE_EXAM_LLM_PROMPT = PromptTemplate(
-    input_variables=["question_breakdown", "bloom_skill_count"],
+    input_variables=["strand", "sub_strand", "learning_outcomes",
+                     "skills_to_assess", "skills_to_test", "question_count"],
     template=CREATE_EXAM_PROMPT_TEXT
 )
 
 
-def generate_llm_question_list(
-        input_data: List[Dict[str, Any]],
+def generate_llm_sub_strand_questions(
+        sub_strand_data: Dict[str, Any],
         is_debug: bool = False,
         llm: Any = OPENAI_LLM_4O,
-        bloom_skill_count: int = APP_BLOOM_SKILL_COUNT) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
 
     prompt_template = CREATE_EXAM_LLM_PROMPT
-    questions_str = json.dumps(input_data)
     formatted_prompt = prompt_template.format(
-        question_breakdown=questions_str, bloom_skill_count=bloom_skill_count)
+        strand=sub_strand_data["strand"],
+        sub_strand=sub_strand_data["sub_strand"],
+        learning_outcomes=sub_strand_data["learning_outcomes"],
+        skills_to_assess=sub_strand_data["skills_to_assess"],
+        skills_to_test=sub_strand_data["skills_to_test"],
+        question_count=sub_strand_data["question_count"],
+    )
     invoke_param = {
-        "question_breakdown": questions_str,
-        "bloom_skill_count": bloom_skill_count
+        "strand": sub_strand_data["strand"],
+        "sub_strand": sub_strand_data["sub_strand"],
+        "learning_outcomes": sub_strand_data["learning_outcomes"],
+        "skills_to_assess": sub_strand_data["skills_to_assess"],
+        "skills_to_test": sub_strand_data["skills_to_test"],
+        "question_count": sub_strand_data["question_count"],
     }
 
     res = run_llm_function(
@@ -153,53 +127,127 @@ def generate_llm_question_list(
     return res
 
 
+def generate_llm_question_list(
+    grouped_question_data: List[Dict[str, Any]],
+    is_debug: bool = False,
+    llm: Any = OPENAI_LLM_4O,
+    output_file: str = QUESTION_LIST_OUTPUT_FILE,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    all_question_list = []
+
+    for group in grouped_question_data:
+        strand = group["strand"]
+        sub_strand = group["sub_strand"]
+        learning_outcomes = "\n- " + "\n- ".join(group["learning_outcomes"])
+        skills_to_assess = "\n- " + "\n- ".join(group["skills_to_assess"])
+
+        # Step 1: Flatten all skills with their associated breakdown number
+        numbered_skills = []
+        for entry in group["skills_to_test"]:
+            number = entry["number"]
+            for skill in entry["skills_to_test"]:
+                numbered_skills.append({"number": number, "skill": skill})
+
+        # Step 2: Build a flat list of just the skills (in order)
+        skills_only = [entry["skill"] for entry in numbered_skills]
+
+        # Step 3: Generate all questions in one LLM call
+        sub_strand_data = {
+            "question_count": len(skills_only),
+            "strand": strand,
+            "sub_strand": sub_strand,
+            "learning_outcomes": learning_outcomes,
+            "skills_to_assess": skills_to_assess,
+            "skills_to_test": skills_only,
+        }
+
+        if (is_debug):
+            print(f"\n{sub_strand} =========")
+
+        parsed_output = generate_llm_sub_strand_questions(
+            llm=llm,
+            sub_strand_data=sub_strand_data,
+            is_debug=is_debug,
+        )
+
+        if not isinstance(parsed_output, list):
+            return parsed_output
+
+        # Step 4: Map each generated question back to the correct `number`
+        tagged_responses = []
+        for idx, qa in enumerate(parsed_output):
+            question_item = {}
+            question_item["number"] = numbered_skills[idx]["number"]
+            question_item["grade"] = group["grade"]
+            question_item["strand"] = group["strand"]
+            question_item["sub_strand"] = group["sub_strand"]
+            question_item["bloom_skill"] = numbered_skills[idx]["skill"]
+            question_item["description"] = qa["question"]
+            question_item["expected_answer"] = qa["expected_answer"]
+
+            tagged_responses.append(question_item)
+
+        all_question_list.extend(tagged_responses)
+
+    all_question_list = sorted(all_question_list, key=itemgetter("number"))
+
+    if (is_debug):
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(all_question_list, f, ensure_ascii=False, indent=4)
+        print(
+            f"\n✅ Question list written to {output_file}. Total: {len(all_question_list)}")
+
+    return all_question_list
+
+
+def get_db_question_objects(
+    all_question_list: List[Dict[str, Any]],
+    is_debug: bool = False,
+    output_file: str = QUESTION_LIST_OUTPUT_FILE,
+) -> List[Dict[str, Any]]:
+    grouped = defaultdict(lambda: {
+        "bloom_skills": [],
+        "questions": [],
+        "expected_answers": []
+    })
+
+    for item in all_question_list:
+        # Create a key based on shared fields
+        key = (
+            item["number"],
+            item["grade"],
+            item["strand"],
+            item["sub_strand"]
+        )
+
+        grouped_item = grouped[key]
+        grouped_item["number"] = item["number"]
+        grouped_item["grade"] = item["grade"]
+        grouped_item["strand"] = item["strand"]
+        grouped_item["sub_strand"] = item["sub_strand"]
+
+        grouped_item["bloom_skills"].append(item["bloom_skill"])
+        grouped_item["questions"].append(item["description"])
+        grouped_item["expected_answers"].append(item["expected_answer"])
+
+        grouped_item["bloom_skill"] = grouped_item["bloom_skills"][0]
+        grouped_item["description"] = grouped_item["questions"][0]
+        grouped_item["expected_answer"] = grouped_item["expected_answers"][0]
+
+    exam_questions = list(grouped.values())
+    exam_questions = sorted(exam_questions, key=lambda x: x["number"])
+
+    if (is_debug):
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(exam_questions, f, ensure_ascii=False, indent=4)
+        print(
+            f"\n✅ Question list to {output_file}. Total: {len(exam_questions)}")
+
+    return exam_questions
+
+
 # ================================================================== MOCK EXAM ANSWERS
 
-
-MOCK_EXAM_ANSWERS_PROMPT_TEXT = """
-You are an AI trained to simulate how students from Junior Secondary School in Kenya (Grades 7–9, ages 11–14) would answer science exam questions in a real test environment.
-
-Each student has an average term score, which reflects their general academic performance and ability to understand and express scientific ideas. Use this score to determine how well they are likely to answer each question.
-
-Scoring guidance:
-- **Below 50% (Basic Understanding)**: Responses may be short, unclear, contain misconceptions, or lack depth.
-- **50% to 74% (Moderate Understanding)**: Responses should be mostly correct but may include minor errors, limited explanation, or simple phrasing.
-- **75% and above (High Understanding)**: Responses should be clear, accurate, well-explained, and demonstrate logical thinking with vocabulary suitable for a Kenyan learner aged 11–14.
-
-**Rules for Responses**
-- Write in a **natural and authentic tone**, like a real student from Kenya would.
-- Avoid overly polished textbook definitions or technical jargon.
-- Each student's answer should **feel different** based on their score, especially for open-ended or evaluative questions.
-- Do not copy expected answers directly. Use them to guide the correctness level.
-
-You will be given:
-- A list of exam questions, each with an `id`, `question`, and `expected_answer` (for your internal use only),
-- A list of students, each with an `id` and `avg_score`.
-
-**Your task:** Simulate how each student might answer each question.
-
-Return ONLY a valid JSON array (no explanation, no markdown)
-**Return Format (strictly):**
-A valid **JSON array**. Each item in the array must have the structure:
-```json
-{{
-  "id": [student_id],
-  "answers": [
-    {{
-      "question_id": "[question_id]",
-      "answer": "[the student's simulated answer]"
-    }},
-    ...
-  ]
-}}
-
-Here is the exam:
-{exam}
-
-And here's the list of students:
-{student_list}
-
-"""
 
 MOCK_EXAM_ANSWERS_LLM_PROMPT = PromptTemplate(
     input_variables=["exam", "student_list"],
@@ -210,9 +258,10 @@ MOCK_EXAM_ANSWERS_LLM_PROMPT = PromptTemplate(
 def generate_llm_exam_answers_list(
         exam_data: List[Dict[str, Any]],
         student_data: List[Dict[str, Any]],
-        llm_model: str = "gpt-4o",
         is_debug: bool = False,
-        llm: Any = OPENAI_LLM_4O) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+        llm: Any = OPENAI_LLM_4O,
+        output_file: str = ANSWERS_LIST_OUTPUT_FILE,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
 
     prompt_template = MOCK_EXAM_ANSWERS_LLM_PROMPT
     exam_str = json.dumps(exam_data, indent=2)
@@ -232,57 +281,47 @@ def generate_llm_exam_answers_list(
         is_debug=is_debug
     )
 
+    if (is_debug):
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(res, f, ensure_ascii=False, indent=4)
+        print(f"\n✅ Mocked Answers list written to {output_file}")
+
     return res
 
 
 # ================================================================== GRADE ANSWERS
 
 
-GRADE_ANSWERS_PROMPT_TEXT = """
-You are an expert Integrated Science teacher grading student answers for a Junior Secondary School science exam in Kenya (Grades 7–9).
-
-You're given a single question, the expected answer, rubric descriptions for the most relevant skill(s), and multiple student answers.
-
-Each student answer has a unique `answer_id`. You must:
-- Evaluate how well each student answered the question
-- Match their response to the best-fitting rubric level
-- Assign a numeric score:
-  - 1 = Below
-  - 2 = Approaches
-  - 3 = Meets
-  - 4 = Exceeds
-
-Your output should use this structure per item:
-{{
-  "answer_id": "[the answer id here]",
-  "score": "[the appropriate score here]"
-}}
-
-Here is the data to grade (as JSON):
-{question_answer_list}
-
-Return ONLY a valid JSON array (no explanation, no markdown). Each object must have exactly two fields: "answer_id" and "score".
-"""
-
-
 GRADE_ANSWERS_LLM_PROMPT = PromptTemplate(
-    input_variables=["question_answer_list"],
+    input_variables=["question", "expected_answer",
+                     "rubrics", "student_answers"],
     template=GRADE_ANSWERS_PROMPT_TEXT
 )
 
 
-def generate_llm_answer_grading_list(
-    question_data: Dict[str, Any],
+def generate_llm_qa_grades(
+    answers_data: Dict[str, Any],
     is_debug: bool = False,
     llm: Any = OPENAI_LLM_4O,
 ) -> Union[List[List[Any]], Dict[str, Any]]:
 
-    questions_str = json.dumps(question_data)
     prompt_template = GRADE_ANSWERS_LLM_PROMPT
-    formatted_prompt = prompt_template.format(question_answer_list=questions_str)
+    formatted_prompt = prompt_template.format(
+        question=answers_data["question"],
+        expected_answer=answers_data["expected_answer"],
+        rubrics=answers_data["rubrics"],
+        student_answers=answers_data["student_answers"],
+    )
+
+    invoke_param = {
+        "question": answers_data["question"],
+        "expected_answer": answers_data["expected_answer"],
+        "rubrics": answers_data["rubrics"],
+        "student_answers": answers_data["student_answers"],
+    }
 
     res = run_llm_function(
-        invoke_param={"question_answer_list": questions_str},
+        invoke_param=invoke_param,
         prompt_template=prompt_template,
         formatted_prompt=formatted_prompt,
         llm=llm,
@@ -290,3 +329,34 @@ def generate_llm_answer_grading_list(
     )
 
     return res
+
+
+def generate_llm_answer_grades_list(
+    grouped_answers_data: List[Dict[str, Any]],
+    is_debug: bool = False,
+    llm: Any = OPENAI_LLM_4O,
+    output_file: str = GRADES_LIST_OUTPUT_FILE,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    all_grades = []
+
+    for answer_group in grouped_answers_data:
+        if (is_debug):
+            print(f"\n{answer_group['question']} =========")
+
+        parsed_output = generate_llm_qa_grades(
+            llm=llm,
+            answers_data=answer_group,
+            is_debug=is_debug,
+        )
+
+        if not isinstance(parsed_output, list):
+            return parsed_output
+
+        all_grades.extend(parsed_output)
+
+    if (is_debug):
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(all_grades, f, ensure_ascii=False, indent=4)
+        print(f"\n✅ Graded Answers list written to {output_file}")
+
+    return all_grades

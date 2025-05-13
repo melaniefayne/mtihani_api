@@ -1,11 +1,12 @@
 # curriculum.py
 
 from collections import defaultdict
+from operator import itemgetter
 import random
 import json
 from typing import List, Dict, Any
 import json
-from itertools import cycle
+from itertools import cycle, groupby
 # from gen.constants import *
 
 APP_QUESTION_COUNT = 25
@@ -115,9 +116,7 @@ def generate_question_plan(
 
 
 def build_question_breakdown_json(
-        question_plan: List[Dict[str, Any]],
-        is_debug: bool,
-        output_file: str = QUESTION_BRD_OUTPUT_FILE) -> List[Dict[str, Any]]:
+        question_plan: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Build structured JSON from question plan and write to a file."""
     structured_questions = []
 
@@ -132,18 +131,12 @@ def build_question_breakdown_json(
             "skills_to_assess": qp['skills_to_assess'] if qp['skills_to_assess'] else []
         })
 
-    if (is_debug):
-        with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(structured_questions, f, ensure_ascii=False, indent=4)
-        print(f"✅ Question breakdown written to {output_file}")
-
     return structured_questions
 
 
 def get_exam_curriculum(
     strand_ids: List[int],
     question_count: int = APP_QUESTION_COUNT,
-    is_debug: bool = False,
     curriculum_file: str = CURRICULUM_FILE,
     bloom_skill_count: int = APP_BLOOM_SKILL_COUNT,
 ) -> List[Dict[str, Any]]:
@@ -154,10 +147,65 @@ def get_exam_curriculum(
     question_plan = generate_question_plan(
         parsed, question_count=question_count, bloom_skill_count=bloom_skill_count)
 
-    question_brd = build_question_breakdown_json(question_plan, is_debug)
+    question_brd = build_question_breakdown_json(question_plan)
 
     return question_brd
 
+
+def get_cbc_grouped_questions(
+    strand_ids: List[int],
+    question_count: int = APP_QUESTION_COUNT,
+    is_debug: bool = False,
+    curriculum_file: str = CURRICULUM_FILE,
+    bloom_skill_count: int = APP_BLOOM_SKILL_COUNT,
+    output_file: str = QUESTION_BRD_OUTPUT_FILE,
+) -> List[Dict[str, Any]]:
+    question_brd = get_exam_curriculum(
+        strand_ids=strand_ids,
+        question_count=question_count,
+        curriculum_file=curriculum_file,
+        bloom_skill_count=bloom_skill_count,
+    )
+
+    sorted_data = sorted(question_brd, key=itemgetter("sub_strand"))
+
+    grouped = defaultdict(list)
+    for key, group_items in groupby(sorted_data, key=itemgetter("strand", "sub_strand")):
+        strand, sub_strand = key
+        grouped[key].extend(list(group_items))
+
+    grouped_questions = []
+    for (strand, sub_strand), items in grouped.items():
+        if not items:
+            continue
+
+        # Use shared fields from the first item
+        grade = items[0]["grade"]
+        learning_outcomes = items[0]["learning_outcomes"]
+        skills_to_assess = items[0]["skills_to_assess"]
+
+        # Collect all skill breakdowns in this sub_strand group
+        skills_group = [{"number": item["number"],
+                        "skills_to_test": item["bloom_skills"]} for item in items]
+
+        # Create the formatted dictionary
+        grouped_questions.append({
+            "grade": grade,
+            "strand": strand,
+            "sub_strand": sub_strand,
+            "learning_outcomes": learning_outcomes,
+            "skills_to_assess": skills_to_assess,
+            "skills_to_test": skills_group
+        })
+
+
+    if (is_debug):
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(grouped_questions, f, ensure_ascii=False, indent=4)
+        print(f"\n✅ Question breakdown written to {output_file}. Total: {len(grouped_questions)}")
+
+    return grouped_questions
+    
 
 def get_rubrics_by_sub_strand(
         sub_strand_name: str,
@@ -181,5 +229,5 @@ def get_rubrics_by_sub_strand(
 
 if __name__ == "__main__":
     selected_strands = [6, 9, 4]
-    question_brd = get_exam_curriculum(
+    question_brd = get_cbc_grouped_questions(
         strand_ids=selected_strands, question_count=10)

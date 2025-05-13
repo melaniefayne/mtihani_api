@@ -8,3 +8,6 @@ __pycache__
 
 # Redis dump files
 *.rdb
+
+mtihaniapi/gen/data/
+mtihaniapi/gen/output/
