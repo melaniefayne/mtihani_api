@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
-from utils import generate_unique_code
+from utils import EXPECTATION_LEVELS, STUDENT_STATUSES, WEEKDAYS, generate_unique_code, get_avg_expectation_level
 
 
 class Teacher(models.Model):
@@ -39,14 +39,6 @@ class Classroom(models.Model):
 
 
 class LessonTime(models.Model):
-    WEEKDAYS = [
-        ("Monday", "Monday"),
-        ("Tuesday", "Tuesday"),
-        ("Wednesday", "Wednesday"),
-        ("Thursday", "Thursday"),
-        ("Friday", "Friday"),
-    ]
-
     day = models.CharField(max_length=10, choices=WEEKDAYS)
     time = models.TimeField()
     classroom = models.ForeignKey(
@@ -60,12 +52,6 @@ class LessonTime(models.Model):
 
 
 class Student(models.Model):
-    STATUSES = [
-        ("Active", "Active"),
-        ("Inactive", "Inactive"),
-        ("Archived", "Archived"),
-    ]
-
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=6, unique=True,
                             default=generate_unique_code)
@@ -74,7 +60,7 @@ class Student(models.Model):
     classroom = models.ForeignKey(
         Classroom, on_delete=models.CASCADE, related_name='students')
     status = models.CharField(
-        max_length=15, choices=STATUSES, default="Inactive")
+        max_length=15, choices=STUDENT_STATUSES, default="Inactive")
     avg_score = models.FloatField(default=0.0)
     avg_expectation_level = models.CharField(max_length=100, blank=True)
 
@@ -82,8 +68,8 @@ class Student(models.Model):
         unique_together = ('classroom', 'code')
 
     def save(self, *args, **kwargs):
-        from utils import get_expectation_level
-        self.avg_expectation_level = get_expectation_level(self.avg_score)
+        from utils import get_avg_expectation_level
+        self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -104,7 +90,8 @@ class TermScore(models.Model):
         ]
     )
     score = models.FloatField()
-    expectation_level = models.CharField(max_length=100, blank=True)
+    expectation_level = models.CharField(
+        max_length=100, choices=EXPECTATION_LEVELS, blank=True)
     student = models.ForeignKey(
         Student, on_delete=models.CASCADE, related_name='term_scores')
 
@@ -112,8 +99,7 @@ class TermScore(models.Model):
         unique_together = ('student', 'grade', 'term')
 
     def save(self, *args, **kwargs):
-        from utils import get_expectation_level
-        self.expectation_level = get_expectation_level(self.score)
+        self.expectation_level = get_avg_expectation_level(self.score)
         super().save(*args, **kwargs)
 
     def __str__(self):

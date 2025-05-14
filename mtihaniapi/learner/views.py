@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.status import *
 from learner.serializers import ClassroomDetailSerializer, ClassroomInputSerializer, StudentSerializer
 from permissions import IsStudent, IsTeacher, IsTeacherOrStudent
-from utils import GlobalPagination, get_expectation_level
+from utils import GlobalPagination, get_avg_expectation_level
 from learner.models import (
     LessonTime, Teacher, TermScore, Classroom, Student)
 from exam.models import (
@@ -126,7 +126,7 @@ def _get_teacher_classrooms(classroom_with_details: List[Dict[str, Any]]) -> Lis
         # Avg term score from stored field on students
         avg_score = student_qs.aggregate(avg=Avg('avg_score'))['avg'] or 0.0
         classroom_data["avg_term_score"] = avg_score
-        classroom_data["avg_term_expectation_level"] = get_expectation_level(
+        classroom_data["avg_term_expectation_level"] = get_avg_expectation_level(
             avg_score)
 
         # Avg mtihani score from ClassExamPerformance
@@ -136,7 +136,7 @@ def _get_teacher_classrooms(classroom_with_details: List[Dict[str, Any]]) -> Lis
 
         avg_mtihani_score = result['average_score'] or 0.0
         classroom_data["avg_mtihani_score"] = avg_mtihani_score
-        classroom_data["avg_mtihani_expectation_level"] = get_expectation_level(
+        classroom_data["avg_mtihani_expectation_level"] = get_avg_expectation_level(
             avg_mtihani_score)
 
         full_classrooms.append(classroom_data)
@@ -166,7 +166,7 @@ def _get_student_classrooms(classroom_with_details: List[Dict[str, Any]], studen
 
         avg_mtihani_score = result['average_score'] or 0.0
         classroom_data["avg_mtihani_score"] = avg_mtihani_score
-        classroom_data["avg_mtihani_expectation_level"] = get_expectation_level(
+        classroom_data["avg_mtihani_expectation_level"] = get_avg_expectation_level(
             avg_mtihani_score)
 
         # Term scores list
@@ -321,7 +321,7 @@ def edit_classroom(request) -> Response:
                 avg = round(sum(s.score for s in all_scores) /
                             len(all_scores), 2)
                 student.avg_score = avg
-                student.avg_expectation_level = get_expectation_level(avg)
+                student.avg_expectation_level = get_avg_expectation_level(avg)
                 student.save()
 
             except Student.DoesNotExist:
@@ -329,7 +329,7 @@ def edit_classroom(request) -> Response:
                 score_values = [s['score'] for s in scores if 'score' in s]
                 avg_score = round(sum(score_values) /
                                   len(score_values), 2) if score_values else 0.0
-                avg_expectation = get_expectation_level(avg_score)
+                avg_expectation = get_avg_expectation_level(avg_score)
 
                 student = Student.objects.create(
                     name=name,
@@ -388,7 +388,7 @@ def edit_student(request) -> Response:
                     term_score = TermScore.objects.get(
                         id=score_id, student=student)
                     term_score.score = score
-                    term_score.expectation_level = get_expectation_level(score)
+                    term_score.expectation_level = get_avg_expectation_level(score)
                     term_score.save()
                     score_values.append(score)
                 except TermScore.DoesNotExist:
@@ -405,14 +405,14 @@ def edit_student(request) -> Response:
                     grade=grade,
                     term=term,
                     score=score,
-                    expectation_level=get_expectation_level(score)
+                    expectation_level=get_avg_expectation_level(score)
                 )
                 score_values.append(score)
 
         if score_values:
             avg_score = round(sum(score_values) / len(score_values), 2)
             student.avg_score = avg_score
-            student.avg_expectation_level = get_expectation_level(
+            student.avg_expectation_level = get_avg_expectation_level(
                 avg_score)
 
         student.save()

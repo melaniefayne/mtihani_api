@@ -64,12 +64,12 @@ class StudentExamSessionAdmin(admin.ModelAdmin):
 @admin.register(StudentExamSessionAnswer)
 class StudentExamSessionAnswerAdmin(admin.ModelAdmin):
     list_display = [
-        'id', 'session', 'question', 'short_description', 'score', 'tr_score',
+        'id', 'question', 'short_description', 'score', 'expectation_level', 'ai_score', 'tr_score',
         'created_at', 'updated_at'
     ]
     list_filter = ['score', 'tr_score']
     search_fields = ['session__student__name', 'question__description']
-    ordering = ['session', 'question__number']
+    ordering = ['question__number']
 
     def short_description(self, obj):
         return (obj.description[:50] + "...") if obj.description and len(obj.description) > 50 else obj.description

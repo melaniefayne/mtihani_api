@@ -1,6 +1,6 @@
 # learner/serializers.py
 # make sure this is imported at the top
-from utils import get_expectation_level
+from utils import WEEKDAYS, get_avg_expectation_level
 from rest_framework import serializers
 
 from learner.models import Classroom, LessonTime, Student, TermScore
@@ -19,11 +19,11 @@ class UploadedStudentSerializer(serializers.Serializer):
 
 class LessonTimeSerializer(serializers.Serializer):
     day = serializers.ChoiceField(
-        choices=[day[0] for day in LessonTime.WEEKDAYS])
+        choices=[day[0] for day in WEEKDAYS])
     time = serializers.TimeField(format='%H:%M', input_formats=['%H:%M'])
 
     def validate_day(self, value):
-        if value not in dict(LessonTime.WEEKDAYS):
+        if value not in dict(WEEKDAYS):
             raise serializers.ValidationError("Invalid weekday.")
         return value
 
@@ -76,7 +76,7 @@ class ClassroomInputSerializer(serializers.ModelSerializer):
                             for s in term_scores_data if 'score' in s]
             avg_score = round(sum(score_values) /
                               len(score_values), 2) if score_values else 0.0
-            avg_expectation = get_expectation_level(avg_score)
+            avg_expectation = get_avg_expectation_level(avg_score)
 
             # Create the student with calculated fields
             student = Student.objects.create(

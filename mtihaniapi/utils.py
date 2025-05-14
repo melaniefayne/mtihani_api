@@ -1,4 +1,5 @@
-import string, random
+import string
+import random
 from rest_framework.pagination import PageNumberPagination
 
 
@@ -12,37 +13,82 @@ def generate_unique_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
 
-EXPECTATION_LEVELS = {
-    "EXCEEDING": {
-        "label": "Exceeding",
-        "min_score": 80,
-    },
-    "MEETING": {
-        "label": "Meeting",
-        "min_score": 60,
-    },
-    "APPROACHING": {
-        "label": "Approaching",
-        "min_score": 40,
-    },
-    "BELOW": {
-        "label": "Below",
-        "min_score": 0,
-    }
+AVG_EXPECTATION_LEVELS = {
+    "Exceeding": {"label": "Exceeding", "min_score": 80},
+    "Meeting": {"label": "Meeting", "min_score": 60},
+    "Approaching": {"label": "Approaching", "min_score": 40},
+    "Below": {"label": "Below", "min_score": 0},
 }
 
-LEVEL_ORDER = [
-    ("EXCEEDING", 80),
-    ("MEETING", 60),
-    ("APPROACHING", 40),
-    ("BELOW", 0),
-]
+SORTED_AVG_EXPECTATION_LEVELS = sorted(
+    AVG_EXPECTATION_LEVELS.values(),
+    key=lambda item: item["min_score"],
+    reverse=True
+)
 
-def get_expectation_level(score):
+
+def get_avg_expectation_level(score):
     if score is None:
         return None
 
-    for key, min_score in LEVEL_ORDER:
-        if score >= min_score:
-            return EXPECTATION_LEVELS[key]["label"]
+    for level in SORTED_AVG_EXPECTATION_LEVELS:
+        if score >= level["min_score"]:
+            return level["label"]
+
     return None
+
+
+ANSWER_EXPECTATION_LEVELS = {
+    0: "Below",
+    1: "Below",
+    2: "Approaching",
+    3: "Meeting",
+    4: "Exceeding",
+}
+
+
+def get_answer_expectation_level(score):
+    if score is None:
+        return None
+
+    try:
+        score = int(float(score))
+    except (TypeError, ValueError):
+        return None
+
+    return ANSWER_EXPECTATION_LEVELS.get(score, None)
+
+
+# ================================================== CONSTANTS
+# ============================================================
+WEEKDAYS = [
+    ("Monday", "Monday"),
+    ("Tuesday", "Tuesday"),
+    ("Wednesday", "Wednesday"),
+    ("Thursday", "Thursday"),
+    ("Friday", "Friday"),
+]
+
+STUDENT_STATUSES = [
+    ("Active", "Active"),
+    ("Inactive", "Inactive"),
+    ("Archived", "Archived"),
+]
+
+EXPECTATION_LEVELS = [
+    ("Below", "Below"),
+    ("Approaching", "Approaching"),
+    ("Meeting", "Meeting"),
+    ("Exceeding", "Exceeding"),
+]
+
+EXAM_STATUSES = [
+    ("Generating", "Generating"),
+    ("Failed", "Failed"),
+    ("Upcoming", "Upcoming"),
+    ("Ongoing", "Ongoing"),
+    ("Grading", "Grading"),
+    ("Complete", "Complete"),
+    ("Analysing", "Analysing"),
+    ("Archive", "Archive"),
+]

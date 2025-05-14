@@ -1,19 +1,7 @@
 from django.db import models
-from utils import generate_unique_code
+from utils import EXAM_STATUSES, EXPECTATION_LEVELS, generate_unique_code, get_answer_expectation_level, get_avg_expectation_level
 from learner.models import Classroom, Student, Teacher
-from datetime import timedelta
 from django.utils import timezone
-
-STATUSES = [
-    ("Generating", "Generating"),
-    ("Failed", "Failed"),
-    ("Upcoming", "Upcoming"),
-    ("Ongoing", "Ongoing"),
-    ("Grading", "Grading"),
-    ("Complete", "Complete"),
-    ("Analysing", "Analysing"),
-    ("Archive", "Archive"),
-]
 
 
 class Exam(models.Model):
@@ -21,7 +9,7 @@ class Exam(models.Model):
     start_date_time = models.DateTimeField()
     end_date_time = models.DateTimeField()
     status = models.CharField(
-        max_length=25, choices=STATUSES, default="Generating")
+        max_length=25, choices=EXAM_STATUSES, default="Generating")
     code = models.CharField(max_length=50, unique=True,
                             default=generate_unique_code)
     duration_min = models.IntegerField(blank=True)
@@ -90,7 +78,7 @@ class ExamQuestionAnalysis(models.Model):
 
 class StudentExamSession(models.Model):
     status = models.CharField(
-        max_length=15, choices=STATUSES, default="Upcoming")
+        max_length=15, choices=EXAM_STATUSES, default="Upcoming")
     is_late_submission = models.BooleanField(default=False)
     start_date_time = models.DateTimeField(null=True)
     end_date_time = models.DateTimeField(null=True, blank=True)
@@ -121,9 +109,17 @@ class StudentExamSessionAnswer(models.Model):
     question = models.ForeignKey(ExamQuestion, on_delete=models.CASCADE)
     description = models.TextField()
     score = models.FloatField(null=True, blank=True)
+    expectation_level = models.CharField(
+        max_length=100, choices=EXPECTATION_LEVELS, blank=True)
+    ai_score = models.FloatField(null=True, blank=True)
     tr_score = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.expectation_level = get_answer_expectation_level(
+            self.score)
+        super().save(*args, **kwargs)
 
 
 class StudentExamSessionPerformance(models.Model):
@@ -137,8 +133,7 @@ class StudentExamSessionPerformance(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        from utils import get_expectation_level
-        self.avg_expectation_level = get_expectation_level(self.avg_score)
+        self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
         super().save(*args, **kwargs)
 
 
@@ -154,6 +149,5 @@ class ClassExamPerformance(models.Model):
         Classroom, on_delete=models.CASCADE, related_name='class_exam_performance')
 
     def save(self, *args, **kwargs):
-        from utils import get_expectation_level
-        self.avg_expectation_level = get_expectation_level(self.avg_score)
+        self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
         super().save(*args, **kwargs)

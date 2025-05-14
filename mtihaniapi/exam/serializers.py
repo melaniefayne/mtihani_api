@@ -114,8 +114,7 @@ class StudentExamSessionAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentExamSessionAnswer
         fields = ['id', 'question_id', 'question_number',
-                  'question_description', 'description', 'score', 'tr_score',
-                  'strand', 'grade']
+                  'question_description', 'description', 'strand', 'grade']
 
 
 class FullStudentExamSessionAnswerSerializer(StudentExamSessionAnswerSerializer):
@@ -126,5 +125,6 @@ class FullStudentExamSessionAnswerSerializer(StudentExamSessionAnswerSerializer)
 
     class Meta(StudentExamSessionAnswerSerializer.Meta):
         fields = StudentExamSessionAnswerSerializer.Meta.fields + [
-            'sub_strand', 'bloom_skill', 'expected_answer'
+            'sub_strand', 'bloom_skill', 'expected_answer', 'score',
+            'expectation_level', 'ai_score', 'tr_score',
         ]

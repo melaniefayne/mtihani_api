@@ -8,7 +8,7 @@ from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis, StudentExamSes
 from exam.serializers import ExamQuestionSerializer, ExamSerializer, FullStudentExamSessionAnswerSerializer, StudentExamSessionAnswerSerializer, StudentExamSessionSerializer
 from gen.curriculum import get_cbc_grouped_questions, get_rubrics_by_sub_strand
 from gen.utils import generate_llm_answer_grades_list, generate_llm_question_list, get_db_question_objects
-from utils import GlobalPagination
+from utils import GlobalPagination, get_answer_expectation_level
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
 from typing import Counter, Dict, Any, List, Optional, Union
@@ -656,6 +656,10 @@ def create_classroom_exam(request) -> Response:
         return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+# =============================================
+# ==========ANY CHANGE TO THIS=================
+# =======!!!!RESTART CELERY!!!=================
+# =============================================
 @shared_task
 def generate_exam_content(exam_id, generation_config):
     try:
@@ -750,6 +754,10 @@ def calculate_exam_analysis(exam):
     )
 
 
+# =============================================
+# ==========ANY CHANGE TO THIS=================
+# =======!!!!RESTART CELERY!!!=================
+# =============================================
 @shared_task
 def generate_exam_grades(exam_id):
     try:
@@ -795,22 +803,25 @@ def generate_exam_grades(exam_id):
         sessions_to_complete = set()
         for item in grades_res:
             answer_id = item.get("answer_id")
-            score = item.get("score")
+            ai_score = float(item.get("score"))
 
-            if answer_id is None or score is None:
+            if answer_id is None or ai_score is None:
                 failed_updates.append(
                     {"answer_id": answer_id, "reason": "Missing answer_id or score"})
                 continue
             try:
                 answer = StudentExamSessionAnswer.objects.get(id=answer_id)
-                answer = StudentExamSessionAnswer.objects.get(id=answer_id)
                 # If answer is blank, override score to 0
                 if not answer.description.strip():
-                    score = 0
-                    
-                answer.score = score
-                answer.save()
+                    ai_score = 0
+
+                answer.ai_score = ai_score
+                answer.score = ai_score
+                # answer.expectation_level = get_answer_expectation_level(ai_score)
+                answer.save(update_fields=["score", "ai_score",
+                                           "expectation_level", "updated_at"])
                 sessions_to_complete.add(answer.session_id)
+
             except StudentExamSessionAnswer.DoesNotExist:
                 failed_updates.append(
                     {"answer_id": answer_id, "reason": "Answer not found"})
@@ -820,8 +831,9 @@ def generate_exam_grades(exam_id):
             exam.generation_error = f"Some updates failed: {json.dumps(failed_updates)}"
             exam.save()
             return
-        
-        StudentExamSession.objects.filter(id__in=sessions_to_complete).update(status="Complete")
+
+        StudentExamSession.objects.filter(
+            id__in=sessions_to_complete).update(status="Complete")
         exam.status = "Analysing"
         exam.is_grading = False
         exam.save()

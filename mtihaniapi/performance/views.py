@@ -22,13 +22,15 @@ def edit_answer_score(request):
                 {"message": "This session is not complete yet. Scores cannot be updated."},
                 status=HTTP_400_BAD_REQUEST
             )
-        tr_score = request.data.get("tr_score")
+        tr_score = float(request.data.get("tr_score"))
 
         if tr_score is None:
             return Response({"message": "Missing teacher score field."}, status=HTTP_400_BAD_REQUEST)
-        
+
         answer.tr_score = tr_score
-        answer.save(update_fields=["tr_score", "updated_at"])
+        answer.score = tr_score
+        answer.save(update_fields=["score", "tr_score",
+                    "expectation_level", "updated_at"])
 
         return Response({"message": "Answer updated successfully."}, status=HTTP_200_OK)
 
