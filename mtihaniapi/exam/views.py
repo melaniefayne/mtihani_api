@@ -1,3 +1,6 @@
+from .models import StudentExamSessionPerformance
+import numpy as np
+from sklearn.cluster import KMeans
 from collections import defaultdict
 from celery import shared_task
 from django.utils import timezone
@@ -13,7 +16,7 @@ from gen.utils import generate_llm_answer_grades_list, generate_llm_question_lis
 from utils import GlobalPagination
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
-from typing import Counter, Dict, Any, List, Optional, Union
+from typing import Counter, Dict, Any, List, Optional, Union, Tuple
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 import json
@@ -706,7 +709,7 @@ def edit_answer_score(request) -> Response:
         return Response({"message": "Something went wrong while updating the answer."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# ==================================================================== LLM & ML FUNCTIONS
+# ==================================================================== LLM FUNCTIONS
 # =======================================================================================
 # =======================================================================================
 
@@ -825,7 +828,8 @@ def calculate_exam_analysis(exam):
     tested_strands = [entry["name"] for entry in strand_dist]
 
     grade_level = exam.classroom.grade
-    uncovered_strands = get_uncovered_strands_up_to_grade(grade_level, tested_strands)
+    uncovered_strands = get_uncovered_strands_up_to_grade(
+        grade_level, tested_strands)
 
     analysis_data = {
         "question_count": questions.count(),
@@ -1313,3 +1317,77 @@ def retry_exam_analysis(exam) -> Response:
         print(f"Retry failed: {e}")
         return Response({"message": "Something went wrong during retry. Please try again."},
                         status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================================================================== ML FUNCTIONS
+# =======================================================================================
+# =======================================================================================
+
+
+def cluster_exam_students(exam, n_clusters=3):
+    """
+    Clusters students for a given exam and assigns cluster_id to their performance record.
+    """
+
+    perf_ids, vectors = vectorize_student_performances(exam)
+
+    if not vectors:
+        return {"error": "No performance vectors found for this exam."}
+
+    # Normalize values (optional but recommended)
+    data = np.array(vectors)
+    if len(data) < n_clusters:
+        return {"error": f"Not enough students ({len(data)}) for {n_clusters} clusters."}
+
+    model = KMeans(n_clusters=n_clusters, random_state=42)
+    labels = model.fit_predict(data)
+
+    # Assign cluster_id to each StudentExamSessionPerformance
+    for perf_id, cluster_id in zip(perf_ids, labels):
+        StudentExamSessionPerformance.objects.filter(
+            id=perf_id).update(cluster_id=cluster_id)
+
+    return {"message": f"{len(perf_ids)} students clustered into {n_clusters} groups."}
+
+
+def vectorize_student_performances(exam) -> Tuple[List[int], List[List[float]]]:
+    """
+    Creates numerical feature vectors for clustering students based on performance.
+
+    Returns:
+        - List of StudentExamSessionPerformance IDs
+        - List of vectors [avg_score, completion_rate, ...bloom_skill_scores]
+    """
+    performances = StudentExamSessionPerformance.objects.filter(
+        session__exam=exam)
+
+    if not performances.exists():
+        return [], []
+
+    bloom_skills_set = set()
+
+    # First pass: gather all bloom skill names across students (for a consistent order)
+    for perf in performances:
+        bloom_scores = json.loads(perf.bloom_skill_scores or "[]")
+        for entry in bloom_scores:
+            bloom_skills_set.add(entry["name"])
+
+    bloom_skills = sorted(list(bloom_skills_set))  # consistent order
+
+    vectors = []
+    perf_ids = []
+
+    for perf in performances:
+        bloom_scores_map = {
+            entry["name"]: entry["percentage"] for entry in json.loads(perf.bloom_skill_scores or "[]")
+        }
+
+        # Default to 0.0 if skill not present
+        bloom_vector = [bloom_scores_map.get(
+            skill, 0.0) for skill in bloom_skills]
+
+        vector = [perf.avg_score, perf.completion_rate] + bloom_vector
+        vectors.append(vector)
+        perf_ids.append(perf.id)
+
+    return perf_ids, vectors

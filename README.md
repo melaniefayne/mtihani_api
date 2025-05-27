@@ -21,4 +21,7 @@ python manage.py makemigrations && python manage.py migrate
 python manage.py makemigrations learner && python manage.py migrate learner
 python manage.py makemigrations exam && python manage.py migrate exam
 python manage.py createsuperuser
+
+# commands
+python manage.py export_exam_performance exam_id
 ```
