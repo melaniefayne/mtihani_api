@@ -97,6 +97,7 @@ class StudentExamSessionPerformanceAdmin(admin.ModelAdmin):
         "session",
         "avg_score",
         "avg_expectation_level",
+        "class_avg_difference",
         "completion_rate",
     )
 

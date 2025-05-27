@@ -696,6 +696,8 @@ def edit_answer_score(request) -> Response:
         answer.score = tr_score
         answer.save(update_fields=["score", "tr_score",
                     "expectation_level", "updated_at"])
+        
+        # TODO: Trigger exam analysis
 
         return Response({"message": "Answer updated successfully."}, status=HTTP_200_OK)
 
@@ -1009,7 +1011,22 @@ def generate_exam_analysis(exam_id):
             exam.save()
             return
 
-        # TODO: update StudentExamSessionPerformance with ClassExamPerformance
+        # update StudentExamSessionPerformance with ClassExamPerformance
+        try:
+            class_perf = ClassExamPerformance.objects.get(exam=exam)
+            student_performances = StudentExamSessionPerformance.objects.filter(session__exam=exam)
+
+            for sp in student_performances:
+                diff = round(sp.avg_score - class_perf.avg_score, 2)
+                sp.class_avg_difference = diff
+                sp.save()
+        except Exception as e:
+            exam.status = "Failed"
+            exam.generation_error = f"Failed updating student-class diffs: {str(e)}"
+            exam.save()
+            return
+
+
         # TODO: updateCreate ExamQuestionPerformance
 
         # exam.status = "Complete"

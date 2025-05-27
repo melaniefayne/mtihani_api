@@ -132,6 +132,7 @@ class StudentExamSessionPerformance(models.Model):
 
     avg_score = models.FloatField()
     avg_expectation_level = models.CharField(max_length=100, blank=True)
+    class_avg_difference = models.FloatField(default=0.0)
 
     bloom_skill_scores = models.TextField(blank=True)
     strand_scores = models.TextField(blank=True)
