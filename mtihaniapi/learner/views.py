@@ -131,7 +131,7 @@ def _get_teacher_classrooms(classroom_with_details: List[Dict[str, Any]]) -> Lis
 
         # Avg mtihani score from ClassExamPerformance
         result = ClassExamPerformance.objects.filter(
-            classroom_id=classroom_id
+            exam__classroom_id=classroom_id
         ).aggregate(average_score=Avg('avg_score'))
 
         avg_mtihani_score = result['average_score'] or 0.0

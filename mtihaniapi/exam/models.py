@@ -46,7 +46,7 @@ class Exam(models.Model):
         self.status = "Grading"
         self.is_grading = True
         self.save(update_fields=["status", "is_grading"])
-    
+
     def update_to_analysing(self):
         self.status = "Analysing"
         self.is_analysing = True
@@ -89,8 +89,6 @@ class StudentExamSession(models.Model):
     start_date_time = models.DateTimeField(null=True)
     end_date_time = models.DateTimeField(null=True, blank=True)
     duration_min = models.IntegerField(null=True, blank=True)
-    avg_score = models.FloatField(null=True, blank=True)
-    expectation_level = models.CharField(max_length=100, blank=True, null=True)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
     student = models.ForeignKey(
         Student, on_delete=models.CASCADE, related_name='student_exam_session')
@@ -140,6 +138,9 @@ class StudentExamSessionPerformance(models.Model):
     sub_strand_scores = models.TextField(blank=True)
     grade_scores = models.TextField(blank=True)
 
+    best_5_question_ids = models.TextField(blank=True)
+    worst_5_question_ids = models.TextField(blank=True)
+
     questions_answered = models.IntegerField(default=0)
     questions_unanswered = models.IntegerField(default=0)
     completion_rate = models.FloatField(default=0.0)
@@ -153,16 +154,29 @@ class StudentExamSessionPerformance(models.Model):
 
 
 class ClassExamPerformance(models.Model):
-    exam = models.OneToOneField(Exam, on_delete=models.CASCADE)
+    exam = models.OneToOneField(
+        Exam, on_delete=models.CASCADE, related_name='class_exam_performance')
+
     avg_score = models.FloatField()
     avg_expectation_level = models.CharField(max_length=100, blank=True)
+    expectation_level_distribution = models.TextField(blank=True)
+    score_distribution = models.TextField(blank=True)
+
     bloom_skill_scores = models.TextField(blank=True)
+    grade_scores = models.TextField(blank=True)
     strand_scores = models.TextField(blank=True)
+    sub_strand_scores = models.TextField(blank=True)
+
+    weak_bloom_skills = models.TextField(blank=True)  # percentage ≤ 50
+    strong_bloom_skills = models.TextField(blank=True)  # percentage ≥ 75
+
+    weak_sub_strands = models.TextField(blank=True)
+    strong_sub_strands = models.TextField(blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    classroom = models.ForeignKey(
-        Classroom, on_delete=models.CASCADE, related_name='class_exam_performance')
 
     def save(self, *args, **kwargs):
         self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
         super().save(*args, **kwargs)
+

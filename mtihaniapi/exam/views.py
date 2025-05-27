@@ -17,7 +17,7 @@ from typing import Counter, Dict, Any, List, Optional, Union
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 import json
-
+from exam.utils import *
 
 APP_QUESTION_COUNT = 25
 APP_BLOOM_SKILL_COUNT = 3
@@ -258,6 +258,11 @@ def get_user_exams(request):
             if (exam.status == "Grading" and not exam.is_grading):
                 # Trigger background task
                 generate_exam_grades.delay(exam.id)
+
+            # # TODO
+            if (exam.status == "Analysing" and not exam.is_analysing):
+                # Trigger background task
+                generate_exam_analysis.delay(exam.id)
 
         # === FETCH STUDENT SESSION MAPPING ===
         if user.groups.filter(name="student").exists():
@@ -940,6 +945,7 @@ def generate_exam_grades(exam_id):
 
         StudentExamSession.objects.filter(
             id__in=sessions_to_complete).update(status="Complete")
+
         exam.status = "Analysing"
         exam.is_grading = False
         exam.save()
@@ -984,8 +990,9 @@ def generate_exam_analysis(exam_id):
     try:
         exam = Exam.objects.get(id=exam_id)
         exam.update_to_analysing()
-        error_res = generate_all_exam_session_performances(exam)
 
+        # updateCreate StudentExamSessionPerformance
+        error_res = generate_all_exam_session_performances(exam)
         if error_res:
             exam.status = "Failed"
             exam.generation_error = error_res.get("error", "An error occurred")
@@ -994,18 +1001,107 @@ def generate_exam_analysis(exam_id):
             exam.save()
             return
 
-        # TODO: updateCreate StudentExamSessionPerformance
-        # TODO: updateCreate ClassExamPerformance
+        # updateCreate ClassExamPerformance
+        error_res = generate_class_exam_performance(exam)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
+
         # TODO: update StudentExamSessionPerformance with ClassExamPerformance
         # TODO: updateCreate ExamQuestionPerformance
 
-        exam.status = "Complete"
+        # exam.status = "Complete"
+        exam.is_analysing = False
         exam.save()
+
     except Exception as e:
         exam.status = "Failed"
         exam.generation_error = f"Unexpected error: {str(e)}"
         exam.save()
         print(f"Background analysis failed for Exam ID {exam.id}: {e}")
+
+
+# ------------------------------------------------------------------------ Classroom exam performance
+
+def generate_class_exam_performance(exam) -> Union[None, Dict[str, Any]]:
+    performances = StudentExamSessionPerformance.objects.filter(
+        session__exam=exam)
+
+    if not performances.exists():
+        return {"error": "No student performances found for this exam."}
+
+    try:
+        avg_score = round(mean(p.avg_score for p in performances), 2)
+        expectation_counts = defaultdict(int)
+
+        for p in performances:
+            expectation_counts[p.avg_expectation_level] += 1
+
+        total = performances.count()
+        expectation_level_distribution = [
+            {"name": level, "percentage": round((count / total) * 100, 2)}
+            for level, count in expectation_counts.items()
+        ]
+
+        # Aggregate scores
+        bloom_scores = merge_and_average_score_lists(
+            p.bloom_skill_scores for p in performances)
+        grade_scores = merge_and_average_score_lists(
+            p.grade_scores for p in performances)
+        strand_scores = merge_and_average_score_lists(
+            p.strand_scores for p in performances)
+        sub_strand_scores = merge_and_average_score_lists(
+            p.sub_strand_scores for p in performances)
+
+        # Strengths and gaps
+        weak_blooms, strong_blooms = classify_scores(bloom_scores)
+        weak_subs, strong_subs = classify_scores(sub_strand_scores)
+
+        # Score distribution in ranges of 10
+        distribution_bins = {f"{i}-{i+9}": 0 for i in range(0, 100, 10)}
+        distribution_bins["100"] = 0  # exact 100
+
+        for p in performances:
+            score = round(p.avg_score)
+            if score == 100:
+                distribution_bins["100"] += 1
+            else:
+                bucket = f"{(score // 10) * 10}-{((score // 10) * 10) + 9}"
+                distribution_bins[bucket] += 1
+
+        score_distribution = [
+            {"name": k, "count": v}
+            for k, v in distribution_bins.items()
+            if v > 0
+        ]
+
+        # Save/update ClassExamPerformance
+        with transaction.atomic():
+            ClassExamPerformance.objects.update_or_create(
+                exam=exam,
+                defaults={
+                    "avg_score": avg_score,
+                    "expectation_level_distribution": json.dumps(expectation_level_distribution),
+                    "bloom_skill_scores": json.dumps(bloom_scores),
+                    "grade_scores": json.dumps(grade_scores),
+                    "strand_scores": json.dumps(strand_scores),
+                    "sub_strand_scores": json.dumps(sub_strand_scores),
+                    "weak_bloom_skills": json.dumps(weak_blooms),
+                    "strong_bloom_skills": json.dumps(strong_blooms),
+                    "weak_sub_strands": json.dumps(weak_subs),
+                    "strong_sub_strands": json.dumps(strong_subs),
+                    "score_distribution": json.dumps(score_distribution),
+                }
+            )
+
+        return None
+
+    except Exception as e:
+        return {"error": f"Error while generating class performance: {str(e)}"}
+
+# ------------------------------------------------------------------------ Student exam performance
 
 
 def generate_all_exam_session_performances(exam) -> Union[None, Dict[str, Any]]:
@@ -1065,6 +1161,14 @@ def generate_student_exam_performance(session) -> Union[None, Dict[str, Any]]:
 
         avg_score = round((total_score / total_possible_score) * 100, 2)
 
+        # Question Performance
+        scored_answers = [(ans.question.id, ans.score)
+                          for ans in answers if ans.score is not None]
+        sorted_answers = sorted(scored_answers, key=lambda x: x[1])
+        best_5 = [qid for qid, _ in sorted_answers[-5:]][::-1]
+        worst_5 = [qid for qid, _ in sorted_answers[:5]]
+
+        # Completion Rate
         unanswered_questions = total_questions - answered_questions
         completion_rate = round(
             (answered_questions / total_questions) * 100, 2) if total_questions > 0 else 0
@@ -1087,7 +1191,9 @@ def generate_student_exam_performance(session) -> Union[None, Dict[str, Any]]:
                     "sub_strand_scores": json.dumps(sub_strand_scores),
                     "questions_answered": answered_questions,
                     "questions_unanswered": unanswered_questions,
-                    "completion_rate": completion_rate
+                    "completion_rate": completion_rate,
+                    "best_5_question_ids": json.dumps(best_5),
+                    "worst_5_question_ids": json.dumps(worst_5)
                 }
             )
 
@@ -1095,20 +1201,6 @@ def generate_student_exam_performance(session) -> Union[None, Dict[str, Any]]:
 
     except Exception as e:
         return {"session_id": session.id,  "reason": f"Error {str(e)}"}
-
-
-def format_scores(score_dict):
-    return sorted(
-        [
-            {
-                "name": str(k),
-                "percentage": round((sum(v) / (len(v) * 4)) * 100, 2)
-            }
-            for k, v in score_dict.items()
-        ],
-        key=lambda item: item["percentage"],
-        reverse=True
-    )
 
 
 def retry_exam_analysis(exam) -> Response:

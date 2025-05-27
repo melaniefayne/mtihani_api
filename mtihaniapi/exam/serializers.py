@@ -99,8 +99,8 @@ class StudentExamSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentExamSession
         fields = ['id', 'is_late_submission', 'start_date_time', 'status',
-                  'end_date_time', 'duration_min', 'avg_score', 'expectation_level',
-                  'exam_id', 'student_id', 'student_name']
+                  'end_date_time', 'duration_min', 'exam_id', 'student_id', 
+                  'student_name']
 
 
 class StudentExamSessionAnswerSerializer(serializers.ModelSerializer):

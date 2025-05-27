@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from exam.models import *
 
 
@@ -51,8 +52,7 @@ class StudentExamSessionAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'exam', 'student', 'status',
         'start_date_time', 'end_date_time',
-        'duration_min', 'avg_score', 'expectation_level',
-        'is_late_submission'
+        'duration_min', 'is_late_submission'
     ]
     list_filter = ['status', 'is_late_submission', 'exam__classroom']
     search_fields = ['student__name', 'exam__code',
@@ -74,3 +74,102 @@ class StudentExamSessionAnswerAdmin(admin.ModelAdmin):
     def short_description(self, obj):
         return (obj.description[:50] + "...") if obj.description and len(obj.description) > 50 else obj.description
     short_description.short_description = "Answer Preview"
+
+
+class StudentPerformanceExamFilter(SimpleListFilter):
+    title = "Exam"
+    parameter_name = "exam"
+
+    def lookups(self, request, model_admin):
+        exams = Exam.objects.all()
+        return [(exam.id, f"{exam.code} (ID {exam.id})") for exam in exams]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(session__exam__id=self.value())
+        return queryset
+
+
+@admin.register(StudentExamSessionPerformance)
+class StudentExamSessionPerformanceAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "session",
+        "avg_score",
+        "avg_expectation_level",
+        "completion_rate",
+    )
+
+    list_filter = ("avg_expectation_level", StudentPerformanceExamFilter)
+    search_fields = ("session__student__name", "session__exam__code")
+
+    readonly_fields = (
+        "bloom_skill_scores",
+        "grade_scores",
+        "strand_scores",
+        "sub_strand_scores",
+        "best_5_question_ids",
+        "worst_5_question_ids",
+        "created_at",
+        "updated_at"
+    )
+
+    fieldsets = (
+        (None, {
+            "fields": (
+                "session",
+                "avg_score",
+                "avg_expectation_level",
+                "questions_answered",
+                "questions_unanswered",
+                "completion_rate",
+            )
+        }),
+        ("Score Distributions", {
+            "fields": (
+                "bloom_skill_scores",
+                "grade_scores",
+                "strand_scores",
+                "sub_strand_scores",
+            ),
+            "classes": ("collapse",)
+        }),
+        ("Question Insights", {
+            "fields": (
+                "best_5_question_ids",
+                "worst_5_question_ids",
+            ),
+            "classes": ("collapse",)
+        }),
+        ("Timestamps", {
+            "fields": (
+                "created_at",
+                "updated_at",
+            ),
+            "classes": ("collapse",)
+        }),
+    )
+
+
+@admin.register(ClassExamPerformance)
+class ClassExamPerformanceAdmin(admin.ModelAdmin):
+    list_display = ("id", "exam", "avg_score",
+                    "avg_expectation_level", "updated_at")
+    readonly_fields = (
+        "exam",
+        "avg_score",
+        "avg_expectation_level",
+        "expectation_level_distribution",
+        "bloom_skill_scores",
+        "grade_scores",
+        "strand_scores",
+        "sub_strand_scores",
+        "weak_bloom_skills",
+        "strong_bloom_skills",
+        "weak_sub_strands",
+        "strong_sub_strands",
+        "score_distribution",
+        "created_at",
+        "updated_at",
+    )
+    search_fields = ("exam__code",)
