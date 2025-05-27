@@ -1,20 +1,91 @@
+from collections import defaultdict
 from celery import shared_task
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import *
+from django.db import transaction
 from learner.models import Classroom, Student, Teacher
-from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis, StudentExamSession, StudentExamSessionAnswer
-from exam.serializers import ExamQuestionSerializer, ExamSerializer, FullStudentExamSessionAnswerSerializer, StudentExamSessionAnswerSerializer, StudentExamSessionSerializer
+from exam.models import *
+from exam.serializers import *
 from gen.curriculum import get_cbc_grouped_questions, get_rubrics_by_sub_strand
 from gen.utils import generate_llm_answer_grades_list, generate_llm_question_list, get_db_question_objects
-from utils import GlobalPagination, get_answer_expectation_level
+from utils import GlobalPagination
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
 from typing import Counter, Dict, Any, List, Optional, Union
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 import json
+
+
+APP_QUESTION_COUNT = 25
+APP_BLOOM_SKILL_COUNT = 3
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def create_classroom_exam(request) -> Response:
+    try:
+        classroom_id = request.GET.get("classroom_id")
+        if not classroom_id:
+            return Response({"message": "Missing classroom_id in request."}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+        except Classroom.DoesNotExist:
+            return Response({"message": "Classroom not found."}, status=HTTP_400_BAD_REQUEST)
+
+        start_date_time_str = request.data.get("start_date_time")
+        end_date_time_str = request.data.get("end_date_time")
+
+        if not start_date_time_str or not end_date_time_str:
+            return Response({"message": "Missing start or end date time"}, status=HTTP_400_BAD_REQUEST)
+
+        start_date_time = parse_datetime(start_date_time_str)
+        end_date_time = parse_datetime(end_date_time_str)
+
+        if not start_date_time or not end_date_time:
+            return Response({"message": "Invalid date format. Use ISO 8601 (e.g. '2025-05-10T09:00:00Z')"},
+                            status=HTTP_400_BAD_REQUEST)
+
+        strand_ids = request.data.get("strand_ids", [])
+        question_count = request.data.get("question_count", APP_QUESTION_COUNT)
+        bloom_skill_count = request.data.get(
+            "bloom_skill_count", APP_BLOOM_SKILL_COUNT)
+        generation_config = {
+            "strand_ids": strand_ids,
+            "question_count": question_count,
+            "bloom_skill_count": bloom_skill_count
+        }
+
+        # Create the Exam
+        exam = Exam.objects.create(
+            start_date_time=start_date_time,
+            end_date_time=end_date_time,
+            classroom=classroom,
+            teacher=Teacher.objects.get(user=request.user),
+            generation_config=json.dumps(generation_config)
+        )
+
+        # Eagerly create ExamSession entries for each student
+        students = Student.objects.filter(classroom=classroom)
+        StudentExamSession.objects.bulk_create([
+            StudentExamSession(student=s, exam=exam) for s in students
+        ])
+
+        # Trigger background task
+        generate_exam_content.delay(exam.id, generation_config)
+
+        return Response({
+            "message": "Exam generation has been initiated.",
+            "exam_id": exam.id,
+            "status": "Generating"
+        }, status=HTTP_201_CREATED)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -595,77 +666,67 @@ def get_exam_questions_with_answers(request):
     return Response(data)
 
 
-# ========================================================================= LLM FUNCTIONS
-# =======================================================================================
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def edit_answer_score(request) -> Response:
+    try:
+        answer_id = request.GET.get("answer_id")
+        try:
+            answer = StudentExamSessionAnswer.objects.select_related(
+                'session').get(id=answer_id)
+        except StudentExamSessionAnswer.DoesNotExist:
+            return Response({"message": "Answer not found."}, status=HTTP_404_NOT_FOUND)
 
-APP_QUESTION_COUNT = 25
-APP_BLOOM_SKILL_COUNT = 3
+        if answer.session.status != "Complete":
+            return Response(
+                {"message": "This session is not complete yet. Scores cannot be updated."},
+                status=HTTP_400_BAD_REQUEST
+            )
+        tr_score = float(request.data.get("tr_score"))
+
+        if tr_score is None:
+            return Response({"message": "Missing teacher score field."}, status=HTTP_400_BAD_REQUEST)
+
+        answer.tr_score = tr_score
+        answer.score = tr_score
+        answer.save(update_fields=["score", "tr_score",
+                    "expectation_level", "updated_at"])
+
+        return Response({"message": "Answer updated successfully."}, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error updating answer: {e}")
+        return Response({"message": "Something went wrong while updating the answer."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================================================================== LLM & ML FUNCTIONS
+# =======================================================================================
+# =======================================================================================
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])
-def create_classroom_exam(request) -> Response:
+def retry_exam_llm_function(request) -> Response:
+    exam_id = request.GET.get("exam_id")
     try:
-        classroom_id = request.GET.get("classroom_id")
-        if not classroom_id:
-            return Response({"message": "Missing classroom_id in request."}, status=HTTP_400_BAD_REQUEST)
+        exam = Exam.objects.get(id=exam_id, teacher__user=request.user)
+    except Exam.DoesNotExist:
+        return Response({"message": "Exam not found or you do not have permission to access it."},
+                        status=HTTP_404_NOT_FOUND)\
 
-        try:
-            classroom = Classroom.objects.get(id=classroom_id)
-        except Classroom.DoesNotExist:
-            return Response({"message": "Classroom not found."}, status=HTTP_400_BAD_REQUEST)
+    if exam.status != "Failed":
+        return Response({"message": "Only exams with status 'Failed' can be retried."},
+                        status=HTTP_400_BAD_REQUEST)
 
-        start_date_time_str = request.data.get("start_date_time")
-        end_date_time_str = request.data.get("end_date_time")
+    if exam.is_grading:
+        return retry_exam_grading(exam)
+    elif exam.is_analysing:
+        return retry_exam_analysis(exam)
+    else:
+        return retry_exam_generation(exam)
 
-        if not start_date_time_str or not end_date_time_str:
-            return Response({"message": "Missing start or end date time"}, status=HTTP_400_BAD_REQUEST)
 
-        start_date_time = parse_datetime(start_date_time_str)
-        end_date_time = parse_datetime(end_date_time_str)
-
-        if not start_date_time or not end_date_time:
-            return Response({"message": "Invalid date format. Use ISO 8601 (e.g. '2025-05-10T09:00:00Z')"},
-                            status=HTTP_400_BAD_REQUEST)
-
-        strand_ids = request.data.get("strand_ids", [])
-        question_count = request.data.get("question_count", APP_QUESTION_COUNT)
-        bloom_skill_count = request.data.get(
-            "bloom_skill_count", APP_BLOOM_SKILL_COUNT)
-        generation_config = {
-            "strand_ids": strand_ids,
-            "question_count": question_count,
-            "bloom_skill_count": bloom_skill_count
-        }
-
-        # Create the Exam
-        exam = Exam.objects.create(
-            start_date_time=start_date_time,
-            end_date_time=end_date_time,
-            classroom=classroom,
-            teacher=Teacher.objects.get(user=request.user),
-            generation_config=json.dumps(generation_config)
-        )
-
-        # Eagerly create ExamSession entries for each student
-        students = Student.objects.filter(classroom=classroom)
-        StudentExamSession.objects.bulk_create([
-            StudentExamSession(student=s, exam=exam) for s in students
-        ])
-
-        # Trigger background task
-        generate_exam_content.delay(exam.id, generation_config)
-
-        return Response({
-            "message": "Exam generation has been initiated.",
-            "exam_id": exam.id,
-            "status": "Generating"
-        }, status=HTTP_201_CREATED)
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-
+# ==================================================================== GENERATING EXAMS
 
 # =============================================
 # ==========ANY CHANGE TO THIS=================
@@ -711,7 +772,7 @@ def generate_exam_content(exam_id, generation_config):
         exam.status = "Failed"
         exam.generation_error = f"Unexpected error: {str(e)}"
         exam.save()
-        print(f"Background generation failed for Exam ID {exam_id}: {e}")
+        print(f"Background generation failed for Exam ID {exam.id}: {e}")
 
 
 def get_llm_generated_exam(
@@ -765,6 +826,40 @@ def calculate_exam_analysis(exam):
     )
 
 
+def retry_exam_generation(exam) -> Response:
+    try:
+        if exam.status == "Generating":
+            return Response({"message": "Exam is already being regenerated."}, status=HTTP_400_BAD_REQUEST)
+
+        # Clear previous error and set back to Generating
+        exam.status = "Generating"
+        exam.generation_error = None
+        exam.save()
+
+        try:
+            config = json.loads(exam.generation_config or "{}")
+        except json.JSONDecodeError:
+            return Response({"message": "Saved generation config is invalid JSON."},
+                            status=HTTP_400_BAD_REQUEST)
+
+        if not config.get("strand_ids"):
+            return Response({"message": "Exam config is incomplete and cannot be retried."},
+                            status=HTTP_400_BAD_REQUEST)
+
+        # Re-trigger async generation
+        generate_exam_content.delay(exam.id, config)
+
+        return Response({"message": "Exam generation retry initiated.", "exam_id": exam.id, "status": "Generating"},
+                        status=HTTP_202_ACCEPTED)
+
+    except Exception as e:
+        print(f"Retry failed: {e}")
+        return Response({"message": "Something went wrong during retry. Please try again."},
+                        status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================================================================== GRADING EXAMS
+
 # =============================================
 # ==========ANY CHANGE TO THIS=================
 # =======!!!!RESTART CELERY!!!=================
@@ -810,14 +905,14 @@ def generate_exam_grades(exam_id):
 
         # update answer scores
 
-        failed_updates = []
+        failed_grading_updates = []
         sessions_to_complete = set()
         for item in grades_res:
             answer_id = item.get("answer_id")
             ai_score = float(item.get("score"))
 
             if answer_id is None or ai_score is None:
-                failed_updates.append(
+                failed_grading_updates.append(
                     {"answer_id": answer_id, "reason": "Missing answer_id or score"})
                 continue
             try:
@@ -834,12 +929,12 @@ def generate_exam_grades(exam_id):
                 sessions_to_complete.add(answer.session_id)
 
             except StudentExamSessionAnswer.DoesNotExist:
-                failed_updates.append(
+                failed_grading_updates.append(
                     {"answer_id": answer_id, "reason": "Answer not found"})
 
-        if failed_updates:
+        if failed_grading_updates:
             exam.status = "Failed"
-            exam.generation_error = f"Some updates failed: {json.dumps(failed_updates)}"
+            exam.generation_error = f"Some updates failed: {json.dumps(failed_grading_updates)}"
             exam.save()
             return
 
@@ -853,59 +948,7 @@ def generate_exam_grades(exam_id):
         exam.status = "Failed"
         exam.generation_error = f"Unexpected error: {str(e)}"
         exam.save()
-        print(f"Background grading failed for Exam ID {exam_id}: {e}")
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, IsTeacher])
-def retry_exam_llm_function(request) -> Response:
-    exam_id = request.GET.get("exam_id")
-    try:
-        exam = Exam.objects.get(id=exam_id, teacher__user=request.user)
-    except Exam.DoesNotExist:
-        return Response({"message": "Exam not found or you do not have permission to access it."},
-                        status=HTTP_404_NOT_FOUND)\
-
-    if exam.status != "Failed":
-        return Response({"message": "Only exams with status 'Failed' can be retried."},
-                        status=HTTP_400_BAD_REQUEST)
-
-    if exam.is_grading:
-        return retry_exam_grading(exam)
-    else:
-        return retry_exam_generation(exam)
-
-
-def retry_exam_generation(exam) -> Response:
-    try:
-        if exam.status == "Generating":
-            return Response({"message": "Exam is already being regenerated."}, status=HTTP_400_BAD_REQUEST)
-
-        # Clear previous error and set back to Generating
-        exam.status = "Generating"
-        exam.generation_error = None
-        exam.save()
-
-        try:
-            config = json.loads(exam.generation_config or "{}")
-        except json.JSONDecodeError:
-            return Response({"message": "Saved generation config is invalid JSON."},
-                            status=HTTP_400_BAD_REQUEST)
-
-        if not config.get("strand_ids"):
-            return Response({"message": "Exam config is incomplete and cannot be retried."},
-                            status=HTTP_400_BAD_REQUEST)
-
-        # Re-trigger async generation
-        generate_exam_content.delay(exam.id, config)
-
-        return Response({"message": "Exam generation retry initiated.", "exam_id": exam.id, "status": "Generating"},
-                        status=HTTP_202_ACCEPTED)
-
-    except Exception as e:
-        print(f"Retry failed: {e}")
-        return Response({"message": "Something went wrong during retry. Please try again."},
-                        status=HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Background grading failed for Exam ID {exam.id}: {e}")
 
 
 def retry_exam_grading(exam) -> Response:
@@ -922,6 +965,166 @@ def retry_exam_grading(exam) -> Response:
         generate_exam_grades.delay(exam.id)
 
         return Response({"message": "Exam grading retry initiated.", "exam_id": exam.id, "status": "Grading"},
+                        status=HTTP_202_ACCEPTED)
+
+    except Exception as e:
+        print(f"Retry failed: {e}")
+        return Response({"message": "Something went wrong during retry. Please try again."},
+                        status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================================================================== ANALYSING EXAMS
+
+# =============================================
+# ==========ANY CHANGE TO THIS=================
+# =======!!!!RESTART CELERY!!!=================
+# =============================================
+@shared_task
+def generate_exam_analysis(exam_id):
+    try:
+        exam = Exam.objects.get(id=exam_id)
+        exam.update_to_analysing()
+        error_res = generate_all_exam_session_performances(exam)
+
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            if "details" in error_res:
+                exam.generation_error += f" | Sessions: {json.dumps(error_res['details'])}"
+            exam.save()
+            return
+
+        # TODO: updateCreate StudentExamSessionPerformance
+        # TODO: updateCreate ClassExamPerformance
+        # TODO: update StudentExamSessionPerformance with ClassExamPerformance
+        # TODO: updateCreate ExamQuestionPerformance
+
+        exam.status = "Complete"
+        exam.save()
+    except Exception as e:
+        exam.status = "Failed"
+        exam.generation_error = f"Unexpected error: {str(e)}"
+        exam.save()
+        print(f"Background analysis failed for Exam ID {exam.id}: {e}")
+
+
+def generate_all_exam_session_performances(exam) -> Union[None, Dict[str, Any]]:
+    sessions = StudentExamSession.objects.filter(exam=exam)
+
+    if not sessions.exists():
+        return {"error": f"No student sessions found for exam {exam.id}"}
+
+    failed_updates = []
+    for session in sessions:
+        error_res = generate_student_exam_performance(session)
+        if error_res:
+            failed_updates.append(error_res)
+
+    if failed_updates:
+        return {"error": "Some updates failed", "details": failed_updates}
+
+    return None
+
+
+def generate_student_exam_performance(session) -> Union[None, Dict[str, Any]]:
+    try:
+        answers = session.answers.select_related('question').all()
+        if not answers.exists():
+            return {"session_id": session.id,  "reason": "Missing answers"}
+
+        total_score = 0
+        total_possible_score = 0
+
+        bloom_scores = defaultdict(list)
+        grade_scores = defaultdict(list)
+        strand_scores = defaultdict(list)
+        sub_strand_scores = defaultdict(list)
+
+        total_questions = 0
+        answered_questions = 0
+
+        for ans in answers:
+            total_questions += 1
+            if ans.description.strip():
+                answered_questions += 1
+            if ans.score is None:
+                continue
+
+            score = ans.score
+            total_score += score
+            total_possible_score += 4
+
+            q = ans.question
+            bloom_scores[q.bloom_skill].append(score)
+            grade_scores[q.grade].append(score)
+            strand_scores[q.strand].append(score)
+            sub_strand_scores[q.sub_strand].append(score)
+
+        if total_possible_score == 0:
+            return {"session_id": session.id,  "reason": "Missing total possible score"}
+
+        avg_score = round((total_score / total_possible_score) * 100, 2)
+
+        unanswered_questions = total_questions - answered_questions
+        completion_rate = round(
+            (answered_questions / total_questions) * 100, 2) if total_questions > 0 else 0
+
+        # Compute final result dict
+        bloom_skill_scores = format_scores(bloom_scores)
+        grade_scores = format_scores(grade_scores)
+        strand_scores = format_scores(strand_scores)
+        sub_strand_scores = format_scores(sub_strand_scores)
+
+        # Save or update performance record
+        with transaction.atomic():
+            StudentExamSessionPerformance.objects.update_or_create(
+                session=session,
+                defaults={
+                    "avg_score": avg_score,
+                    "bloom_skill_scores": json.dumps(bloom_skill_scores),
+                    "grade_scores": json.dumps(grade_scores),
+                    "strand_scores": json.dumps(strand_scores),
+                    "sub_strand_scores": json.dumps(sub_strand_scores),
+                    "questions_answered": answered_questions,
+                    "questions_unanswered": unanswered_questions,
+                    "completion_rate": completion_rate
+                }
+            )
+
+        return None
+
+    except Exception as e:
+        return {"session_id": session.id,  "reason": f"Error {str(e)}"}
+
+
+def format_scores(score_dict):
+    return sorted(
+        [
+            {
+                "name": str(k),
+                "percentage": round((sum(v) / (len(v) * 4)) * 100, 2)
+            }
+            for k, v in score_dict.items()
+        ],
+        key=lambda item: item["percentage"],
+        reverse=True
+    )
+
+
+def retry_exam_analysis(exam) -> Response:
+    try:
+        if exam.status == "Analysing":
+            return Response({"message": "Exam is already being analysed."}, status=HTTP_400_BAD_REQUEST)
+
+        # Clear previous error and set back to Analysing
+        exam.status = "Analysing"
+        exam.generation_error = None
+        exam.save()
+
+        # Re-trigger async generation
+        generate_exam_analysis.delay(exam.id)
+
+        return Response({"message": "Exam analysis retry initiated.", "exam_id": exam.id, "status": "Analysing"},
                         status=HTTP_202_ACCEPTED)
 
     except Exception as e:

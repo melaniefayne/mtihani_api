@@ -15,6 +15,7 @@ class Exam(models.Model):
     duration_min = models.IntegerField(blank=True)
     is_published = models.BooleanField(default=False)
     is_grading = models.BooleanField(default=False)
+    is_analysing = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     generation_config = models.TextField(blank=True, null=True)
@@ -45,6 +46,11 @@ class Exam(models.Model):
         self.status = "Grading"
         self.is_grading = True
         self.save(update_fields=["status", "is_grading"])
+    
+    def update_to_analysing(self):
+        self.status = "Analysing"
+        self.is_analysing = True
+        self.save(update_fields=["status", "is_analysing"])
 
 
 class ExamQuestion(models.Model):
@@ -125,10 +131,19 @@ class StudentExamSessionAnswer(models.Model):
 class StudentExamSessionPerformance(models.Model):
     session = models.OneToOneField(
         StudentExamSession, on_delete=models.CASCADE, related_name='student_exam_session_performance')
+
     avg_score = models.FloatField()
     avg_expectation_level = models.CharField(max_length=100, blank=True)
+
     bloom_skill_scores = models.TextField(blank=True)
     strand_scores = models.TextField(blank=True)
+    sub_strand_scores = models.TextField(blank=True)
+    grade_scores = models.TextField(blank=True)
+
+    questions_answered = models.IntegerField(default=0)
+    questions_unanswered = models.IntegerField(default=0)
+    completion_rate = models.FloatField(default=0.0)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
