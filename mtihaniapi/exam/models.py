@@ -76,6 +76,7 @@ class ExamQuestionAnalysis(models.Model):
     bloom_skill_distribution = models.TextField(blank=True)
     strand_distribution = models.TextField(blank=True)
     sub_strand_distribution = models.TextField(blank=True)
+    untested_strands = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     exam = models.OneToOneField(
@@ -181,3 +182,18 @@ class ClassExamPerformance(models.Model):
         self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
         super().save(*args, **kwargs)
 
+
+class ExamQuestionPerformance(models.Model):
+    question = models.OneToOneField(
+        ExamQuestion, on_delete=models.CASCADE, related_name="performance")
+
+    avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
+    score_distribution = models.TextField(blank=True)
+    answers_by_level = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.avg_expectation_level = get_answer_expectation_level(self.avg_score)
+        super().save(*args, **kwargs)

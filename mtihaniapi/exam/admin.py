@@ -38,12 +38,12 @@ class ExamQuestionAdmin(admin.ModelAdmin):
 @admin.register(ExamQuestionAnalysis)
 class ExamQuestionAnalysisAdmin(admin.ModelAdmin):
     list_display = (
-        "exam", "question_count", "created_at", "updated_at"
+        "exam", "question_count", "untested_strands", "updated_at"
     )
     readonly_fields = (
         "exam", "question_count", "grade_distribution",
         "bloom_skill_distribution", "strand_distribution",
-        "sub_strand_distribution", "created_at", "updated_at"
+        "sub_strand_distribution", "untested_strands", "created_at", "updated_at"
     )
 
 
@@ -174,3 +174,37 @@ class ClassExamPerformanceAdmin(admin.ModelAdmin):
         "updated_at",
     )
     search_fields = ("exam__code",)
+
+
+@admin.register(ExamQuestionPerformance)
+class ExamQuestionPerformanceAdmin(admin.ModelAdmin):
+    list_display = ("id", "question", "avg_score", "avg_expectation_level", "updated_at")
+    list_filter = ("question__exam",)
+    search_fields = ("question__description", "question__exam__code")
+
+    readonly_fields = (
+        "question",
+        "avg_score",
+        "score_distribution",
+        "answers_by_level",
+        "created_at",
+        "updated_at"
+    )
+
+    fieldsets = (
+        (None, {
+            "fields": ("question", "avg_score")
+        }),
+        ("Distributions", {
+            "fields": ("score_distribution",),
+            "classes": ("collapse",)
+        }),
+        ("Answers by Expectation Level", {
+            "fields": ("answers_by_level",),
+            "classes": ("collapse",)
+        }),
+        ("Timestamps", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",)
+        }),
+    )

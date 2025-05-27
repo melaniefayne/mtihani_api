@@ -8,7 +8,7 @@ from django.db import transaction
 from learner.models import Classroom, Student, Teacher
 from exam.models import *
 from exam.serializers import *
-from gen.curriculum import get_cbc_grouped_questions, get_rubrics_by_sub_strand
+from gen.curriculum import get_cbc_grouped_questions, get_rubrics_by_sub_strand, get_uncovered_strands_up_to_grade
 from gen.utils import generate_llm_answer_grades_list, generate_llm_question_list, get_db_question_objects
 from utils import GlobalPagination
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
@@ -696,7 +696,7 @@ def edit_answer_score(request) -> Response:
         answer.score = tr_score
         answer.save(update_fields=["score", "tr_score",
                     "expectation_level", "updated_at"])
-        
+
         # TODO: Trigger exam analysis
 
         return Response({"message": "Answer updated successfully."}, status=HTTP_200_OK)
@@ -818,15 +818,24 @@ def get_llm_generated_exam(
 def calculate_exam_analysis(exam):
     questions = exam.questions.all()
 
+    strand_dist = [
+        {"name": k, "count": v}
+        for k, v in Counter(q.strand for q in questions).items()
+    ]
+    tested_strands = [entry["name"] for entry in strand_dist]
+
+    grade_level = exam.classroom.grade
+    uncovered_strands = get_uncovered_strands_up_to_grade(grade_level, tested_strands)
+
     analysis_data = {
         "question_count": questions.count(),
         "grade_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.grade for q in questions).items()]),
         "bloom_skill_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.bloom_skill for q in questions).items()]),
-        "strand_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.strand for q in questions).items()]),
+        "strand_distribution": json.dumps(strand_dist),
+        "untested_strands": json.dumps(uncovered_strands),
         "sub_strand_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.sub_strand for q in questions).items()]),
     }
 
-    # Update or create the analysis
     ExamQuestionAnalysis.objects.update_or_create(
         exam=exam,
         defaults=analysis_data
@@ -1014,7 +1023,8 @@ def generate_exam_analysis(exam_id):
         # update StudentExamSessionPerformance with ClassExamPerformance
         try:
             class_perf = ClassExamPerformance.objects.get(exam=exam)
-            student_performances = StudentExamSessionPerformance.objects.filter(session__exam=exam)
+            student_performances = StudentExamSessionPerformance.objects.filter(
+                session__exam=exam)
 
             for sp in student_performances:
                 diff = round(sp.avg_score - class_perf.avg_score, 2)
@@ -1026,10 +1036,15 @@ def generate_exam_analysis(exam_id):
             exam.save()
             return
 
+        # updateCreate ExamQuestionPerformance
+        error_res = generate_exam_question_performance(exam)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
 
-        # TODO: updateCreate ExamQuestionPerformance
-
-        # exam.status = "Complete"
+        exam.status = "Complete"
         exam.is_analysing = False
         exam.save()
 
@@ -1040,7 +1055,65 @@ def generate_exam_analysis(exam_id):
         print(f"Background analysis failed for Exam ID {exam.id}: {e}")
 
 
+# ------------------------------------------------------------------------ Question exam performance
+
+def generate_exam_question_performance(exam) -> Union[None, Dict[str, Any]]:
+    questions = exam.questions.all()
+
+    if not questions.exists():
+        return {"error": "No questions found for this exam."}
+
+    try:
+        for question in questions:
+            answers = StudentExamSessionAnswer.objects.filter(
+                question=question, session__exam=exam)
+
+            if not answers.exists():
+                continue  # No answers for this question, skip
+
+            # Compute average score
+            scored_answers = [a.score for a in answers if a.score is not None]
+            if not scored_answers:
+                avg_score = 0.0
+            else:
+                avg_score = round(sum(scored_answers) / len(scored_answers), 2)
+
+            # Score distribution per expectation level
+            level_counts = defaultdict(int)
+            level_answers = defaultdict(list)
+
+            for answer in answers:
+                level = answer.expectation_level or "Unclassified"
+                level_counts[level] += 1
+                level_answers[level].append(answer.id)
+
+            # Filter out levels with count == 0
+            score_distribution = [
+                {"name": k, "count": v}
+                for k, v in level_counts.items()
+                if v > 0
+            ]
+
+            # Save or update ExamQuestionPerformance
+            avg_score = round(sum(scored_answers) / len(scored_answers), 2)
+            avg_expectation_level = get_answer_expectation_level(avg_score)
+            with transaction.atomic():
+                ExamQuestionPerformance.objects.update_or_create(
+                    question=question,
+                    defaults={
+                        "avg_score": avg_score,
+                        "avg_expectation_level": avg_expectation_level,
+                        "score_distribution": json.dumps(score_distribution),
+                        "answers_by_level": json.dumps(level_answers),
+                    }
+                )
+        return None
+
+    except Exception as e:
+        return {"error": f"Error while generating question performance: {str(e)}"}
+
 # ------------------------------------------------------------------------ Classroom exam performance
+
 
 def generate_class_exam_performance(exam) -> Union[None, Dict[str, Any]]:
     performances = StudentExamSessionPerformance.objects.filter(
