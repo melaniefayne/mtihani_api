@@ -110,7 +110,7 @@ class StudentExamSessionAnswer(models.Model):
     description = models.TextField()
     score = models.FloatField(null=True, blank=True)
     expectation_level = models.CharField(
-        max_length=100, choices=EXPECTATION_LEVELS, blank=True)
+        max_length=100, choices=EXPECTATION_LEVELS, blank=True, null=True)
     ai_score = models.FloatField(null=True, blank=True)
     tr_score = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

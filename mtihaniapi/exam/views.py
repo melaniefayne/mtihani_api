@@ -519,10 +519,18 @@ def mock_exam_answers(request):
 @permission_classes([IsAuthenticated, IsTeacher])
 def get_student_exam_sessions(request) -> Response:
     try:
+        exam_id = request.GET.get('exam_id')
+        if not exam_id:
+            return Response(
+                {"message": "Missing required parameter: exam_id"},
+                status=HTTP_400_BAD_REQUEST
+            )
+
         expectation_level = request.GET.get('expectation_level')
         search_query = request.GET.get('search')
 
-        sessions = StudentExamSession.objects.select_related('student', 'exam')
+        sessions = StudentExamSession.objects.select_related(
+            'student', 'exam').filter(exam_id=exam_id)
 
         if expectation_level:
             sessions = sessions.filter(expectation_level=expectation_level)
@@ -540,8 +548,11 @@ def get_student_exam_sessions(request) -> Response:
         return paginator.get_paginated_response(serialized.data)
 
     except Exception as e:
-        print(f"Error fetching exam questions: {e}")
-        return Response({"message": "Something went wrong while fetching sessions."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error fetching student exam sessions: {e}")
+        return Response(
+            {"message": "Something went wrong while fetching sessions."},
+            status=HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(['GET'])
