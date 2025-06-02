@@ -245,3 +245,19 @@ if __name__ == "__main__":
     selected_strands = [6, 9, 4]
     question_brd = get_cbc_grouped_questions(
         strand_ids=selected_strands, question_count=10)
+
+
+def get_all_strand_names(
+    curriculum_file: str = CURRICULUM_FILE,
+) -> List[str]:
+    cbc_data = load_curriculum(curriculum_file)
+
+    strand_names = []
+    for item in cbc_data:
+        for strand in item.get("strands", []):
+            strand_names.append(strand['name'])
+            sub_strands = strand['sub_strands']
+            for sub_strand in sub_strands:
+                strand_names.append(sub_strand['name'])
+
+    return strand_names

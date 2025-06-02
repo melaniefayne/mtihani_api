@@ -17,4 +17,6 @@ urlpatterns = [
     path('get-student-exam-sessions', get_student_exam_sessions),
     path('get-exam-question-answers', get_exam_questions_with_answers),
     path('edit-answer-score', edit_answer_score),
+    # performance
+    path('get-class-exam-performance', get_class_exam_performance),
 ]

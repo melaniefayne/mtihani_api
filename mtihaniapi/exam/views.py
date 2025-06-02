@@ -712,6 +712,25 @@ def edit_answer_score(request) -> Response:
         return Response({"message": "Something went wrong while updating the answer."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_class_exam_performance(request) -> Response:
+    try:
+        exam_id = request.GET.get("exam_id")
+        if not exam_id:
+            return Response({"message": "Missing exam_id parameter."}, status=HTTP_400_BAD_REQUEST)
+        try:
+            class_performance = ClassExamPerformance.objects.get(
+                exam__id=exam_id)
+        except ClassExamPerformance.DoesNotExist:
+            return Response({"message": "Class Performance not found."}, status=HTTP_404_NOT_FOUND)
+
+        serializer = ClassExamPerformanceSerializer(class_performance)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except Exception as e:
+        print(f"Error getting class performance answer: {e}")
+        return Response({"message": "Something went wrong while getting performance"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
 # ================================================================== GENERATION FUNCTIONS
 # =======================================================================================
 # =======================================================================================
@@ -1042,9 +1061,9 @@ def generate_exam_analysis(exam_id):
             exam.generation_error = f"Failed updating student-class diffs: {str(e)}"
             exam.save()
             return
-        
+
         # create classroom clusters
-        # 
+        #
 
         # # updateCreate ExamQuestionPerformance
         # error_res = generate_exam_question_performance(exam)
@@ -1240,11 +1259,11 @@ def generate_class_exam_performance(exam) -> Union[None, Dict[str, Any]]:
             "avg_expectation_level": get_avg_expectation_level(avg_score),
             "expectation_level_distribution": json.dumps(expectation_level_distribution),
             "score_distribution": json.dumps(score_distribution),
-            "score_variance": {
+            "score_variance": json.dumps({
                 "min": round(min(class_scores), 2),
                 "max": round(max(class_scores), 2),
                 "std_dev": std_dev
-            },
+            }),
             "bloom_skill_scores": json.dumps(bloom_scores),
         }
         general_insights_res = generate_llm_class_perf_insights(
@@ -1361,8 +1380,8 @@ def generate_strand_analysis(
             sub_strand_distribution.append({
                 "name": sub_name,
                 "percentage": sub_strand_avg,
-                "strand_difference": strand_difference,
-                "strand_difference_descriptor": diff_desc
+                "difference": strand_difference,
+                "difference_desc": diff_desc
             })
         sub_strand_distribution.sort(
             key=lambda x: x["percentage"], reverse=True)
@@ -1377,8 +1396,8 @@ def generate_strand_analysis(
         bloom_distribution.sort(key=lambda x: x["percentage"], reverse=True)
 
         analysis.append({
-            "strand_name": strand_name,
-            "strand_grade": strand_grade,
+            "name": strand_name,
+            "grade": strand_grade,
             "avg_score": avg_score,
             "avg_expectation_level": expectation_level,
             "bloom_skill_scores": bloom_distribution,
@@ -1404,7 +1423,7 @@ def generate_strand_analysis(
     }
 
     for strand in analysis:
-        strand_name = strand['strand_name']
+        strand_name = strand['name']
         llm_data = insights_lookup.get(strand_name)
         if llm_data:
             strand['insights'] = llm_data.get('insights', [])
@@ -1427,8 +1446,8 @@ def generate_strand_analysis(
 #       {
 #         "name": "Elements and Compounds",
 #         "percentage": 81.2,
-#         "strand_difference": 6.7,
-#         "strand_difference_descriptor": "Above Strand Average"
+#         "difference": 6.7,
+#         "difference_desc": "Above Strand Average"
 #       },
 #       ...
 #     ],

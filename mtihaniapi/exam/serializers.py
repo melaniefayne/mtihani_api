@@ -128,3 +128,92 @@ class FullStudentExamSessionAnswerSerializer(StudentExamSessionAnswerSerializer)
             'sub_strand', 'bloom_skill', 'expected_answer', 'score',
             'expectation_level', 'ai_score', 'tr_score',
         ]
+
+from rest_framework import serializers
+
+class ClassExamPerformanceSerializer(serializers.ModelSerializer):
+    # Parse fields stored as JSON/text into Python objects
+    expectation_level_distribution = serializers.SerializerMethodField()
+    score_distribution = serializers.SerializerMethodField()
+    score_variance = serializers.SerializerMethodField()
+    bloom_skill_scores = serializers.SerializerMethodField()
+    general_insights = serializers.SerializerMethodField()
+    grade_scores = serializers.SerializerMethodField()
+    strand_analysis = serializers.SerializerMethodField()
+    strand_student_mastery = serializers.SerializerMethodField()
+    flagged_sub_strands = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ClassExamPerformance
+        fields = [
+            "id",
+            "exam",
+            "avg_score",
+            "avg_expectation_level",
+            "student_count",
+            "expectation_level_distribution",
+            "score_distribution",
+            "score_variance",
+            "bloom_skill_scores",
+            "general_insights",
+            "grade_scores",
+            "strand_analysis",
+            "strand_student_mastery",
+            "flagged_sub_strands",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_expectation_level_distribution(self, obj):
+        try:
+            return json.loads(obj.expectation_level_distribution or "[]")
+        except Exception:
+            return []
+
+    def get_score_distribution(self, obj):
+        try:
+            return json.loads(obj.score_distribution or "[]")
+        except Exception:
+            return []
+
+    def get_score_variance(self, obj):
+        try:
+            return json.loads(obj.score_variance or "{}")
+        except Exception:
+            return {}
+
+    def get_bloom_skill_scores(self, obj):
+        try:
+            return json.loads(obj.bloom_skill_scores or "[]")
+        except Exception:
+            return []
+
+    def get_general_insights(self, obj):
+        try:
+            return json.loads(obj.general_insights or "[]")
+        except Exception:
+            return []
+
+    def get_grade_scores(self, obj):
+        try:
+            return json.loads(obj.grade_scores or "[]")
+        except Exception:
+            return []
+
+    def get_strand_analysis(self, obj):
+        try:
+            return json.loads(obj.strand_analysis or "[]")
+        except Exception:
+            return []
+
+    def get_strand_student_mastery(self, obj):
+        try:
+            return json.loads(obj.strand_student_mastery or "[]")
+        except Exception:
+            return []
+
+    def get_flagged_sub_strands(self, obj):
+        try:
+            return json.loads(obj.flagged_sub_strands or "[]")
+        except Exception:
+            return []
