@@ -93,87 +93,56 @@ class StudentPerformanceExamFilter(SimpleListFilter):
 @admin.register(StudentExamSessionPerformance)
 class StudentExamSessionPerformanceAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
-        "session",
-        "avg_score",
-        "avg_expectation_level",
-        "class_avg_difference",
-        "completion_rate",
+        'id',
+        'session',
+        'avg_score',
+        'avg_expectation_level',
+        'class_avg_difference',
+        'completion_rate',
+        'updated_at',
     )
-
-    list_filter = ("avg_expectation_level", StudentPerformanceExamFilter)
-    search_fields = ("session__student__name", "session__exam__code")
-
+    search_fields = ('session__student__name', 'session__exam__code')
+    list_filter = ('avg_expectation_level',)
     readonly_fields = (
-        "bloom_skill_scores",
-        "grade_scores",
-        "strand_scores",
-        "sub_strand_scores",
-        "best_5_question_ids",
-        "worst_5_question_ids",
-        "created_at",
-        "updated_at"
+        'bloom_skill_scores',
+        'strand_scores',
+        'grade_scores',
+        'best_5_question_ids',
+        'worst_5_question_ids',
     )
 
-    fieldsets = (
-        (None, {
-            "fields": (
-                "session",
-                "avg_score",
-                "avg_expectation_level",
-                "questions_answered",
-                "questions_unanswered",
-                "completion_rate",
-            )
-        }),
-        ("Score Distributions", {
-            "fields": (
-                "bloom_skill_scores",
-                "grade_scores",
-                "strand_scores",
-                "sub_strand_scores",
-            ),
-            "classes": ("collapse",)
-        }),
-        ("Question Insights", {
-            "fields": (
-                "best_5_question_ids",
-                "worst_5_question_ids",
-            ),
-            "classes": ("collapse",)
-        }),
-        ("Timestamps", {
-            "fields": (
-                "created_at",
-                "updated_at",
-            ),
-            "classes": ("collapse",)
-        }),
-    )
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(ClassExamPerformance)
 class ClassExamPerformanceAdmin(admin.ModelAdmin):
-    list_display = ("id", "exam", "avg_score",
-                    "avg_expectation_level", "updated_at")
-    readonly_fields = (
-        "exam",
-        "avg_score",
-        "avg_expectation_level",
-        "expectation_level_distribution",
-        "bloom_skill_scores",
-        "grade_scores",
-        "strand_scores",
-        "sub_strand_scores",
-        "weak_bloom_skills",
-        "strong_bloom_skills",
-        "weak_sub_strands",
-        "strong_sub_strands",
-        "score_distribution",
-        "created_at",
-        "updated_at",
+    list_display = (
+        'id',
+        'exam',
+        'avg_score',
+        'avg_expectation_level',
+        'updated_at',
     )
-    search_fields = ("exam__code",)
+    search_fields = ('exam__code', 'exam__classroom__name')
+    readonly_fields = (
+        'expectation_level_distribution',
+        'score_distribution',
+        'bloom_skill_scores',
+        'grade_scores',
+        'strand_analysis',
+        'strand_student_mastery',
+        'flagged_sub_strands',
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(ExamQuestionPerformance)

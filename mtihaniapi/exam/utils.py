@@ -1,8 +1,10 @@
 from collections import defaultdict
 import json
 from statistics import mean
+from typing import Dict, Any, List
 
-def format_scores(score_dict):
+
+def format_scores(score_dict) -> List[Dict[str, Any]]:
     return sorted(
         [
             {

@@ -136,16 +136,15 @@ class StudentExamSessionPerformance(models.Model):
     class_avg_difference = models.FloatField(default=0.0)
 
     bloom_skill_scores = models.TextField(blank=True)
-    strand_scores = models.TextField(blank=True)
-    sub_strand_scores = models.TextField(blank=True)
     grade_scores = models.TextField(blank=True)
-
-    best_5_question_ids = models.TextField(blank=True)
-    worst_5_question_ids = models.TextField(blank=True)
+    strand_scores = models.TextField(blank=True)
 
     questions_answered = models.IntegerField(default=0)
     questions_unanswered = models.IntegerField(default=0)
     completion_rate = models.FloatField(default=0.0)
+
+    best_5_question_ids = models.TextField(blank=True)
+    worst_5_question_ids = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -161,19 +160,16 @@ class ClassExamPerformance(models.Model):
 
     avg_score = models.FloatField()
     avg_expectation_level = models.CharField(max_length=100, blank=True)
+    student_count = models.IntegerField(default=0)
     expectation_level_distribution = models.TextField(blank=True)
     score_distribution = models.TextField(blank=True)
-
+    score_variance = models.TextField(blank=True)
     bloom_skill_scores = models.TextField(blank=True)
+    general_insights = models.TextField(blank=True)
     grade_scores = models.TextField(blank=True)
-    strand_scores = models.TextField(blank=True)
-    sub_strand_scores = models.TextField(blank=True)
-
-    weak_bloom_skills = models.TextField(blank=True)  # percentage ≤ 50
-    strong_bloom_skills = models.TextField(blank=True)  # percentage ≥ 75
-
-    weak_sub_strands = models.TextField(blank=True)
-    strong_sub_strands = models.TextField(blank=True)
+    strand_analysis = models.TextField(blank=True)
+    strand_student_mastery = models.TextField(blank=True)
+    flagged_sub_strands = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -195,5 +191,6 @@ class ExamQuestionPerformance(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        self.avg_expectation_level = get_answer_expectation_level(self.avg_score)
+        self.avg_expectation_level = get_answer_expectation_level(
+            self.avg_score)
         super().save(*args, **kwargs)
