@@ -1,5 +1,5 @@
 from django.db import models
-from utils import EXAM_STATUSES, EXPECTATION_LEVELS, generate_unique_code, get_answer_expectation_level, get_avg_expectation_level
+from utils import EXAM_STATUSES, EXPECTATION_LEVELS, EXAM_TYPES, generate_unique_code, get_answer_expectation_level, get_avg_expectation_level
 from learner.models import Classroom, Student, Teacher
 from django.utils import timezone
 
@@ -24,6 +24,18 @@ class Exam(models.Model):
         Classroom, on_delete=models.CASCADE, related_name='exams')
     teacher = models.ForeignKey(
         Teacher, on_delete=models.SET_NULL, null=True, related_name='exams')
+
+    #
+    type = models.CharField(
+        max_length=25, choices=EXAM_TYPES, default="Standard")
+    source_exam = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.SET_NULL)
+    performance_cluster = models.ForeignKey(
+        "ExamPerformanceCluster",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="follow_up_exams"
+    )
 
     def save(self, *args, **kwargs):
         if self.start_date_time and self.end_date_time:
@@ -199,7 +211,7 @@ class ExamQuestionPerformance(models.Model):
 class ExamPerformanceCluster(models.Model):
     exam = models.ForeignKey(
         "Exam", on_delete=models.CASCADE, related_name="performance_clusters")
-    
+
     cluster_label = models.CharField(max_length=10)
     cluster_size = models.IntegerField(default=0)
     student_session_ids = models.TextField()

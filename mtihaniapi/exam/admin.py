@@ -16,7 +16,7 @@ class ExamQuestionInline(admin.TabularInline):
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "code", "classroom", "status", "is_published", "is_grading", "is_analysing", "generation_config", "generation_error"
+        "id", "code", "classroom", "status", "is_published", "is_grading", "is_analysing", "generation_config", "generation_error", "type",
     )
     list_filter = ("status", "is_published", "classroom__name",
                    "teacher__user__username")

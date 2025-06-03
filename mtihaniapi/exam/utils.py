@@ -1,5 +1,6 @@
 from collections import defaultdict
 import json
+import re
 from statistics import mean
 from typing import Dict, Any, List
 
@@ -48,3 +49,12 @@ def find_elbow(X, min_k=2, max_k=6):
     drops = np.diff(inertias)
     elbow_k = possible_ks[np.argmin(drops) + 1] if len(drops) else min_k
     return elbow_k
+
+def extract_grade_from_strand(strand_name: str) -> int:
+    match = re.search(r'\(G(\d+)\)', strand_name or "")
+    return int(match.group(1)) if match else None
+
+def split_text(text, max_chars=100):
+    """Helper to split long text into lines of max_chars."""
+    import textwrap
+    return textwrap.wrap(text, width=max_chars)

@@ -19,4 +19,7 @@ urlpatterns = [
     path('edit-answer-score', edit_answer_score),
     # performance
     path('get-class-exam-performance', get_class_exam_performance),
+    path('get-class-exam-clusters', get_class_exam_clusters),
+    path('get-cluster-quiz', get_cluster_quiz),
+    path('download-cluster-quiz-pdf', download_cluster_quiz_pdf),
 ]

@@ -439,3 +439,40 @@ def generate_llm_sub_strand_corr_insights(
     )
 
     return res
+
+
+CREATE_CLUSTER_FOLLOW_UP_QUIZ_LLM_PROMPT = PromptTemplate(
+    input_variables=["exam_questions", "cluster_performance", "question_count"],
+    template=CREATE_CLUSTER_FOLLOW_UP_QUIZ_PROMPT
+)
+
+
+def generate_llm_follow_up_quiz(
+        exam_questions: List[Dict[str, Any]],
+        cluster_performance: Dict[str, Any],
+        question_count: int = 15,
+        is_debug: bool = False,
+        llm: Any = OPENAI_LLM_4O,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+
+    prompt_template = CREATE_CLUSTER_FOLLOW_UP_QUIZ_LLM_PROMPT
+    formatted_prompt = prompt_template.format(
+        exam_questions=exam_questions,
+        cluster_performance=cluster_performance,
+        question_count=question_count,
+    )
+    invoke_param = {
+        "exam_questions": exam_questions,
+        "cluster_performance": cluster_performance,
+        "question_count": question_count,
+    }
+
+    res = run_llm_function(
+        invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
+
+    return res

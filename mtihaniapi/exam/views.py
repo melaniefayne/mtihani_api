@@ -1,3 +1,8 @@
+from .models import Exam, ExamQuestion
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from rest_framework.status import HTTP_400_BAD_REQUEST
+from django.http import HttpResponse
 import math
 import itertools
 
@@ -252,6 +257,7 @@ def get_user_exams(request):
             filters &= Q(is_published=is_published.lower() == "true")
 
         # === FETCH EXAMS ===
+        filters &= Q(type='Standard')
         exams = Exam.objects.filter(filters).select_related(
             'classroom', 'teacher', 'analysis'
         ).order_by('-start_date_time')
@@ -737,6 +743,94 @@ def get_class_exam_performance(request) -> Response:
         print(f"Error getting class performance answer: {e}")
         return Response({"message": "Something went wrong while getting performance"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_class_exam_clusters(request) -> Response:
+    try:
+        exam_id = request.GET.get("exam_id")
+        if not exam_id:
+            return Response({"message": "Missing exam_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+        clusters = ExamPerformanceCluster.objects.filter(
+            exam__id=exam_id).order_by("cluster_label")
+        serializer = ExamPerformanceClusterSerializer(clusters, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error getting class performance clusters: {e}")
+        return Response({"message": "Something went wrong while getting clusters"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_cluster_quiz(request) -> Response:
+    try:
+        cluster_id = request.GET.get("cluster_id")
+        if not cluster_id:
+            return Response({"message": "Missing cluster_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+        follow_up_exam = Exam.objects.filter(
+            performance_cluster__id=cluster_id, type="FollowUp").first()
+        if not follow_up_exam:
+            return Response({"message": "No follow-up quiz found for this cluster."}, status=HTTP_400_BAD_REQUEST)
+
+        questions = ExamQuestion.objects.filter(
+            exam=follow_up_exam).order_by("number")
+        serializer = ExamQuestionSerializer(questions, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error getting class performance answer: {e}")
+        return Response({"message": "Something went wrong while getting cluster quiz"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def download_cluster_quiz_pdf(request):
+    cluster_id = request.GET.get("cluster_id")
+    if not cluster_id:
+        return Response({"message": "Missing cluster_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+    follow_up_exam = Exam.objects.filter(
+        performance_cluster__id=cluster_id, type="FollowUp").first()
+    if not follow_up_exam:
+        return Response({"message": "No follow-up quiz found for this cluster."}, status=HTTP_400_BAD_REQUEST)
+
+    questions = ExamQuestion.objects.filter(
+        exam=follow_up_exam).order_by("number")
+    if not questions.exists():
+        return Response({"message": "No questions found for this quiz."}, status=HTTP_400_BAD_REQUEST)
+
+    # --- PDF Generation ---
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Cluster_{cluster_id}_Quiz.pdf"'
+
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+
+    title = f"Cluster Follow-Up Quiz\n\n"
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, height - 50, title)
+
+    p.setFont("Helvetica", 12)
+    y = height - 80
+
+    for idx, q in enumerate(questions, start=1):
+        q_text = f"{idx}. {q.description}"
+        # Wrap text if too long
+        for line in split_text(q_text, max_chars=100):
+            p.drawString(50, y, line)
+            y -= 18
+            if y < 80:
+                p.showPage()
+                y = height - 50
+        y -= 10  # extra space between questions
+
+    p.save()
+    return response
+
+
 # ================================================================== GENERATION FUNCTIONS
 # =======================================================================================
 # =======================================================================================
@@ -1034,7 +1128,7 @@ def generate_exam_analysis(exam_id):
         exam = Exam.objects.get(id=exam_id)
         exam.update_to_analysing()
 
-        # updateCreate StudentExamSessionPerformance
+        # 1. updateCreate StudentExamSessionPerformance
         error_res = generate_all_exam_session_performances(exam)
         if error_res:
             exam.status = "Failed"
@@ -1047,7 +1141,7 @@ def generate_exam_analysis(exam_id):
         performances = StudentExamSessionPerformance.objects.filter(
             session__exam=exam)
 
-        # updateCreate ClassExamPerformance
+        # 2. updateCreate ClassExamPerformance
         error_res = generate_class_exam_performance(exam, performances)
         if error_res:
             exam.status = "Failed"
@@ -1055,7 +1149,7 @@ def generate_exam_analysis(exam_id):
             exam.save()
             return
 
-        # update StudentExamSessionPerformance with ClassExamPerformance
+        # 3. update StudentExamSessionPerformance with ClassExamPerformance
         try:
             class_perf = ClassExamPerformance.objects.get(exam=exam)
             for sp in performances:
@@ -1068,11 +1162,21 @@ def generate_exam_analysis(exam_id):
             exam.save()
             return
 
-        # create performance clusters
+        # 4. create performance clusters
         error_res = generate_exam_performance_clusters(exam, performances)
         if error_res:
             exam.status = "Failed"
             exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
+
+        # 5. create cluster follow up quizzes
+        error_res = generate_all_cluster_follow_ups(exam)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            if "details" in error_res:
+                exam.generation_error += f" | Clusters: {json.dumps(error_res['details'])}"
             exam.save()
             return
 
@@ -1739,7 +1843,7 @@ def cluster_exam_performance(performances: List, use_pca: bool = True, pca_compo
         X_reduced = pca.fit_transform(X_scaled)
     else:
         X_reduced = X_scaled  # Use full features if not enough columns or PCA not requested
-    
+
     n_samples = X_reduced.shape[0]
     n_unique = np.unique(X_reduced, axis=0).shape[0]
     k_max = max(2, min(max_k, n_samples, n_unique))
@@ -1761,6 +1865,9 @@ def cluster_exam_performance(performances: List, use_pca: bool = True, pca_compo
 
 def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[str, Any]]:
     try:
+        # Delete any existing clusters for this exam
+        ExamPerformanceCluster.objects.filter(exam=exam).delete()
+
         labels, optimal_k, _, _ = cluster_exam_performance(
             performances)
         clusters = [[] for _ in range(optimal_k)]
@@ -1875,6 +1982,87 @@ def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[s
     except Exception as e:
         return {"error": f"Cluster Generation Failed for examId {exam.id}: {e}"}
 
+
+def generate_all_cluster_follow_ups(exam) -> Union[None, Dict[str, Any]]:
+    clusters = ExamPerformanceCluster.objects.filter(exam=exam)
+    questions = ExamQuestion.objects.filter(exam=exam)
+
+    if not clusters.exists() or not questions.exists():
+        return {"error": f"No performance clusters found for exam {exam.id}"}
+
+    failed_generations = []
+    for cluster in clusters:
+        error_res = generate_cluster_follow_up_quizzes(
+            exam, cluster, questions)
+        if error_res:
+            failed_generations.append(error_res)
+
+    if failed_generations:
+        return {"error": "Some updates failed", "details": failed_generations}
+
+    return None
+
+
+def generate_cluster_follow_up_quizzes(exam, cluster, questions) -> Union[None, Dict[str, Any]]:
+    try:
+        exam_questions = [
+            {
+                "question": q.description,
+                "expected_answer": q.expected_answer,
+                "strand": q.strand,
+                "sub_strand": q.sub_strand,
+                "bloom_skill": q.bloom_skill,
+            }
+            for q in questions
+        ]
+        cluster_performance = {
+            "cluster_label": cluster.cluster_label,
+            "avg_score": cluster.avg_score,
+            "cluster_size": cluster.cluster_size,
+            "avg_expectation_level": cluster.avg_expectation_level,
+            "score_variance": json.loads(cluster.score_variance or '{}'),
+            "bloom_skill_scores": json.loads(cluster.bloom_skill_scores or '[]'),
+            "strand_scores": json.loads(cluster.strand_scores or '[]'),
+            "top_best_question_ids": json.loads(cluster.top_best_question_ids or '[]'),
+            "top_worst_question_ids": json.loads(cluster.top_worst_question_ids or '[]'),
+        }
+
+        follow_up_quiz_res = generate_llm_follow_up_quiz(
+            exam_questions=exam_questions,
+            cluster_performance=cluster_performance,
+        )
+        if not isinstance(follow_up_quiz_res, list):
+            return {"error": follow_up_quiz_res.get("error", "Unknown LLM error")}
+
+        # Create the Exam
+        follow_up_exam = Exam.objects.create(
+            start_date_time=exam.start_date_time,
+            end_date_time=exam.end_date_time,
+            status="Complete",
+            type="FollowUp",
+            source_exam=exam,
+            classroom=exam.classroom,
+            teacher=exam.teacher,
+            performance_cluster=cluster,
+        )
+
+        # create exam questions
+        for idx, item in enumerate(follow_up_quiz_res):
+            ExamQuestion.objects.create(
+                number=idx+1,
+                grade=int(item.get("grade")),
+                strand=item.get("strand"),
+                sub_strand=item.get("sub_strand"),
+                bloom_skill=item.get("bloom_skill"),
+                description=item.get("question"),
+                expected_answer=item.get("expected_answer"),
+                exam=follow_up_exam
+            )
+
+        return None
+
+    except Exception as e:
+        return {"cluster_id": cluster.id,  "reason": f"Error {str(e)}"}
 
 # ------------------------------------------------------------------------ Question exam performance
 
