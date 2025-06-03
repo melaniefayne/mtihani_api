@@ -3,6 +3,9 @@ import json
 from statistics import mean
 from typing import Dict, Any, List
 
+import numpy as np
+from sklearn.cluster import KMeans
+
 
 def format_scores(score_dict) -> List[Dict[str, Any]]:
     return sorted(
@@ -33,3 +36,15 @@ def classify_scores(score_list, weak_thresh=50, strong_thresh=75):
     weak = [s for s in score_list if s["percentage"] <= weak_thresh]
     strong = [s for s in score_list if s["percentage"] >= strong_thresh]
     return weak, strong
+
+def find_elbow(X, min_k=2, max_k=6):
+    inertias = []
+    possible_ks = range(min_k, max_k+1)
+    for k in possible_ks:
+        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+        kmeans.fit(X)
+        inertias.append(kmeans.inertia_)
+    # Find the "elbow" point (simple version: biggest drop in inertia)
+    drops = np.diff(inertias)
+    elbow_k = possible_ks[np.argmin(drops) + 1] if len(drops) else min_k
+    return elbow_k

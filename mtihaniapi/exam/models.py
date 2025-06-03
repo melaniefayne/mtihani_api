@@ -194,3 +194,29 @@ class ExamQuestionPerformance(models.Model):
         self.avg_expectation_level = get_answer_expectation_level(
             self.avg_score)
         super().save(*args, **kwargs)
+
+
+class ExamPerformanceCluster(models.Model):
+    exam = models.ForeignKey(
+        "Exam", on_delete=models.CASCADE, related_name="performance_clusters")
+    
+    cluster_label = models.CharField(max_length=10)
+    cluster_size = models.IntegerField(default=0)
+    student_session_ids = models.TextField()
+    avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
+    score_variance = models.TextField(blank=True)
+    bloom_skill_scores = models.TextField(blank=True)
+    strand_scores = models.TextField(blank=True)
+    top_best_question_ids = models.TextField(blank=True)
+    top_worst_question_ids = models.TextField(blank=True)
+    insight = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.avg_expectation_level = get_avg_expectation_level(
+            self.avg_score)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.cluster_label} (Exam ID: {self.exam_id})"

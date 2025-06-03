@@ -1,7 +1,10 @@
 import math
 import itertools
+
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import StandardScaler
 from .models import StudentExamSessionPerformance
-import numpy as np
 from scipy.stats import pearsonr
 from collections import defaultdict
 from celery import shared_task
@@ -23,10 +26,13 @@ from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 import json
 from exam.utils import *
-from statistics import stdev
+from statistics import mode, stdev
 
 APP_QUESTION_COUNT = 25
 APP_BLOOM_SKILL_COUNT = 3
+BLOOM_SKILLS = [
+    "Knowledge", "Comprehension", "Application", "Analysis", "Synthesis", "Evaluation"
+]
 
 
 @api_view(['POST'])
@@ -1038,8 +1044,11 @@ def generate_exam_analysis(exam_id):
             exam.save()
             return
 
+        performances = StudentExamSessionPerformance.objects.filter(
+            session__exam=exam)
+
         # updateCreate ClassExamPerformance
-        error_res = generate_class_exam_performance(exam)
+        error_res = generate_class_exam_performance(exam, performances)
         if error_res:
             exam.status = "Failed"
             exam.generation_error = error_res.get("error", "An error occurred")
@@ -1049,10 +1058,7 @@ def generate_exam_analysis(exam_id):
         # update StudentExamSessionPerformance with ClassExamPerformance
         try:
             class_perf = ClassExamPerformance.objects.get(exam=exam)
-            student_performances = StudentExamSessionPerformance.objects.filter(
-                session__exam=exam)
-
-            for sp in student_performances:
+            for sp in performances:
                 diff = round(sp.avg_score - class_perf.avg_score, 2)
                 sp.class_avg_difference = diff
                 sp.save()
@@ -1062,8 +1068,13 @@ def generate_exam_analysis(exam_id):
             exam.save()
             return
 
-        # create classroom clusters
-        #
+        # create performance clusters
+        error_res = generate_exam_performance_clusters(exam, performances)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
 
         # # updateCreate ExamQuestionPerformance
         # error_res = generate_exam_question_performance(exam)
@@ -1208,10 +1219,7 @@ def generate_student_exam_performance(session) -> Union[None, Dict[str, Any]]:
 # ------------------------------------------------------------------------ Classroom exam performance
 
 
-def generate_class_exam_performance(exam) -> Union[None, Dict[str, Any]]:
-    performances = StudentExamSessionPerformance.objects.filter(
-        session__exam=exam)
-
+def generate_class_exam_performance(exam, performances) -> Union[None, Dict[str, Any]]:
     if not performances.exists():
         return {"error": "No student performances found for this exam."}
 
@@ -1572,6 +1580,10 @@ def generate_flagged_sub_strands(
         if np.sum(valid) < 3:
             continue
 
+        # Skip if one or both columns are constant
+        if np.std(col_i[valid]) == 0 or np.std(col_j[valid]) == 0:
+            continue
+
         corr, _ = pearsonr(col_i[valid], col_j[valid])
         corr = round(corr, 2)
 
@@ -1617,6 +1629,252 @@ def generate_flagged_sub_strands(
     #     "suggestion": "Help students connect ...",
     # }
 # ]
+
+# ------------------------------------------------------------------------ Exam performance clusters
+
+def extract_performance_feature_matrix(performances):
+    # Gather all possible feature names
+    all_bloom_skills = set()
+    all_grades = set()
+    all_strands = set()
+    all_sub_strands = set()
+
+    for perf in performances:
+        all_bloom_skills.update(entry["name"] for entry in json.loads(
+            perf.bloom_skill_scores or "[]"))
+        all_grades.update(entry["name"]
+                          for entry in json.loads(perf.grade_scores or "[]"))
+        all_strands.update(entry["name"]
+                           for entry in json.loads(perf.strand_scores or "[]"))
+        # CORRECT: Collect all sub-strand names from inside strand_scores
+        for strand in json.loads(perf.strand_scores or "[]"):
+            all_sub_strands.update(sub["name"]
+                                   for sub in strand.get("sub_strands", []))
+
+    # Sorted list for consistent ordering
+    bloom_skills = sorted(f"Skill-{s}" for s in all_bloom_skills)
+    grades = sorted(f"Grade-{g}" for g in all_grades)
+    strands = sorted(f"Strand-{s}" for s in all_strands)
+    sub_strands = sorted(f"SubStrand-{s}" for s in all_sub_strands)
+
+    # All best/worst question IDs
+    all_best_qids = set()
+    all_worst_qids = set()
+    for perf in performances:
+        all_best_qids.update(json.loads(perf.best_5_question_ids or "[]"))
+        all_worst_qids.update(json.loads(perf.worst_5_question_ids or "[]"))
+    best_q_cols = sorted(f"BestQ-{qid}" for qid in all_best_qids)
+    worst_q_cols = sorted(f"WorstQ-{qid}" for qid in all_worst_qids)
+
+    feature_columns = (
+        ["avg_score", "completion_rate", "class_avg_difference"]
+        + bloom_skills + grades + strands + sub_strands
+        + best_q_cols + worst_q_cols
+    )
+
+    feature_matrix = []
+    id_list = []
+
+    for perf in performances:
+        row = []
+        row.append(perf.avg_score)
+        row.append(perf.completion_rate)
+        row.append(perf.class_avg_difference)
+
+        # Bloom skills
+        bloom_map = {f"Skill-{entry['name']}": entry["percentage"]
+                     for entry in json.loads(perf.bloom_skill_scores or "[]")}
+        for skill in bloom_skills:
+            row.append(bloom_map.get(skill, 0.0))
+
+        # Grades
+        grade_map = {f"Grade-{entry['name']}": entry["percentage"]
+                     for entry in json.loads(perf.grade_scores or "[]")}
+        for g in grades:
+            row.append(grade_map.get(g, 0.0))
+
+        # Strands
+        strand_map = {f"Strand-{entry['name']}": entry["percentage"]
+                      for entry in json.loads(perf.strand_scores or "[]")}
+        for s in strands:
+            row.append(strand_map.get(s, 0.0))
+
+        # Sub-strands (from nested in strand_scores)
+        all_sub_strand_scores = {}
+        for strand in json.loads(perf.strand_scores or "[]"):
+            for sub in strand.get("sub_strands", []):
+                all_sub_strand_scores[f"SubStrand-{sub['name']}"] = sub["percentage"]
+        for s in sub_strands:
+            row.append(all_sub_strand_scores.get(s, 0.0))
+
+        # Binary columns for best/worst questions
+        best_ids = set(json.loads(perf.best_5_question_ids or "[]"))
+        worst_ids = set(json.loads(perf.worst_5_question_ids or "[]"))
+        for q in best_q_cols:
+            qid = int(q.replace("BestQ-", ""))
+            row.append(1.0 if qid in best_ids else 0.0)
+        for q in worst_q_cols:
+            qid = int(q.replace("WorstQ-", ""))
+            row.append(1.0 if qid in worst_ids else 0.0)
+
+        feature_matrix.append(row)
+        id_list.append(perf.id)
+
+    return feature_matrix, feature_columns, id_list
+
+
+def cluster_exam_performance(performances: List, use_pca: bool = True, pca_components: int = 3, max_k: int = 6):
+    # Step 1: Extract features
+    feature_matrix, feature_columns, id_list = extract_performance_feature_matrix(
+        performances)
+    X = np.array(feature_matrix)
+
+    # Step 2: Standardize features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Step 3: PCA
+    if use_pca and X_scaled.shape[1] > pca_components:
+        pca = PCA(n_components=pca_components)
+        X_reduced = pca.fit_transform(X_scaled)
+    else:
+        X_reduced = X_scaled  # Use full features if not enough columns or PCA not requested
+    
+    n_samples = X_reduced.shape[0]
+    n_unique = np.unique(X_reduced, axis=0).shape[0]
+    k_max = max(2, min(max_k, n_samples, n_unique))
+
+    # Elbow method to find optimal k
+    n_samples = X_reduced.shape[0]
+    n_unique = np.unique(X_reduced, axis=0).shape[0]
+    k_max = max(2, min(max_k, n_samples, n_unique))
+
+    optimal_k = find_elbow(X_reduced, min_k=2, max_k=k_max)
+    optimal_k = min(optimal_k, n_unique, n_samples)
+
+    # Final KMeans clustering
+    final_kmeans = KMeans(n_clusters=optimal_k, random_state=42)
+    labels = final_kmeans.fit_predict(X_reduced)
+
+    return labels, optimal_k, feature_columns, id_list
+
+
+def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[str, Any]]:
+    try:
+        labels, optimal_k, _, _ = cluster_exam_performance(
+            performances)
+        clusters = [[] for _ in range(optimal_k)]
+        for perf, label in zip(performances, labels):
+            clusters[label].append(perf)
+
+        for cluster_index, group in enumerate(clusters):
+            if not group:
+                continue
+
+            # Aggregate scores and expectation levels
+            all_scores = [perf.avg_score for perf in group]
+            all_expectation_levels = [
+                perf.avg_expectation_level for perf in group]
+            student_ids = [perf.session.id for perf in group]
+
+            # Aggregate Bloom skill distribution
+            bloom_skill_map = defaultdict(list)
+            for perf in group:
+                for entry in json.loads(perf.bloom_skill_scores or "[]"):
+                    bloom_skill_map[entry["name"]].append(entry["percentage"])
+            bloom_skill_distribution = sorted(
+                [
+                    {"name": name, "percentage": round(
+                        sum(vals) / len(vals), 2)}
+                    for name, vals in bloom_skill_map.items()
+                ],
+                key=lambda item: item["percentage"],
+                reverse=True
+            )
+
+            # Aggregate strand and sub-strand distribution
+            strand_map = defaultdict(list)
+            sub_strand_map = defaultdict(lambda: defaultdict(list))
+            for perf in group:
+                for strand in json.loads(perf.strand_scores or "[]"):
+                    strand_map[strand["name"]].append(strand["percentage"])
+                    for sub in strand.get("sub_strands", []):
+                        sub_strand_map[strand["name"]][sub["name"]].append(
+                            sub["percentage"])
+
+            strand_distribution = []
+            for strand_name, strand_vals in strand_map.items():
+                strand_avg = round(sum(strand_vals) / len(strand_vals), 2)
+                sub_strands = sorted(
+                    [
+                        {"name": sub_name, "percentage": round(
+                            sum(vals) / len(vals), 2)}
+                        for sub_name, vals in sub_strand_map[strand_name].items()
+                    ],
+                    key=lambda item: item["percentage"],
+                    reverse=True
+                )
+                strand_distribution.append({
+                    "name": strand_name,
+                    "percentage": strand_avg,
+                    "sub_strands": sub_strands
+                })
+
+            # Compute averages
+            avg_score = round(sum(all_scores) / len(all_scores),
+                              2) if all_scores else 0.0
+            # Use mode or most common expectation level
+            try:
+                avg_expectation_level = mode(all_expectation_levels)
+            except:
+                avg_expectation_level = Counter(all_expectation_levels).most_common(1)[
+                    0][0] if all_expectation_levels else ""
+
+            best_question_counter = Counter()
+            worst_question_counter = Counter()
+            for perf in group:
+                best_question_counter.update(
+                    json.loads(perf.best_5_question_ids or "[]"))
+                worst_question_counter.update(
+                    json.loads(perf.worst_5_question_ids or "[]"))
+
+            # Top N defining questions for this cluster
+            top_best_questions = [qid for qid,
+                                  _ in best_question_counter.most_common(5)]
+            top_worst_questions = [qid for qid,
+                                   _ in worst_question_counter.most_common(5)]
+
+            # Score variance
+            score_stddev = round(float(np.std(all_scores)),
+                                 2) if all_scores else 0.0
+            score_range = [round(float(min(all_scores)), 2), round(
+                float(max(all_scores)), 2)] if all_scores else [0.0, 0.0]
+            score_variance = {
+                "min": score_range[0],
+                "max": score_range[1],
+                "std_dev": score_stddev,
+            }
+
+            # Save to DB
+            ExamPerformanceCluster.objects.create(
+                exam=exam,
+                cluster_label=f"Cluster {chr(65 + cluster_index)}",
+                student_session_ids=json.dumps(student_ids),
+                avg_score=avg_score,
+                avg_expectation_level=avg_expectation_level,
+                bloom_skill_scores=json.dumps(bloom_skill_distribution),
+                strand_scores=json.dumps(strand_distribution),
+                cluster_size=len(group),
+                top_best_question_ids=json.dumps(top_best_questions),
+                top_worst_question_ids=json.dumps(top_worst_questions),
+                score_variance=json.dumps(score_variance),
+            )
+
+        return None
+
+    except Exception as e:
+        return {"error": f"Cluster Generation Failed for examId {exam.id}: {e}"}
+
 
 # ------------------------------------------------------------------------ Question exam performance
 
@@ -1697,8 +1955,3 @@ def retry_exam_analysis(exam) -> Response:
         print(f"Retry failed: {e}")
         return Response({"message": "Something went wrong during retry. Please try again."},
                         status=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-# ==================================================================== ML FUNCTIONS
-# =======================================================================================
-# =======================================================================================

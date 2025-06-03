@@ -16,7 +16,7 @@ class ExamQuestionInline(admin.TabularInline):
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "code", "classroom", "teacher", "status", "is_published", "generation_config", "generation_error"
+        "id", "code", "classroom", "status", "is_published", "is_grading", "is_analysing", "generation_config", "generation_error"
     )
     list_filter = ("status", "is_published", "classroom__name",
                    "teacher__user__username")
@@ -147,7 +147,8 @@ class ClassExamPerformanceAdmin(admin.ModelAdmin):
 
 @admin.register(ExamQuestionPerformance)
 class ExamQuestionPerformanceAdmin(admin.ModelAdmin):
-    list_display = ("id", "question", "avg_score", "avg_expectation_level", "updated_at")
+    list_display = ("id", "question", "avg_score",
+                    "avg_expectation_level", "updated_at")
     list_filter = ("question__exam",)
     search_fields = ("question__description", "question__exam__code")
 
@@ -177,3 +178,37 @@ class ExamQuestionPerformanceAdmin(admin.ModelAdmin):
             "classes": ("collapse",)
         }),
     )
+
+
+@admin.register(ExamPerformanceCluster)
+class ExamPerformanceClusterAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "exam",
+        "cluster_label",
+        "cluster_size",
+        "avg_score",
+        "avg_expectation_level",
+        "score_variance",
+        "created_at",
+    ]
+    list_filter = ["exam", "cluster_label"]
+    search_fields = ["cluster_label", "exam__id", "exam__title"]
+    readonly_fields = [
+        "created_at",
+        "avg_score",
+        "avg_expectation_level",
+        "score_variance",
+        "bloom_skill_scores",
+        "strand_scores",
+        "student_session_ids",
+        "top_best_question_ids",
+        "top_worst_question_ids",
+        "insight",
+    ]
+    ordering = ["-created_at"]
+
+    def exam_title(self, obj):
+        return obj.exam.title if hasattr(obj.exam, "title") else obj.exam.id
+
+    exam_title.short_description = "Exam"
