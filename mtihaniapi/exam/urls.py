@@ -22,4 +22,5 @@ urlpatterns = [
     path('get-class-exam-clusters', get_class_exam_clusters),
     path('get-cluster-quiz', get_cluster_quiz),
     path('download-cluster-quiz-pdf', download_cluster_quiz_pdf),
+    path('get-percentile-performances', get_percentile_performances),
 ]

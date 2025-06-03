@@ -228,12 +228,12 @@ Generate {question_count} new, original quiz questions that will help this group
 A valid **JSON array**. Each item in the array must have the structure:
 ```json
 {{
-  "question": "[your generated question here]",
-  "expected_answer": "[concise but accurate answer here]"
-  "grade": "[the grade the questions tests]"
-  "strand": "[the strand the questions tests]"
-  "sub_strand": "[the sub strand the questions tests]"
-  "bloom_skill": "[the bloom skill the questions tests]"
+  "question": "... your generated question here",
+  "expected_answer": "... concise but accurate answer here"
+  "grade": "... the grade the questions tests as a simple integer"
+  "strand": "... the strand the questions tests"
+  "sub_strand": "... the sub strand the questions tests"
+  "bloom_skill": "... the bloom skill the questions tests"
 }}
 
 """

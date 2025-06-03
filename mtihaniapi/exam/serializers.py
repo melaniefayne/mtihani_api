@@ -103,6 +103,30 @@ class StudentExamSessionSerializer(serializers.ModelSerializer):
                   'student_name']
 
 
+class StudentExamSessionSerializer(serializers.ModelSerializer):
+    exam_id = serializers.IntegerField(source='exam.id')
+    student_id = serializers.ReadOnlyField(source='student.id')
+    student_name = serializers.ReadOnlyField(source='student.name')
+    avg_score = serializers.SerializerMethodField()
+    expectation_level = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StudentExamSession
+        fields = ['id', 'is_late_submission', 'start_date_time', 'status',
+                  'end_date_time', 'duration_min', 'exam_id', 'student_id',
+                  'student_name', "avg_score", "expectation_level"]
+
+    def get_avg_score(self, obj):
+        if obj.exam.status == "Complete" and hasattr(obj, 'student_exam_session_performance'):
+            return obj.student_exam_session_performance.avg_score
+        return None
+
+    def get_expectation_level(self, obj):
+        if obj.exam.status == "Complete" and hasattr(obj, 'student_exam_session_performance'):
+            return obj.student_exam_session_performance.avg_expectation_level
+        return None
+
+
 class StudentExamSessionAnswerSerializer(serializers.ModelSerializer):
     question_id = serializers.IntegerField(source='question.id')
     question_number = serializers.ReadOnlyField(source='question.number')
@@ -302,6 +326,7 @@ class StudentExamSessionPerformanceMiniSerializer(serializers.ModelSerializer):
 
     def get_student_name(self, obj):
         return obj.session.student.name if obj.session and obj.session.student else None
+
 
 class ExamPerformanceClusterSerializer(serializers.ModelSerializer):
     student_sessions = serializers.SerializerMethodField()

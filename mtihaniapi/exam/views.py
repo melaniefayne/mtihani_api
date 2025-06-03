@@ -624,10 +624,11 @@ def get_student_exam_sessions(request) -> Response:
         search_query = request.GET.get('search')
 
         sessions = StudentExamSession.objects.select_related(
-            'student', 'exam').filter(exam_id=exam_id)
+            'student', 'exam', 'student_exam_session_performance').filter(exam_id=exam_id)
 
         if expectation_level:
-            sessions = sessions.filter(expectation_level=expectation_level)
+            sessions = sessions.filter(
+                student_exam_session_performance__avg_expectation_level=expectation_level)
 
         if search_query:
             sessions = sessions.filter(student__name__icontains=search_query)
@@ -740,7 +741,7 @@ def get_class_exam_performance(request) -> Response:
         serializer = ClassExamPerformanceSerializer(class_performance)
         return Response(serializer.data, status=HTTP_200_OK)
     except Exception as e:
-        print(f"Error getting class performance answer: {e}")
+        print(f"Error getting class performance: {e}")
         return Response({"message": "Something went wrong while getting performance"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -781,7 +782,7 @@ def get_cluster_quiz(request) -> Response:
         return Response(serializer.data, status=HTTP_200_OK)
 
     except Exception as e:
-        print(f"Error getting class performance answer: {e}")
+        print(f"Error getting class cluster quiz: {e}")
         return Response({"message": "Something went wrong while getting cluster quiz"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -830,6 +831,51 @@ def download_cluster_quiz_pdf(request):
     p.save()
     return response
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_percentile_performances(request):
+    try:
+        exam_id = request.GET.get("exam_id")
+        if not exam_id:
+            return Response({"message": "Missing exam_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+        performances = StudentExamSessionPerformance.objects.filter(
+            session__exam__id=exam_id
+        ).select_related('session', 'session__student', 'session__exam')
+
+        # If you want the top/bottom 10%, for example:
+        total = performances.count()
+        if total == 0:
+            return Response({
+                "top_students": [],
+                "bottom_students": [],
+            })
+
+        sorted_performances = sorted(
+            performances, key=lambda p: p.avg_score if p.avg_score is not None else 0, reverse=True
+        )
+        percentile = 10
+        top_count = max(1, total // percentile)
+        bottom_count = max(1, total // percentile)
+
+        top_students = sorted_performances[:top_count]
+        bottom_students = sorted_performances[-bottom_count:]
+
+        # Use your compact serializer
+        from .serializers import StudentExamSessionPerformanceMiniSerializer
+
+        return Response({
+            "top_students": StudentExamSessionPerformanceMiniSerializer(top_students, many=True).data,
+            "bottom_students": StudentExamSessionPerformanceMiniSerializer(bottom_students, many=True).data,
+        })
+
+    except Exception as e:
+        print(f"Error getting performance percentiles: {e}")
+        return Response(
+            {"message": "Something went wrong while getting percentile students"},
+            status=HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 # ================================================================== GENERATION FUNCTIONS
 # =======================================================================================
