@@ -16,7 +16,7 @@ class ExamQuestionInline(admin.TabularInline):
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "code", "classroom", "status", "is_published", "is_grading", "is_analysing", "generation_config", "generation_error", "type",
+        "id", "code", "classroom", "source_exam", "status", "is_published", "is_grading", "is_analysing", "generation_config", "generation_error", "type",
     )
     list_filter = ("status", "is_published", "classroom__name",
                    "teacher__user__username")
@@ -190,12 +190,12 @@ class ExamPerformanceClusterAdmin(admin.ModelAdmin):
         "avg_score",
         "avg_expectation_level",
         "score_variance",
-        "created_at",
+        "updated_at",
     ]
     list_filter = ["exam", "cluster_label"]
     search_fields = ["cluster_label", "exam__id", "exam__title"]
     readonly_fields = [
-        "created_at",
+        "updated_at",
         "avg_score",
         "avg_expectation_level",
         "score_variance",
@@ -204,7 +204,6 @@ class ExamPerformanceClusterAdmin(admin.ModelAdmin):
         "student_session_ids",
         "top_best_question_ids",
         "top_worst_question_ids",
-        "insight",
     ]
     ordering = ["-created_at"]
 

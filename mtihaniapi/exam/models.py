@@ -222,8 +222,8 @@ class ExamPerformanceCluster(models.Model):
     strand_scores = models.TextField(blank=True)
     top_best_question_ids = models.TextField(blank=True)
     top_worst_question_ids = models.TextField(blank=True)
-    insight = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         self.avg_expectation_level = get_avg_expectation_level(

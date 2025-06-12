@@ -333,8 +333,9 @@ class ExamPerformanceClusterSerializer(serializers.ModelSerializer):
     score_variance = serializers.SerializerMethodField()
     bloom_skill_scores = serializers.SerializerMethodField()
     strand_scores = serializers.SerializerMethodField()
-    top_best_question_ids = serializers.SerializerMethodField()
-    top_worst_question_ids = serializers.SerializerMethodField()
+    # top_best_questions = serializers.SerializerMethodField()
+    # top_worst_questions = serializers.SerializerMethodField()
+    follow_up_exam_id = serializers.SerializerMethodField()
 
     class Meta:
         model = ExamPerformanceCluster
@@ -349,10 +350,11 @@ class ExamPerformanceClusterSerializer(serializers.ModelSerializer):
             "score_variance",
             "bloom_skill_scores",
             "strand_scores",
-            "top_best_question_ids",
-            "top_worst_question_ids",
-            "insight",
+            # "top_best_questions",
+            # "top_worst_questions",
             "created_at",
+            "updated_at",
+            "follow_up_exam_id",
         ]
 
     # Nested performances
@@ -382,8 +384,24 @@ class ExamPerformanceClusterSerializer(serializers.ModelSerializer):
     def get_strand_scores(self, obj):
         return self._parse_json_field(obj, "strand_scores", [])
 
-    def get_top_best_question_ids(self, obj):
-        return self._parse_json_field(obj, "top_best_question_ids", [])
+    # def get_top_best_questions(self, obj):
+    #     import json
+    #     ids = json.loads(obj.top_best_question_ids or "[]")
+    #     questions = ExamQuestion.objects.filter(id__in=ids)
+    #     # Return in the original order
+    #     id_map = {q.id: q for q in questions}
+    #     ordered_questions = [id_map[qid] for qid in ids if qid in id_map]
+    #     return ExamQuestionSerializer(ordered_questions, many=True).data
 
-    def get_top_worst_question_ids(self, obj):
-        return self._parse_json_field(obj, "top_worst_question_ids", [])
+    # def get_top_worst_questions(self, obj):
+    #     import json
+    #     ids = json.loads(obj.top_worst_question_ids or "[]")
+    #     questions = ExamQuestion.objects.filter(id__in=ids)
+    #     # Return in the original order
+    #     id_map = {q.id: q for q in questions}
+    #     ordered_questions = [id_map[qid] for qid in ids if qid in id_map]
+    #     return ExamQuestionSerializer(ordered_questions, many=True).data
+
+    def get_follow_up_exam_id(self, obj):
+        follow_up_exam = obj.follow_up_exams.filter(type="FollowUp").first()
+        return follow_up_exam.id if follow_up_exam else None
