@@ -201,7 +201,6 @@ class ExamPerformanceClusterAdmin(admin.ModelAdmin):
         "score_variance",
         "bloom_skill_scores",
         "strand_scores",
-        "student_session_ids",
         "top_best_question_ids",
         "top_worst_question_ids",
     ]

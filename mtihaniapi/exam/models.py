@@ -161,6 +161,14 @@ class StudentExamSessionPerformance(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    cluster = models.ForeignKey(
+        'ExamPerformanceCluster',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="performances"
+    )
+
     def save(self, *args, **kwargs):
         self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
         super().save(*args, **kwargs)
@@ -214,7 +222,6 @@ class ExamPerformanceCluster(models.Model):
 
     cluster_label = models.CharField(max_length=10)
     cluster_size = models.IntegerField(default=0)
-    student_session_ids = models.TextField()
     avg_score = models.FloatField()
     avg_expectation_level = models.CharField(max_length=100, blank=True)
     score_variance = models.TextField(blank=True)

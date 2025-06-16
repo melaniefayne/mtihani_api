@@ -790,7 +790,7 @@ def get_cluster_quiz(request) -> Response:
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsTeacher])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
 def download_cluster_quiz_pdf(request):
     cluster_id = request.GET.get("cluster_id")
     if not cluster_id:
@@ -894,8 +894,9 @@ def get_student_exam_answers(request):
 
         if not answer_ids:
             return Response({"message": "No answer_ids provided."}, status=HTTP_400_BAD_REQUEST)
-        
-        answer_ids = [int(i) for i in request.query_params.getlist("answer_ids")]
+
+        answer_ids = [int(i)
+                      for i in request.query_params.getlist("answer_ids")]
         answers = StudentExamSessionAnswer.objects.select_related(
             "session__student", "session__exam"
         ).filter(id__in=answer_ids)
@@ -934,7 +935,6 @@ def get_student_exam_answers(request):
 @permission_classes([IsAuthenticated])
 def get_question_performance(request):
     question_id = request.GET.get("question_id")
-
     if not question_id:
         return Response({"message": "Missing question_id parameter."}, status=HTTP_400_BAD_REQUEST)
 
@@ -951,6 +951,25 @@ def get_question_performance(request):
     except Exception as e:
         print("Error fetching performance:", e)
         return Response({"message": "Something went wrong."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
+def get_student_exam_cluster(request):
+    student_session_id = request.GET.get("student_session_id")
+    if not student_session_id:
+        return Response({"message": "Missing student_session_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+    try:
+        performance = StudentExamSessionPerformance.objects.select_related(
+            'cluster').get(session_id=student_session_id)
+        cluster = performance.cluster
+        if not cluster:
+            return Response({"message": "Cluster not assigned yet."}, status=HTTP_404_NOT_FOUND)
+        serializer = ExamPerformanceClusterSerializer(cluster)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except StudentExamSessionPerformance.DoesNotExist:
+        return Response({"detail": "Performance not found for session."}, status=HTTP_404_NOT_FOUND)
 
 # ================================================================== GENERATION FUNCTIONS
 # =======================================================================================
@@ -1987,13 +2006,15 @@ def cluster_exam_performance(performances: List, use_pca: bool = True, pca_compo
 
 def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[str, Any]]:
     try:
-        # Delete past clusters and their follow-up exams 
-        existing_clusters = ExamPerformanceCluster.objects.filter(exam_id=exam.id)
+        # Delete past clusters and their follow-up exams
+        existing_clusters = ExamPerformanceCluster.objects.filter(
+            exam_id=exam.id)
         cluster_ids = list(existing_clusters.values_list('id', flat=True))
         if cluster_ids:
-            Exam.objects.filter(performance_cluster_id__in=cluster_ids, type="FollowUp").delete()
+            Exam.objects.filter(
+                performance_cluster_id__in=cluster_ids, type="FollowUp").delete()
         existing_clusters.delete()
-        
+
         # Create clusters
         labels, optimal_k, _, _ = cluster_exam_performance(
             performances)
@@ -2009,7 +2030,6 @@ def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[s
             all_scores = [perf.avg_score for perf in group]
             all_expectation_levels = [
                 perf.avg_expectation_level for perf in group]
-            student_ids = [perf.id for perf in group]
 
             # Aggregate Bloom skill distribution
             bloom_skill_map = defaultdict(list)
@@ -2088,12 +2108,11 @@ def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[s
                 "max": score_range[1],
                 "std_dev": score_stddev,
             }
-            
+
             # Save to DB
-            ExamPerformanceCluster.objects.create(
+            cluster_obj = ExamPerformanceCluster.objects.create(
                 exam=exam,
                 cluster_label=f"Cluster {chr(65 + cluster_index)}",
-                student_session_ids=json.dumps(student_ids),
                 avg_score=avg_score,
                 avg_expectation_level=avg_expectation_level,
                 bloom_skill_scores=json.dumps(bloom_skill_distribution),
@@ -2103,6 +2122,11 @@ def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[s
                 top_worst_question_ids=json.dumps(top_worst_questions),
                 score_variance=json.dumps(score_variance),
             )
+
+            # Assign this cluster to each StudentExamSessionPerformance
+            for perf in group:
+                perf.cluster = cluster_obj
+                perf.save(update_fields=["cluster"])
 
         return None
 

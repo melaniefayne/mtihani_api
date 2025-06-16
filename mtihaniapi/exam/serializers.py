@@ -364,9 +364,7 @@ class ExamPerformanceClusterSerializer(serializers.ModelSerializer):
 
     # Nested performances
     def get_student_sessions(self, obj):
-        import json
-        ids = json.loads(obj.student_session_ids or "[]")
-        performances = StudentExamSessionPerformance.objects.filter(id__in=ids)
+        performances = obj.performances.all()
         return StudentExamSessionPerformanceMiniSerializer(performances, many=True).data
 
     # All JSON fields (reuse from earlier style)

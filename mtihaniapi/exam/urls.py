@@ -26,4 +26,5 @@ urlpatterns = [
     path('download-cluster-quiz-pdf', download_cluster_quiz_pdf),
     path('get-student-exam-answers', get_student_exam_answers),
     path('get-question-performance', get_question_performance),
+    path('get-student-exam-cluster', get_student_exam_cluster),
 ]
