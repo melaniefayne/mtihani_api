@@ -10,6 +10,7 @@ class ExamQuestionAnalysisSerializer(serializers.ModelSerializer):
     bloom_skill_distribution = serializers.SerializerMethodField()
     strand_distribution = serializers.SerializerMethodField()
     sub_strand_distribution = serializers.SerializerMethodField()
+    untested_strands = serializers.SerializerMethodField()
 
     class Meta:
         model = ExamQuestionAnalysis
@@ -19,6 +20,7 @@ class ExamQuestionAnalysisSerializer(serializers.ModelSerializer):
             'bloom_skill_distribution',
             'strand_distribution',
             'sub_strand_distribution',
+            'untested_strands',
         ]
 
     def get_grade_distribution(self, obj):
@@ -32,6 +34,9 @@ class ExamQuestionAnalysisSerializer(serializers.ModelSerializer):
 
     def get_sub_strand_distribution(self, obj):
         return _safe_json_parse(obj.sub_strand_distribution)
+
+    def get_untested_strands(self, obj):
+        return _safe_json_parse(obj.untested_strands)
 
 
 def _safe_json_parse(raw):
@@ -405,3 +410,26 @@ class ExamPerformanceClusterSerializer(serializers.ModelSerializer):
     def get_follow_up_exam_id(self, obj):
         follow_up_exam = obj.follow_up_exams.filter(type="FollowUp").first()
         return follow_up_exam.id if follow_up_exam else None
+
+
+class ExamQuestionPerformanceSerializer(serializers.ModelSerializer):
+    score_distribution = serializers.SerializerMethodField()
+    answers_by_level = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ExamQuestionPerformance
+        fields = [
+            "question_id",
+            "avg_score",
+            "avg_expectation_level",
+            "score_distribution",
+            "answers_by_level",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_score_distribution(self, obj):
+        return _safe_json_parse(obj.score_distribution)
+
+    def get_answers_by_level(self, obj):
+        return _safe_json_parse(obj.answers_by_level)

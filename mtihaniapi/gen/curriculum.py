@@ -234,11 +234,11 @@ def get_uncovered_strands_up_to_grade(
         g = item.get("grade")
         if g is not None and 7 <= g <= grade:
             for strand in item.get("strands", []):
-                strand_name = strand["name"]
+                strand_name =  f"{strand['name']} (G{g})"
                 if strand_name not in tested_strands:
-                    missing_strands.append(f"G{g}: {strand_name}")
+                    missing_strands.append(strand_name)
 
-    return sorted(missing_strands)
+    return missing_strands
 
 
 if __name__ == "__main__":

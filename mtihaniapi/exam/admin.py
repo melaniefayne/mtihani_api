@@ -68,7 +68,7 @@ class StudentExamSessionAnswerAdmin(admin.ModelAdmin):
         'created_at', 'updated_at'
     ]
     list_filter = ['score', 'tr_score']
-    search_fields = ['session__student__name', 'question__description']
+    search_fields = ['session__student__name', 'id', 'question__description']
     ordering = ['question__number']
 
     def short_description(self, obj):
