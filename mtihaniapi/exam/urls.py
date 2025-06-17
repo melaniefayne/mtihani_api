@@ -16,4 +16,18 @@ urlpatterns = [
     path('mock-exam-answers', mock_exam_answers),
     path('get-student-exam-sessions', get_student_exam_sessions),
     path('get-exam-question-answers', get_exam_questions_with_answers),
+    path('edit-answer-score', edit_answer_score),
+    # performance
+    path('get-class-exam-performance', get_class_exam_performance),
+    path('get-class-exam-clusters', get_class_exam_clusters),
+    path('get-cluster-quiz', get_cluster_quiz),
+    path('download-cluster-quiz-pdf', download_cluster_quiz_pdf),
+    path('get-percentile-performances', get_percentile_performances),
+    path('download-cluster-quiz-pdf', download_cluster_quiz_pdf),
+    path('get-student-exam-answers', get_student_exam_answers),
+    path('get-question-performance', get_question_performance),
+    path('get-student-exam-cluster', get_student_exam_cluster),
+    path('get-student-exam-performance', get_student_exam_performance),
+    path('get-class-performance-aggregate', get_class_performance_aggregate),
+    path('get-student-performance-aggregate', get_student_performance_aggregate),
 ]

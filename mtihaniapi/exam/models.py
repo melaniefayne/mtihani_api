@@ -1,5 +1,5 @@
 from django.db import models
-from utils import EXAM_STATUSES, EXPECTATION_LEVELS, generate_unique_code, get_answer_expectation_level, get_avg_expectation_level
+from utils import EXAM_STATUSES, EXPECTATION_LEVELS, EXAM_TYPES, generate_unique_code, get_answer_expectation_level, get_avg_expectation_level
 from learner.models import Classroom, Student, Teacher
 from django.utils import timezone
 
@@ -15,6 +15,7 @@ class Exam(models.Model):
     duration_min = models.IntegerField(blank=True)
     is_published = models.BooleanField(default=False)
     is_grading = models.BooleanField(default=False)
+    is_analysing = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     generation_config = models.TextField(blank=True, null=True)
@@ -23,6 +24,18 @@ class Exam(models.Model):
         Classroom, on_delete=models.CASCADE, related_name='exams')
     teacher = models.ForeignKey(
         Teacher, on_delete=models.SET_NULL, null=True, related_name='exams')
+
+    #
+    type = models.CharField(
+        max_length=25, choices=EXAM_TYPES, default="Standard")
+    source_exam = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.SET_NULL)
+    performance_cluster = models.ForeignKey(
+        "ExamPerformanceCluster",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="follow_up_exams"
+    )
 
     def save(self, *args, **kwargs):
         if self.start_date_time and self.end_date_time:
@@ -45,6 +58,11 @@ class Exam(models.Model):
         self.status = "Grading"
         self.is_grading = True
         self.save(update_fields=["status", "is_grading"])
+
+    def update_to_analysing(self):
+        self.status = "Analysing"
+        self.is_analysing = True
+        self.save(update_fields=["status", "is_analysing"])
 
 
 class ExamQuestion(models.Model):
@@ -70,6 +88,7 @@ class ExamQuestionAnalysis(models.Model):
     bloom_skill_distribution = models.TextField(blank=True)
     strand_distribution = models.TextField(blank=True)
     sub_strand_distribution = models.TextField(blank=True)
+    untested_strands = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     exam = models.OneToOneField(
@@ -83,8 +102,6 @@ class StudentExamSession(models.Model):
     start_date_time = models.DateTimeField(null=True)
     end_date_time = models.DateTimeField(null=True, blank=True)
     duration_min = models.IntegerField(null=True, blank=True)
-    avg_score = models.FloatField(null=True, blank=True)
-    expectation_level = models.CharField(max_length=100, blank=True, null=True)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
     student = models.ForeignKey(
         Student, on_delete=models.CASCADE, related_name='student_exam_session')
@@ -125,9 +142,48 @@ class StudentExamSessionAnswer(models.Model):
 class StudentExamSessionPerformance(models.Model):
     session = models.OneToOneField(
         StudentExamSession, on_delete=models.CASCADE, related_name='student_exam_session_performance')
+
+    avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
+    class_avg_difference = models.FloatField(default=0.0)
+
+    bloom_skill_scores = models.TextField(blank=True)
+    grade_scores = models.TextField(blank=True)
+    strand_scores = models.TextField(blank=True)
+
+    questions_answered = models.IntegerField(default=0)
+    questions_unanswered = models.IntegerField(default=0)
+    completion_rate = models.FloatField(default=0.0)
+
+    best_5_answer_ids = models.TextField(blank=True)
+    worst_5_answer_ids = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    cluster = models.ForeignKey(
+        'ExamPerformanceCluster',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="performances"
+    )
+
+    def save(self, *args, **kwargs):
+        self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
+        super().save(*args, **kwargs)
+
+
+class StudentAggregatePerformance(models.Model):
+    student = models.OneToOneField(
+        Student, on_delete=models.CASCADE, related_name='aggregate_performance'
+    )
+
+    exam_count = models.IntegerField(default=0)
     avg_score = models.FloatField()
     avg_expectation_level = models.CharField(max_length=100, blank=True)
     bloom_skill_scores = models.TextField(blank=True)
+    grade_scores = models.TextField(blank=True)
     strand_scores = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -138,15 +194,85 @@ class StudentExamSessionPerformance(models.Model):
 
 
 class ClassExamPerformance(models.Model):
-    exam = models.OneToOneField(Exam, on_delete=models.CASCADE)
+    exam = models.OneToOneField(
+        Exam, on_delete=models.CASCADE, related_name='class_exam_performance')
+
     avg_score = models.FloatField()
     avg_expectation_level = models.CharField(max_length=100, blank=True)
+    student_count = models.IntegerField(default=0)
+    expectation_level_distribution = models.TextField(blank=True)
+    score_distribution = models.TextField(blank=True)
+    score_variance = models.TextField(blank=True)
     bloom_skill_scores = models.TextField(blank=True)
-    strand_scores = models.TextField(blank=True)
+    general_insights = models.TextField(blank=True)
+    grade_scores = models.TextField(blank=True)
+    strand_analysis = models.TextField(blank=True)
+    strand_student_mastery = models.TextField(blank=True)
+    flagged_sub_strands = models.TextField(blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    classroom = models.ForeignKey(
-        Classroom, on_delete=models.CASCADE, related_name='class_exam_performance')
+
+    def save(self, *args, **kwargs):
+        self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
+        super().save(*args, **kwargs)
+
+
+class ExamQuestionPerformance(models.Model):
+    question = models.OneToOneField(
+        ExamQuestion, on_delete=models.CASCADE, related_name="performance")
+
+    avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
+    score_distribution = models.TextField(blank=True)
+    answers_by_level = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.avg_expectation_level = get_answer_expectation_level(
+            self.avg_score)
+        super().save(*args, **kwargs)
+
+
+class ExamPerformanceCluster(models.Model):
+    exam = models.ForeignKey(
+        "Exam", on_delete=models.CASCADE, related_name="performance_clusters")
+
+    cluster_label = models.CharField(max_length=10)
+    cluster_size = models.IntegerField(default=0)
+    avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
+    score_variance = models.TextField(blank=True)
+    bloom_skill_scores = models.TextField(blank=True)
+    strand_scores = models.TextField(blank=True)
+    top_best_question_ids = models.TextField(blank=True)
+    top_worst_question_ids = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.avg_expectation_level = get_avg_expectation_level(
+            self.avg_score)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.cluster_label} (Exam ID: {self.exam_id})"
+
+
+class ClassAggregatePerformance(models.Model):
+    classroom = models.OneToOneField(
+        Classroom, on_delete=models.CASCADE, related_name='aggregate_exam_performance'
+    )
+
+    exam_count = models.IntegerField(default=0)
+    avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
+    grade_scores = models.TextField(blank=True)
+    bloom_skill_scores = models.TextField(blank=True)
+    strand_analysis = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         self.avg_expectation_level = get_avg_expectation_level(self.avg_score)

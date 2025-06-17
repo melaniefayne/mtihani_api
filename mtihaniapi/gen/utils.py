@@ -344,3 +344,135 @@ def generate_llm_answer_grades_list(
         print(f"\n✅ Graded Answers list written to {output_file}")
 
     return all_grades
+
+
+# ================================================================== GRADE ANSWERS
+
+CLASSROOM_EXAM_INSIGHTS_LLM_PROMPT = PromptTemplate(
+    input_variables=["class_performance_data"],
+    template=CLASSROOM_EXAM_INSIGHTS_PROMPT
+)
+
+
+def generate_llm_class_perf_insights(
+        class_performance_data: List[Dict[str, Any]],
+        is_debug: bool = False,
+        llm: Any = OPENAI_LLM_4O,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+
+    prompt_template = CLASSROOM_EXAM_INSIGHTS_LLM_PROMPT
+    formatted_prompt = prompt_template.format(
+        class_performance_data=class_performance_data
+    )
+    invoke_param = {
+        "class_performance_data": class_performance_data
+    }
+
+    res = run_llm_function(
+        invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
+
+    return res
+
+
+STRAND_PERFORMANCE_INSIGHTS_LLM_PROMPT = PromptTemplate(
+    input_variables=["strand_performance_data"],
+    template=STRAND_PERFORMANCE_INSIGHTS_PROMPT
+)
+
+
+def generate_llm_strand_insights(
+        strand_performance_data: List[Dict[str, Any]],
+        is_debug: bool = False,
+        llm: Any = OPENAI_LLM_4O,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+
+    prompt_template = STRAND_PERFORMANCE_INSIGHTS_LLM_PROMPT
+    formatted_prompt = prompt_template.format(
+        strand_performance_data=strand_performance_data
+    )
+    invoke_param = {
+        "strand_performance_data": strand_performance_data
+    }
+
+    res = run_llm_function(
+        invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
+
+    return res
+
+
+FLAGGED_SUB_STRAND_INSIGHTS_LLM_PROMPT = PromptTemplate(
+    input_variables=["sub_strand_correlations"],
+    template=FLAGGED_SUB_STRAND_INSIGHTS_PROMPT
+)
+
+
+def generate_llm_sub_strand_corr_insights(
+        sub_strand_correlations: List[Dict[str, Any]],
+        is_debug: bool = False,
+        llm: Any = OPENAI_LLM_4O,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+
+    prompt_template = FLAGGED_SUB_STRAND_INSIGHTS_LLM_PROMPT
+    formatted_prompt = prompt_template.format(
+        sub_strand_correlations=sub_strand_correlations
+    )
+    invoke_param = {
+        "sub_strand_correlations": sub_strand_correlations
+    }
+
+    res = run_llm_function(
+        invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
+
+    return res
+
+
+CREATE_CLUSTER_FOLLOW_UP_QUIZ_LLM_PROMPT = PromptTemplate(
+    input_variables=["exam_questions", "cluster_performance", "question_count"],
+    template=CREATE_CLUSTER_FOLLOW_UP_QUIZ_PROMPT
+)
+
+
+def generate_llm_follow_up_quiz(
+        exam_questions: List[Dict[str, Any]],
+        cluster_performance: Dict[str, Any],
+        question_count: int = 15,
+        is_debug: bool = False,
+        llm: Any = OPENAI_LLM_4O,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+
+    prompt_template = CREATE_CLUSTER_FOLLOW_UP_QUIZ_LLM_PROMPT
+    formatted_prompt = prompt_template.format(
+        exam_questions=exam_questions,
+        cluster_performance=cluster_performance,
+        question_count=question_count,
+    )
+    invoke_param = {
+        "exam_questions": exam_questions,
+        "cluster_performance": cluster_performance,
+        "question_count": question_count,
+    }
+
+    res = run_llm_function(
+        invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
+
+    return res

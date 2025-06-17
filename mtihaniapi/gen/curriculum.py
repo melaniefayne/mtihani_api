@@ -189,14 +189,14 @@ def get_cbc_grouped_questions(
             "skills_to_test": skills_group
         })
 
-
     if (is_debug):
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(grouped_questions, f, ensure_ascii=False, indent=4)
-        print(f"\n✅ Question breakdown written to {output_file}. Total: {len(grouped_questions)}")
+        print(
+            f"\n✅ Question breakdown written to {output_file}. Total: {len(grouped_questions)}")
 
     return grouped_questions
-    
+
 
 def get_rubrics_by_sub_strand(
         sub_strand_name: str,
@@ -218,7 +218,46 @@ def get_rubrics_by_sub_strand(
     return []
 
 
+def get_uncovered_strands_up_to_grade(
+    grade: int,
+    tested_strands: list[str],
+    curriculum_file: str = CURRICULUM_FILE,
+) -> list[str]:
+    """
+    Returns a list of strand names from grade 7 up to the given grade,
+    excluding any already present in tested_strands.
+    """
+    missing_strands = []
+    cbc_data = load_curriculum(curriculum_file)
+
+    for item in cbc_data:
+        g = item.get("grade")
+        if g is not None and 7 <= g <= grade:
+            for strand in item.get("strands", []):
+                strand_name =  f"{strand['name']} (G{g})"
+                if strand_name not in tested_strands:
+                    missing_strands.append(strand_name)
+
+    return missing_strands
+
+
 if __name__ == "__main__":
     selected_strands = [6, 9, 4]
     question_brd = get_cbc_grouped_questions(
         strand_ids=selected_strands, question_count=10)
+
+
+def get_all_strand_names(
+    curriculum_file: str = CURRICULUM_FILE,
+) -> List[str]:
+    cbc_data = load_curriculum(curriculum_file)
+
+    strand_names = []
+    for item in cbc_data:
+        for strand in item.get("strands", []):
+            strand_names.append(strand['name'])
+            sub_strands = strand['sub_strands']
+            for sub_strand in sub_strands:
+                strand_names.append(sub_strand['name'])
+
+    return strand_names

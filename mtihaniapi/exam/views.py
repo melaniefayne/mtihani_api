@@ -1,20 +1,110 @@
+from io import BytesIO
+from mtihaniapi import settings
+from .models import Exam, ExamQuestion
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from rest_framework.status import HTTP_400_BAD_REQUEST
+from django.http import HttpResponse
+import math
+import itertools
+
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import StandardScaler
+from .models import StudentExamSessionPerformance
+from scipy.stats import pearsonr
+from collections import defaultdict
 from celery import shared_task
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import *
+from django.db import transaction
 from learner.models import Classroom, Student, Teacher
-from exam.models import Exam, ExamQuestion, ExamQuestionAnalysis, StudentExamSession, StudentExamSessionAnswer
-from exam.serializers import ExamQuestionSerializer, ExamSerializer, FullStudentExamSessionAnswerSerializer, StudentExamSessionAnswerSerializer, StudentExamSessionSerializer
-from gen.curriculum import get_cbc_grouped_questions, get_rubrics_by_sub_strand
-from gen.utils import generate_llm_answer_grades_list, generate_llm_question_list, get_db_question_objects
-from utils import GlobalPagination, get_answer_expectation_level
+from exam.models import *
+from exam.serializers import *
+from gen.curriculum import get_cbc_grouped_questions, get_rubrics_by_sub_strand, get_uncovered_strands_up_to_grade
+from gen.utils import *
+from utils import GlobalPagination
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
 from typing import Counter, Dict, Any, List, Optional, Union
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 import json
+from exam.utils import *
+from statistics import mode, stdev
+
+APP_QUESTION_COUNT = 25
+APP_BLOOM_SKILL_COUNT = 3
+BLOOM_SKILLS = [
+    "Knowledge", "Comprehension", "Application", "Analysis", "Synthesis", "Evaluation"
+]
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def create_classroom_exam(request) -> Response:
+    try:
+        classroom_id = request.GET.get("classroom_id")
+        if not classroom_id:
+            return Response({"message": "Missing classroom_id in request."}, status=HTTP_400_BAD_REQUEST)
+
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+        except Classroom.DoesNotExist:
+            return Response({"message": "Classroom not found."}, status=HTTP_400_BAD_REQUEST)
+
+        start_date_time_str = request.data.get("start_date_time")
+        end_date_time_str = request.data.get("end_date_time")
+
+        if not start_date_time_str or not end_date_time_str:
+            return Response({"message": "Missing start or end date time"}, status=HTTP_400_BAD_REQUEST)
+
+        start_date_time = parse_datetime(start_date_time_str)
+        end_date_time = parse_datetime(end_date_time_str)
+
+        if not start_date_time or not end_date_time:
+            return Response({"message": "Invalid date format. Use ISO 8601 (e.g. '2025-05-10T09:00:00Z')"},
+                            status=HTTP_400_BAD_REQUEST)
+
+        strand_ids = request.data.get("strand_ids", [])
+        question_count = request.data.get("question_count", APP_QUESTION_COUNT)
+        bloom_skill_count = request.data.get(
+            "bloom_skill_count", APP_BLOOM_SKILL_COUNT)
+        generation_config = {
+            "strand_ids": strand_ids,
+            "question_count": question_count,
+            "bloom_skill_count": bloom_skill_count
+        }
+
+        # Create the Exam
+        exam = Exam.objects.create(
+            start_date_time=start_date_time,
+            end_date_time=end_date_time,
+            classroom=classroom,
+            teacher=Teacher.objects.get(user=request.user),
+            generation_config=json.dumps(generation_config)
+        )
+
+        # Eagerly create ExamSession entries for each student
+        students = Student.objects.filter(classroom=classroom)
+        StudentExamSession.objects.bulk_create([
+            StudentExamSession(student=s, exam=exam) for s in students
+        ])
+
+        # Trigger background task
+        generate_exam_content.delay(exam.id, generation_config)
+
+        return Response({
+            "message": "Exam generation has been initiated.",
+            "exam_id": exam.id,
+            "status": "Generating"
+        }, status=HTTP_201_CREATED)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
@@ -113,7 +203,7 @@ def edit_exam_questions(request) -> Response:
 
         if updated_questions:
             exam = updated_questions[0].exam
-            calculate_exam_analysis(exam)
+            generate_exam_question_analysis(exam)
 
             serializer = ExamSerializer(exam)
             return Response({
@@ -169,6 +259,7 @@ def get_user_exams(request):
             filters &= Q(is_published=is_published.lower() == "true")
 
         # === FETCH EXAMS ===
+        filters &= Q(type='Standard')
         exams = Exam.objects.filter(filters).select_related(
             'classroom', 'teacher', 'analysis'
         ).order_by('-start_date_time')
@@ -187,6 +278,11 @@ def get_user_exams(request):
             if (exam.status == "Grading" and not exam.is_grading):
                 # Trigger background task
                 generate_exam_grades.delay(exam.id)
+
+            # # TODO
+            if (exam.status == "Analysing" and not exam.is_analysing):
+                # Trigger background task
+                generate_exam_analysis.delay(exam.id)
 
         # === FETCH STUDENT SESSION MAPPING ===
         if user.groups.filter(name="student").exists():
@@ -530,10 +626,11 @@ def get_student_exam_sessions(request) -> Response:
         search_query = request.GET.get('search')
 
         sessions = StudentExamSession.objects.select_related(
-            'student', 'exam').filter(exam_id=exam_id)
+            'student', 'exam', 'student_exam_session_performance').filter(exam_id=exam_id)
 
         if expectation_level:
-            sessions = sessions.filter(expectation_level=expectation_level)
+            sessions = sessions.filter(
+                student_exam_session_performance__avg_expectation_level=expectation_level)
 
         if search_query:
             sessions = sessions.filter(student__name__icontains=search_query)
@@ -595,77 +692,358 @@ def get_exam_questions_with_answers(request):
     return Response(data)
 
 
-# ========================================================================= LLM FUNCTIONS
-# =======================================================================================
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def edit_answer_score(request) -> Response:
+    try:
+        answer_id = request.GET.get("answer_id")
+        try:
+            answer = StudentExamSessionAnswer.objects.select_related(
+                'session').get(id=answer_id)
+        except StudentExamSessionAnswer.DoesNotExist:
+            return Response({"message": "Answer not found."}, status=HTTP_404_NOT_FOUND)
 
-APP_QUESTION_COUNT = 25
-APP_BLOOM_SKILL_COUNT = 3
+        if answer.session.status != "Complete":
+            return Response(
+                {"message": "This session is not complete yet. Scores cannot be updated."},
+                status=HTTP_400_BAD_REQUEST
+            )
+        tr_score = float(request.data.get("tr_score"))
+
+        if tr_score is None:
+            return Response({"message": "Missing teacher score field."}, status=HTTP_400_BAD_REQUEST)
+
+        answer.tr_score = tr_score
+        answer.score = tr_score
+        answer.save(update_fields=["score", "tr_score",
+                    "expectation_level", "updated_at"])
+
+        # Trigger background task
+        generate_exam_analysis.delay(answer.session.exam.id)
+
+        return Response({"message": "Answer updated successfully."}, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error updating answer: {e}")
+        return Response({"message": "Something went wrong while updating the answer."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_class_exam_performance(request) -> Response:
+    try:
+        exam_id = request.GET.get("exam_id")
+        if not exam_id:
+            return Response({"message": "Missing exam_id parameter."}, status=HTTP_400_BAD_REQUEST)
+        try:
+            class_performance = ClassExamPerformance.objects.get(
+                exam__id=exam_id)
+        except ClassExamPerformance.DoesNotExist:
+            return Response({"message": "Class Performance not found."}, status=HTTP_404_NOT_FOUND)
+
+        serializer = ClassExamPerformanceSerializer(class_performance)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except Exception as e:
+        print(f"Error getting class performance: {e}")
+        return Response({"message": "Something went wrong while getting performance"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_class_exam_clusters(request) -> Response:
+    try:
+        exam_id = request.GET.get("exam_id")
+        if not exam_id:
+            return Response({"message": "Missing exam_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+        clusters = ExamPerformanceCluster.objects.filter(
+            exam__id=exam_id).order_by("cluster_label")
+        serializer = ExamPerformanceClusterSerializer(clusters, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error getting class performance clusters: {e}")
+        return Response({"message": "Something went wrong while getting clusters"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_cluster_quiz(request) -> Response:
+    try:
+        cluster_id = request.GET.get("cluster_id")
+        if not cluster_id:
+            return Response({"message": "Missing cluster_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+        follow_up_exam = Exam.objects.filter(
+            performance_cluster__id=cluster_id, type="FollowUp").first()
+        if not follow_up_exam:
+            return Response({"message": "No follow-up quiz found for this cluster."}, status=HTTP_400_BAD_REQUEST)
+
+        questions = ExamQuestion.objects.filter(
+            exam=follow_up_exam).order_by("number")
+        serializer = ExamQuestionSerializer(questions, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+    except Exception as e:
+        print(f"Error getting class cluster quiz: {e}")
+        return Response({"message": "Something went wrong while getting cluster quiz"}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
+def download_cluster_quiz_pdf(request):
+    cluster_id = request.GET.get("cluster_id")
+    if not cluster_id:
+        return Response({"message": "Missing cluster_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+    follow_up_exam = Exam.objects.filter(
+        performance_cluster__id=cluster_id, type="FollowUp").first()
+    if not follow_up_exam:
+        return Response({"message": "No follow-up quiz found for this cluster."}, status=HTTP_400_BAD_REQUEST)
+
+    questions = ExamQuestion.objects.filter(
+        exam=follow_up_exam).order_by("number")
+    if not questions.exists():
+        return Response({"message": "No questions found for this quiz."}, status=HTTP_400_BAD_REQUEST)
+
+    # --- PDF Generation ---
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+
+    # Example Branding (repeat as before)
+    p.setFont("Helvetica-Bold", 20)
+    p.drawString(50, height - 50, "Mtihani - Cluster Follow-Up Quiz")
+    p.setFont("Helvetica", 12)
+    p.drawString(50, height - 70,
+                 f"Cluster: {cluster_id} | Generated by Mtihani App")
+    p.line(40, height - 80, width - 40, height - 80)
+    y = height - 100
+
+    for idx, q in enumerate(questions, start=1):
+        q_text = f"{idx}. {q.description}"
+        for line in split_text(q_text, max_chars=100):
+            p.drawString(50, y, line)
+            y -= 18
+            if y < 80:
+                p.showPage()
+                p.setFont("Helvetica-Bold", 20)
+                p.drawString(50, height - 50,
+                             "Mtihani - Cluster Follow-Up Quiz")
+                p.setFont("Helvetica", 12)
+                p.drawString(
+                    50, height - 70, f"Cluster: {cluster_id} | Generated by Mtihani App")
+                p.line(40, height - 80, width - 40, height - 80)
+                y = height - 100
+        y -= 10
+
+    p.save()
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
+
+    # If you want to return as HTTP download:
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Cluster_{cluster_id}_Quiz.pdf"'
+    return response
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_percentile_performances(request):
+    try:
+        exam_id = request.GET.get("exam_id")
+        if not exam_id:
+            return Response({"message": "Missing exam_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+        performances = StudentExamSessionPerformance.objects.filter(
+            session__exam__id=exam_id
+        ).select_related('session', 'session__student', 'session__exam')
+
+        scores = [p.avg_score for p in performances if p.avg_score is not None]
+        if not scores:
+            return Response({"top_students": [], "bottom_students": []})
+
+        percent_90 = np.percentile(scores, 80)
+        percent_10 = np.percentile(scores, 20)
+
+        top_students = [
+            p for p in performances if p.avg_score is not None and p.avg_score >= percent_90]
+        bottom_students = [
+            p for p in performances if p.avg_score is not None and p.avg_score <= percent_10]
+
+        return Response({
+            "top_students": StudentExamSessionPerformanceMiniSerializer(top_students, many=True).data,
+            "bottom_students": StudentExamSessionPerformanceMiniSerializer(bottom_students, many=True).data,
+        })
+
+    except Exception as e:
+        print(f"Error getting performance percentiles: {e}")
+        return Response(
+            {"message": "Something went wrong while getting percentile students"},
+            status=HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_student_exam_answers(request):
+    try:
+        answer_ids = request.GET.get("answer_ids", [])
+        expectation_level = request.data.get("expectation_level")
+        student_name = request.GET.get("student_name")
+
+        if not answer_ids:
+            return Response({"message": "No answer_ids provided."}, status=HTTP_400_BAD_REQUEST)
+
+        answer_ids = [int(i)
+                      for i in request.query_params.getlist("answer_ids")]
+        answers = StudentExamSessionAnswer.objects.select_related(
+            "session__student", "session__exam"
+        ).filter(id__in=answer_ids)
+
+        if expectation_level:
+            answers = answers.filter(expectation_level=expectation_level)
+
+        if student_name:
+            answers = answers.filter(
+                session__student__name__icontains=student_name)
+
+        serialized = [
+            {
+                "id": ans.session.exam.id,
+                "status": ans.session.exam.status,
+                "code": ans.session.exam.code,
+                "answer_id": ans.id,
+                "answer_description": ans.description,
+                "answer_score": ans.score,
+                "answer_expectation_level": ans.expectation_level,
+                "student_id": ans.session.student.id,
+                "student_name": ans.session.student.name,
+                "exam_id": ans.session.exam.id,
+            }
+            for ans in answers
+        ]
+
+        return Response(serialized, status=HTTP_200_OK)
+
+    except Exception as e:
+        print("Error fetching student exam answers:", e)
+        return Response({"message": "Something went wrong."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_question_performance(request):
+    question_id = request.GET.get("question_id")
+    if not question_id:
+        return Response({"message": "Missing question_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+    try:
+        question_perf = ExamQuestionPerformance.objects.select_related("question").get(
+            question_id=question_id
+        )
+        serialized = ExamQuestionPerformanceSerializer(question_perf)
+        return Response(serialized.data, status=HTTP_200_OK)
+
+    except ExamQuestionPerformance.DoesNotExist:
+        return Response({"message": "Performance not found for this question."}, status=HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        print("Error fetching performance:", e)
+        return Response({"message": "Something went wrong."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
+def get_student_exam_cluster(request):
+    student_session_id = request.GET.get("student_session_id")
+    if not student_session_id:
+        return Response({"message": "Missing student_session_id parameter."}, status=HTTP_400_BAD_REQUEST)
+
+    try:
+        performance = StudentExamSessionPerformance.objects.select_related(
+            'cluster').get(session_id=student_session_id)
+        cluster = performance.cluster
+        if not cluster:
+            return Response({"message": "Cluster not assigned yet."}, status=HTTP_404_NOT_FOUND)
+        serializer = ExamPerformanceClusterSerializer(cluster)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except StudentExamSessionPerformance.DoesNotExist:
+        return Response({"detail": "Performance not found for session."}, status=HTTP_404_NOT_FOUND)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
+def get_student_exam_performance(request):
+    student_session_id = request.GET.get("student_session_id")
+    if not student_session_id:
+        return Response({"message": "Missing student_session_id parameter."}, status=HTTP_400_BAD_REQUEST)
+    try:
+        performance = StudentExamSessionPerformance.objects.select_related(
+            'session__student', 'session__exam').get(session_id=student_session_id)
+        serializer = StudentExamSessionPerformanceSerializer(performance)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except StudentExamSessionPerformance.DoesNotExist:
+        return Response({"detail": "Performance not found for this student session."}, status=HTTP_404_NOT_FOUND)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_class_performance_aggregate(request):
+    classroom_id = request.query_params.get('classroom_id')
+    if not classroom_id:
+        return Response({"error": "Missing 'classroom_id' query parameter."}, status=HTTP_400_BAD_REQUEST)
+
+    try:
+        agg = ClassAggregatePerformance.objects.get(classroom__id=classroom_id)
+        serializer = ClassAggregatePerformanceSerializer(agg)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except ClassAggregatePerformance.DoesNotExist:
+        return Response({"error": "No aggregate performance found for that classroom."}, status=HTTP_404_NOT_FOUND)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
+def get_student_performance_aggregate(request):
+    student_id = request.query_params.get("student_id")
+    if not student_id:
+        return Response({"error": "Missing student_id in query params."}, status=HTTP_400_BAD_REQUEST)
+
+    try:
+        agg = StudentAggregatePerformance.objects.get(student__id=student_id)
+        serializer = StudentAggregatePerformanceSerializer(agg)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except StudentAggregatePerformance.DoesNotExist:
+        return Response({"error": "Student aggregate performance not found."}, status=HTTP_404_NOT_FOUND)
+
+# ================================================================== GENERATION FUNCTIONS
+# =======================================================================================
+# =======================================================================================
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated, IsTeacher])
-def create_classroom_exam(request) -> Response:
+def retry_exam_llm_function(request) -> Response:
+    exam_id = request.GET.get("exam_id")
     try:
-        classroom_id = request.GET.get("classroom_id")
-        if not classroom_id:
-            return Response({"message": "Missing classroom_id in request."}, status=HTTP_400_BAD_REQUEST)
+        exam = Exam.objects.get(id=exam_id, teacher__user=request.user)
+    except Exam.DoesNotExist:
+        return Response({"message": "Exam not found or you do not have permission to access it."},
+                        status=HTTP_404_NOT_FOUND)\
 
-        try:
-            classroom = Classroom.objects.get(id=classroom_id)
-        except Classroom.DoesNotExist:
-            return Response({"message": "Classroom not found."}, status=HTTP_400_BAD_REQUEST)
+    if exam.status != "Failed":
+        return Response({"message": "Only exams with status 'Failed' can be retried."},
+                        status=HTTP_400_BAD_REQUEST)
 
-        start_date_time_str = request.data.get("start_date_time")
-        end_date_time_str = request.data.get("end_date_time")
+    if exam.is_grading:
+        return retry_exam_grading(exam)
+    elif exam.is_analysing:
+        return retry_exam_analysis(exam)
+    else:
+        return retry_exam_generation(exam)
 
-        if not start_date_time_str or not end_date_time_str:
-            return Response({"message": "Missing start or end date time"}, status=HTTP_400_BAD_REQUEST)
 
-        start_date_time = parse_datetime(start_date_time_str)
-        end_date_time = parse_datetime(end_date_time_str)
-
-        if not start_date_time or not end_date_time:
-            return Response({"message": "Invalid date format. Use ISO 8601 (e.g. '2025-05-10T09:00:00Z')"},
-                            status=HTTP_400_BAD_REQUEST)
-
-        strand_ids = request.data.get("strand_ids", [])
-        question_count = request.data.get("question_count", APP_QUESTION_COUNT)
-        bloom_skill_count = request.data.get(
-            "bloom_skill_count", APP_BLOOM_SKILL_COUNT)
-        generation_config = {
-            "strand_ids": strand_ids,
-            "question_count": question_count,
-            "bloom_skill_count": bloom_skill_count
-        }
-
-        # Create the Exam
-        exam = Exam.objects.create(
-            start_date_time=start_date_time,
-            end_date_time=end_date_time,
-            classroom=classroom,
-            teacher=Teacher.objects.get(user=request.user),
-            generation_config=json.dumps(generation_config)
-        )
-
-        # Eagerly create ExamSession entries for each student
-        students = Student.objects.filter(classroom=classroom)
-        StudentExamSession.objects.bulk_create([
-            StudentExamSession(student=s, exam=exam) for s in students
-        ])
-
-        # Trigger background task
-        generate_exam_content.delay(exam.id, generation_config)
-
-        return Response({
-            "message": "Exam generation has been initiated.",
-            "exam_id": exam.id,
-            "status": "Generating"
-        }, status=HTTP_201_CREATED)
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return Response({"message": "Something went wrong on our side :( Please try again later."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-
+# ==================================================================== GENERATING EXAMS
 
 # =============================================
 # ==========ANY CHANGE TO THIS=================
@@ -703,7 +1081,7 @@ def generate_exam_content(exam_id, generation_config):
                 exam=exam
             )
 
-        calculate_exam_analysis(exam)
+        generate_exam_question_analysis(exam)
 
         exam.status = "Upcoming"
         exam.save()
@@ -711,7 +1089,7 @@ def generate_exam_content(exam_id, generation_config):
         exam.status = "Failed"
         exam.generation_error = f"Unexpected error: {str(e)}"
         exam.save()
-        print(f"Background generation failed for Exam ID {exam_id}: {e}")
+        print(f"Background generation failed for Exam ID {exam.id}: {e}")
 
 
 def get_llm_generated_exam(
@@ -747,23 +1125,68 @@ def get_llm_generated_exam(
         return {"error": f"LLM generation failed: {str(e)}"}
 
 
-def calculate_exam_analysis(exam):
+def generate_exam_question_analysis(exam):
     questions = exam.questions.all()
+
+    strand_dist = [
+        {"name": k, "count": v}
+        for k, v in Counter(f"{q.strand} (G{q.grade})" for q in questions).items()
+    ]
+
+    tested_strands = list(set(f"{q.strand} (G{q.grade})" for q in questions))
+
+    grade_level = exam.classroom.grade
+    uncovered_strands = get_uncovered_strands_up_to_grade(
+        grade_level, tested_strands)
 
     analysis_data = {
         "question_count": questions.count(),
         "grade_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.grade for q in questions).items()]),
         "bloom_skill_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.bloom_skill for q in questions).items()]),
-        "strand_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.strand for q in questions).items()]),
+        "strand_distribution": json.dumps(strand_dist),
+        "untested_strands": json.dumps(uncovered_strands),
         "sub_strand_distribution": json.dumps([{"name": k, "count": v} for k, v in Counter(q.sub_strand for q in questions).items()]),
     }
 
-    # Update or create the analysis
     ExamQuestionAnalysis.objects.update_or_create(
         exam=exam,
         defaults=analysis_data
     )
 
+
+def retry_exam_generation(exam) -> Response:
+    try:
+        if exam.status == "Generating":
+            return Response({"message": "Exam is already being regenerated."}, status=HTTP_400_BAD_REQUEST)
+
+        # Clear previous error and set back to Generating
+        exam.status = "Generating"
+        exam.generation_error = None
+        exam.save()
+
+        try:
+            config = json.loads(exam.generation_config or "{}")
+        except json.JSONDecodeError:
+            return Response({"message": "Saved generation config is invalid JSON."},
+                            status=HTTP_400_BAD_REQUEST)
+
+        if not config.get("strand_ids"):
+            return Response({"message": "Exam config is incomplete and cannot be retried."},
+                            status=HTTP_400_BAD_REQUEST)
+
+        # Re-trigger async generation
+        generate_exam_content.delay(exam.id, config)
+
+        return Response({"message": "Exam generation retry initiated.", "exam_id": exam.id, "status": "Generating"},
+                        status=HTTP_202_ACCEPTED)
+
+    except Exception as e:
+        print(f"Retry failed: {e}")
+        return Response({"message": "Something went wrong during retry. Please try again."},
+                        status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================================================================== GRADING EXAMS
 
 # =============================================
 # ==========ANY CHANGE TO THIS=================
@@ -810,14 +1233,14 @@ def generate_exam_grades(exam_id):
 
         # update answer scores
 
-        failed_updates = []
+        failed_grading_updates = []
         sessions_to_complete = set()
         for item in grades_res:
             answer_id = item.get("answer_id")
             ai_score = float(item.get("score"))
 
             if answer_id is None or ai_score is None:
-                failed_updates.append(
+                failed_grading_updates.append(
                     {"answer_id": answer_id, "reason": "Missing answer_id or score"})
                 continue
             try:
@@ -834,17 +1257,18 @@ def generate_exam_grades(exam_id):
                 sessions_to_complete.add(answer.session_id)
 
             except StudentExamSessionAnswer.DoesNotExist:
-                failed_updates.append(
+                failed_grading_updates.append(
                     {"answer_id": answer_id, "reason": "Answer not found"})
 
-        if failed_updates:
+        if failed_grading_updates:
             exam.status = "Failed"
-            exam.generation_error = f"Some updates failed: {json.dumps(failed_updates)}"
+            exam.generation_error = f"Some updates failed: {json.dumps(failed_grading_updates)}"
             exam.save()
             return
 
         StudentExamSession.objects.filter(
             id__in=sessions_to_complete).update(status="Complete")
+
         exam.status = "Analysing"
         exam.is_grading = False
         exam.save()
@@ -853,59 +1277,7 @@ def generate_exam_grades(exam_id):
         exam.status = "Failed"
         exam.generation_error = f"Unexpected error: {str(e)}"
         exam.save()
-        print(f"Background grading failed for Exam ID {exam_id}: {e}")
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated, IsTeacher])
-def retry_exam_llm_function(request) -> Response:
-    exam_id = request.GET.get("exam_id")
-    try:
-        exam = Exam.objects.get(id=exam_id, teacher__user=request.user)
-    except Exam.DoesNotExist:
-        return Response({"message": "Exam not found or you do not have permission to access it."},
-                        status=HTTP_404_NOT_FOUND)\
-
-    if exam.status != "Failed":
-        return Response({"message": "Only exams with status 'Failed' can be retried."},
-                        status=HTTP_400_BAD_REQUEST)
-
-    if exam.is_grading:
-        return retry_exam_grading(exam)
-    else:
-        return retry_exam_generation(exam)
-
-
-def retry_exam_generation(exam) -> Response:
-    try:
-        if exam.status == "Generating":
-            return Response({"message": "Exam is already being regenerated."}, status=HTTP_400_BAD_REQUEST)
-
-        # Clear previous error and set back to Generating
-        exam.status = "Generating"
-        exam.generation_error = None
-        exam.save()
-
-        try:
-            config = json.loads(exam.generation_config or "{}")
-        except json.JSONDecodeError:
-            return Response({"message": "Saved generation config is invalid JSON."},
-                            status=HTTP_400_BAD_REQUEST)
-
-        if not config.get("strand_ids"):
-            return Response({"message": "Exam config is incomplete and cannot be retried."},
-                            status=HTTP_400_BAD_REQUEST)
-
-        # Re-trigger async generation
-        generate_exam_content.delay(exam.id, config)
-
-        return Response({"message": "Exam generation retry initiated.", "exam_id": exam.id, "status": "Generating"},
-                        status=HTTP_202_ACCEPTED)
-
-    except Exception as e:
-        print(f"Retry failed: {e}")
-        return Response({"message": "Something went wrong during retry. Please try again."},
-                        status=HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Background grading failed for Exam ID {exam.id}: {e}")
 
 
 def retry_exam_grading(exam) -> Response:
@@ -922,6 +1294,1281 @@ def retry_exam_grading(exam) -> Response:
         generate_exam_grades.delay(exam.id)
 
         return Response({"message": "Exam grading retry initiated.", "exam_id": exam.id, "status": "Grading"},
+                        status=HTTP_202_ACCEPTED)
+
+    except Exception as e:
+        print(f"Retry failed: {e}")
+        return Response({"message": "Something went wrong during retry. Please try again."},
+                        status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================================================================== ANALYSING EXAMS
+
+# =============================================
+# ==========ANY CHANGE TO THIS=================
+# =======!!!!RESTART CELERY!!!=================
+# =============================================
+@shared_task
+def generate_exam_analysis(exam_id):
+    try:
+        exam = Exam.objects.get(id=exam_id)
+        exam.update_to_analysing()
+
+        # 1. updateCreate StudentExamSessionPerformance
+        error_res = generate_all_exam_session_performances(exam)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            if "details" in error_res:
+                exam.generation_error += f" | Sessions: {json.dumps(error_res['details'])}"
+            exam.save()
+            return
+
+        performances = StudentExamSessionPerformance.objects.filter(
+            session__exam=exam)
+
+        # 2. updateCreate ClassExamPerformance
+        error_res = generate_class_exam_performance(exam, performances)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
+
+        # 3. update StudentExamSessionPerformance with ClassExamPerformance
+        try:
+            class_perf = ClassExamPerformance.objects.get(exam=exam)
+            for sp in performances:
+                diff = round(sp.avg_score - class_perf.avg_score, 2)
+                sp.class_avg_difference = diff
+                sp.save()
+        except Exception as e:
+            exam.status = "Failed"
+            exam.generation_error = f"Failed updating student-class diffs: {str(e)}"
+            exam.save()
+            return
+
+        # 4. create performance clusters
+        error_res = generate_exam_performance_clusters(exam, performances)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
+
+        # 5. create cluster follow up quizzes
+        error_res = generate_all_cluster_follow_ups(exam)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            if "details" in error_res:
+                exam.generation_error += f" | Clusters: {json.dumps(error_res['details'])}"
+            exam.save()
+            return
+
+        # 6. updateCreate ExamQuestionPerformance
+        error_res = generate_exam_question_performance(exam)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
+
+        # 6. updateCreate ClassAggregatePerformance
+        error_res = update_class_aggregate_performance(exam.classroom)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
+
+        # 7. updateCreate StudentAggregatePerformance
+        error_res = update_all_student_aggregates(performances)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            if "details" in error_res:
+                exam.generation_error += f" | Students: {json.dumps(error_res['details'])}"
+            exam.save()
+            return
+
+        exam.status = "Complete"
+        exam.is_analysing = False
+        exam.save()
+
+    except Exception as e:
+        exam.status = "Failed"
+        exam.generation_error = f"Unexpected error: {str(e)}"
+        exam.save()
+        print(f"Background analysis failed for Exam ID {exam.id}: {e}")
+
+
+# ------------------------------------------------------------------------ Student exam performance
+
+def generate_all_exam_session_performances(exam) -> Union[None, Dict[str, Any]]:
+    sessions = StudentExamSession.objects.filter(exam=exam)
+
+    if not sessions.exists():
+        return {"error": f"No student sessions found for exam {exam.id}"}
+
+    failed_updates = []
+    for session in sessions:
+        error_res = generate_student_exam_performance(session)
+        if error_res:
+            failed_updates.append(error_res)
+
+    if failed_updates:
+        return {"error": "Some updates failed", "details": failed_updates}
+
+    return None
+
+
+def generate_student_exam_performance(session) -> Union[None, Dict[str, Any]]:
+    try:
+        answers = session.answers.select_related('question').all()
+        if not answers.exists():
+            # return {"session_id": session.id,  "reason": "Missing answers"}
+            return None
+
+        total_score = 0
+        total_possible_score = 0
+
+        bloom_scores = defaultdict(list)
+        grade_scores = defaultdict(list)
+        strand_scores = defaultdict(list)
+        strand_sub_strand_scores = defaultdict(lambda: defaultdict(list))
+        strand_bloom_scores = defaultdict(lambda: defaultdict(list))
+
+        total_questions = 0
+        answered_questions = 0
+
+        for ans in answers:
+            total_questions += 1
+            if ans.description.strip():
+                answered_questions += 1
+            if ans.score is None:
+                continue
+
+            score = ans.score
+            total_score += score
+            total_possible_score += 4
+
+            q = ans.question
+            bloom_scores[q.bloom_skill].append(score)
+            grade_scores[q.grade].append(score)
+            strand_scores[q.strand].append(score)
+            strand_sub_strand_scores[q.strand][q.sub_strand].append(score)
+            strand_bloom_scores[q.strand][q.bloom_skill].append(score)
+
+        if total_possible_score == 0:
+            return {"session_id": session.id,  "reason": "Missing total possible score"}
+
+        avg_score = round((total_score / total_possible_score) * 100, 2)
+
+        # Question Performance
+        scored_answers = [(ans.id, ans.score)
+                          for ans in answers if ans.score is not None]
+        sorted_answers = sorted(scored_answers, key=lambda x: x[1])
+        best_5 = [aid for aid, _ in sorted_answers[-5:]][::-1]
+        worst_5 = [aid for aid, _ in sorted_answers[:5]]
+
+        # Completion Rate
+        unanswered_questions = total_questions - answered_questions
+        completion_rate = round(
+            (answered_questions / total_questions) * 100, 2) if total_questions > 0 else 0
+
+        # Format nested strand scores
+        formatted_strand_scores = []
+        strand_grade_map = {}
+        for ans in answers:
+            if ans.question.strand not in strand_grade_map:
+                strand_grade_map[ans.question.strand] = ans.question.grade
+
+        for _, (strand, strand_vals) in enumerate(strand_scores.items()):
+            sub_strands = strand_sub_strand_scores[strand]
+            formatted_subs = format_scores(sub_strands)
+            formatted_blooms = format_scores(strand_bloom_scores[strand])
+            strand_grade = strand_grade_map.get(strand)
+            strand_name_with_grade = f"{strand} (G{strand_grade})" if strand_grade else strand
+            formatted_strand_scores.append({
+                "name": strand_name_with_grade,
+                "grade": strand_grade,
+                "percentage": round(sum(strand_vals) / (len(strand_vals) * 4) * 100, 2),
+                "sub_strands": sorted(formatted_subs, key=lambda x: x["percentage"], reverse=True),
+                "bloom_skills": sorted(formatted_blooms, key=lambda x: x["percentage"], reverse=True)
+            })
+        # Format other scores
+        bloom_skill_scores = format_scores(bloom_scores)
+        grade_scores = format_scores(grade_scores)
+
+        # Save or update performance record
+        with transaction.atomic():
+            StudentExamSessionPerformance.objects.update_or_create(
+                session=session,
+                defaults={
+                    "avg_score": avg_score,
+                    "bloom_skill_scores": json.dumps(bloom_skill_scores),
+                    "grade_scores": json.dumps(grade_scores),
+                    "strand_scores": json.dumps(formatted_strand_scores),
+                    "questions_answered": answered_questions,
+                    "questions_unanswered": unanswered_questions,
+                    "completion_rate": completion_rate,
+                    "best_5_answer_ids": json.dumps(best_5),
+                    "worst_5_answer_ids": json.dumps(worst_5)
+                }
+            )
+
+        return None
+
+    except Exception as e:
+        return {"session_id": session.id,  "reason": f"Error {str(e)}"}
+
+
+# ------------------------------------------------------------------------ Classroom exam performance
+
+
+def generate_class_exam_performance(exam, performances) -> Union[None, Dict[str, Any]]:
+    if not performances.exists():
+        return {"error": "No student performances found for this exam."}
+
+    try:
+        class_scores = [p.avg_score for p in performances]
+        avg_score = round(mean(class_scores), 2)
+        std_dev = round(stdev(class_scores), 2) if len(
+            class_scores) > 1 else 0.0
+        expectation_counts = defaultdict(int)
+
+        for p in performances:
+            expectation_counts[p.avg_expectation_level] += 1
+
+        expectation_level_distribution = [
+            {"name": level, "count": count} for level, count in expectation_counts.items()
+        ]
+
+        # Score distribution in ranges of 10
+        distribution_bins = {f"{i}-{i+9}": 0 for i in range(0, 100, 10)}
+        distribution_bins["100"] = 0  # exact 100
+
+        for p in performances:
+            score = round(p.avg_score)
+            if score == 100:
+                distribution_bins["100"] += 1
+            else:
+                bucket = f"{(score // 10) * 10}-{((score // 10) * 10) + 9}"
+                distribution_bins[bucket] += 1
+
+        score_distribution = [
+            {"name": k, "count": v}
+            for k, v in distribution_bins.items()
+            if v > 0
+        ]
+
+        # Aggregate scores
+        bloom_scores = merge_and_average_score_lists(
+            p.bloom_skill_scores for p in performances)
+        grade_scores = merge_and_average_score_lists(
+            p.grade_scores for p in performances)
+        strand_student_mastery = generate_strand_student_mastery(performances)
+
+        class_performance_data = {
+            "avg_score": avg_score,
+            "avg_expectation_level": get_avg_expectation_level(avg_score),
+            "expectation_level_distribution": json.dumps(expectation_level_distribution),
+            "score_distribution": json.dumps(score_distribution),
+            "score_variance": json.dumps({
+                "min": round(min(class_scores), 2),
+                "max": round(max(class_scores), 2),
+                "std_dev": std_dev
+            }),
+            "bloom_skill_scores": json.dumps(bloom_scores),
+        }
+        general_insights_res = generate_llm_class_perf_insights(
+            class_performance_data)
+        if not isinstance(general_insights_res, list):
+            return general_insights_res
+
+        strand_analysis_res = generate_strand_analysis(performances)
+        if not isinstance(strand_analysis_res, list):
+            return strand_analysis_res
+
+        flagged_sub_strands_res = generate_flagged_sub_strands(performances)
+        if not isinstance(flagged_sub_strands_res, list):
+            return flagged_sub_strands_res
+
+        # Save/update ClassExamPerformance
+        with transaction.atomic():
+            ClassExamPerformance.objects.update_or_create(
+                exam=exam,
+                defaults={
+                    "student_count": performances.count(),
+                    **class_performance_data,
+                    "general_insights": json.dumps(general_insights_res),
+                    "grade_scores": json.dumps(grade_scores),
+                    "strand_analysis": json.dumps(strand_analysis_res),
+                    "strand_student_mastery": json.dumps(strand_student_mastery),
+                    "flagged_sub_strands": json.dumps(flagged_sub_strands_res)
+                }
+            )
+
+        return None
+
+    except Exception as e:
+        return {"error": f"Error while generating class performance: {str(e)}"}
+
+
+def generate_strand_analysis(
+    performances, percentile=0.10
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    # Aggregators
+    strand_scores_map = defaultdict(list)
+    strand_student_scores_map = defaultdict(list)  # For top/bottom students
+    strand_sub_strand_scores_map = defaultdict(lambda: defaultdict(list))
+    strand_bloom_skill_scores_map = defaultdict(lambda: defaultdict(list))
+    strand_grades = {}
+
+    # Gather all data
+    for perf in performances:
+        strand_scores = json.loads(perf.strand_scores or "[]")
+        student = perf.session.student
+        exam_id = perf.session.exam.id
+        student_id = student.id
+        avg_score = perf.avg_score
+        avg_expectation_level = perf.avg_expectation_level
+
+        for strand in strand_scores:
+            strand_name = strand["name"]
+            strand_grade = strand["grade"]
+            strand_percentage = strand["percentage"]
+            strand_scores_map[strand_name].append(strand_percentage)
+            strand_grades[strand_name] = strand_grade
+            # Collect student scores per strand
+            strand_student_scores_map[strand_name].append({
+                "student_name": student.name,
+                "avg_score": strand_percentage,
+                "avg_expectation_level": avg_expectation_level,
+                "exam_id": exam_id,
+                "student_id": student_id
+            })
+
+            # Sub-strand aggregation
+            for sub in strand.get("sub_strands", []):
+                strand_sub_strand_scores_map[strand_name][sub["name"]].append(
+                    sub["percentage"])
+
+            # Bloom skill aggregation
+            for skill in strand.get("bloom_skills", []):
+                strand_bloom_skill_scores_map[strand_name][skill["name"]].append(
+                    skill["percentage"])
+
+    analysis = []
+
+    for strand_name, strand_scores in strand_scores_map.items():
+        if not strand_scores:
+            continue
+
+        avg_score = round(mean(strand_scores), 2)
+        std_dev = round(stdev(strand_scores), 2) if len(
+            strand_scores) > 1 else 0.0
+        expectation_level = get_avg_expectation_level(avg_score)
+        strand_grade = strand_grades.get(strand_name)
+
+        # -- Top & Bottom Percentile Students --
+        students = sorted(
+            strand_student_scores_map[strand_name], key=lambda x: x["avg_score"], reverse=True)
+        n = len(students)
+        top_n_count = max(1, math.ceil(n * percentile))
+        bottom_n_count = max(1, math.ceil(n * percentile))
+        top_students = students[:top_n_count]
+        bottom_students = students[-bottom_n_count:] if bottom_n_count > 0 else []
+
+        # Sub-strand distribution
+        sub_strand_distribution = []
+        for sub_name, values in strand_sub_strand_scores_map[strand_name].items():
+            sub_strand_avg = round(mean(values), 2)
+            strand_difference = round(sub_strand_avg - avg_score, 2)
+            if strand_difference > 0:
+                diff_desc = "Above Strand Average"
+            elif strand_difference < 0:
+                diff_desc = "Below Strand Average"
+            else:
+                diff_desc = "Equal to Strand Average"
+
+            sub_strand_distribution.append({
+                "name": sub_name,
+                "percentage": sub_strand_avg,
+                "difference": strand_difference,
+                "difference_desc": diff_desc
+            })
+        sub_strand_distribution.sort(
+            key=lambda x: x["percentage"], reverse=True)
+
+        # Bloom skill distribution
+        bloom_distribution = []
+        for skill_name, values in strand_bloom_skill_scores_map[strand_name].items():
+            bloom_distribution.append({
+                "name": skill_name,
+                "percentage": round(mean(values), 2)
+            })
+        bloom_distribution.sort(key=lambda x: x["percentage"], reverse=True)
+
+        analysis.append({
+            "name": strand_name,
+            "grade": strand_grade,
+            "avg_score": avg_score,
+            "avg_expectation_level": expectation_level,
+            "bloom_skill_scores": bloom_distribution,
+            "score_variance": {
+                "min": round(min(strand_scores), 2),
+                "max": round(max(strand_scores), 2),
+                "std_dev": std_dev
+            },
+            "sub_strand_scores": sub_strand_distribution,
+            "top_students": top_students,
+            "bottom_students": bottom_students,
+        })
+
+    strand_insights_res = generate_llm_strand_insights(analysis)
+
+    if not isinstance(strand_insights_res, list):
+        return {"error": strand_insights_res.get(
+                "error", "Unknown LLM error")}
+
+    insights_lookup = {
+        insight['strand']: insight
+        for insight in strand_insights_res
+    }
+
+    for strand in analysis:
+        strand_name = strand['name']
+        llm_data = insights_lookup.get(strand_name)
+        if llm_data:
+            strand['insights'] = llm_data.get('insights', [])
+            strand['suggestions'] = llm_data.get('suggestions', [])
+        else:
+            strand['insights'] = []
+            strand['suggestions'] = []
+
+    return analysis
+# Output
+# [
+#   {
+#     "strand_name": "Mixtures (G7)",
+#     "strand_grade": 7,
+#     "avg_score": 74.5,
+#     "avg_expectation_level": "Meets",
+#     "bloom_skill_scores": [...],
+#     "score_variance": {...},
+#     "sub_strand_scores": [
+#       {
+#         "name": "Elements and Compounds",
+#         "percentage": 81.2,
+#         "difference": 6.7,
+#         "difference_desc": "Above Strand Average"
+#       },
+#       ...
+#     ],
+#     "top_students": [
+#       {"student_name": "Akinyi", "avg_score": 98.2, ...}
+#     ],
+#     "bottom_students": [
+#       {"student_name": "Wanjiru", "avg_score": 44.5, ...}
+#     ],
+#     "insights": [...],
+#     "suggestions": [...],
+#   }
+# ]
+
+
+def generate_strand_student_mastery(performances, percentile=0.10) -> Dict[str, Any]:
+    student_rows = []
+
+    for perf in performances:
+        student_name = perf.session.student.name
+        strand_scores = json.loads(perf.strand_scores or "[]")
+        strand_score_map = {s["name"]: s["percentage"] for s in strand_scores}
+        student_rows.append({
+            "name": student_name,
+            "avg": perf.avg_score,
+            "strand_scores": strand_score_map
+        })
+
+    sorted_students = sorted(
+        student_rows, key=lambda x: x["avg"], reverse=True
+    )
+
+    n = len(sorted_students)
+    top_n_count = max(1, math.ceil(n * percentile))
+    bottom_n_count = max(1, math.ceil(n * percentile))
+
+    top_n = sorted_students[:top_n_count]
+    bottom_n = sorted_students[-bottom_n_count:]
+
+    # Optionally, middle students (e.g., middle 10% for context)
+    middle_n = []
+    if n >= 3 * max(top_n_count, bottom_n_count):  # enough for a middle group
+        middle_start = (n - top_n_count - bottom_n_count) // 2
+        middle_n_count = max(1, math.ceil(n * percentile))
+        middle_n = sorted_students[middle_start:middle_start + middle_n_count]
+
+    selected_students = top_n + middle_n + bottom_n
+
+    # Get all unique strand names and preserve column order
+    strand_names = []
+    seen_strands = set()
+    for student in selected_students:
+        for strand in student["strand_scores"].keys():
+            if strand not in seen_strands:
+                seen_strands.add(strand)
+                strand_names.append(strand)
+
+    # Build final matrix
+    matrix = []
+    for student in selected_students:
+        row = {
+            "name": student["name"],
+            "scores": [
+                round(student["strand_scores"].get(strand, 0.0), 2)
+                for strand in strand_names
+            ]
+        }
+        matrix.append(row)
+
+    return {
+        "strands": strand_names,
+        "students": matrix
+    }
+# Output:
+# {
+#   "strands": ["Energy", "Forces", "Living Things"],
+#   "students": [
+#     {"name": "Akinyi", "scores": [88.0, 76.5, 92.1]},
+#     {"name": "Mwangi", "scores": [45.3, 55.2, 64.0]},
+#     ...
+#   ]
+# }
+
+
+def generate_flagged_sub_strands(
+        performances
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    from collections import defaultdict
+
+    # Step 1: Prepare data
+    student_sub_scores = []
+    all_sub_strands = set()
+
+    for perf in performances:
+        strand_scores = json.loads(perf.strand_scores or "[]")
+        student_map = {}
+        for strand in strand_scores:
+            for sub in strand.get("sub_strands", []):
+                name = sub["name"]
+                student_map[name] = sub["percentage"]
+                all_sub_strands.add(name)
+        student_sub_scores.append(student_map)
+
+    all_sub_strands = sorted(list(all_sub_strands))
+    if len(all_sub_strands) < 2:
+        return {"sub_strands": []}
+
+    data = np.array([
+        [row.get(name, None) for name in all_sub_strands]
+        for row in student_sub_scores
+    ], dtype=np.float64)
+
+    mask = ~np.isnan(data)
+
+    correlations_map = defaultdict(list)
+
+    for i, j in itertools.combinations(range(len(all_sub_strands)), 2):
+        col_i = data[:, i]
+        col_j = data[:, j]
+        valid = mask[:, i] & mask[:, j]
+
+        if np.sum(valid) < 3:
+            continue
+
+        # Skip if one or both columns are constant
+        if np.std(col_i[valid]) == 0 or np.std(col_j[valid]) == 0:
+            continue
+
+        corr, _ = pearsonr(col_i[valid], col_j[valid])
+        corr = round(corr, 2)
+
+        if abs(corr) < 0.3 or corr == 1.0:
+            continue
+
+        name_i, name_j = all_sub_strands[i], all_sub_strands[j]
+
+        correlations_map[name_i].append((name_j, corr))
+        correlations_map[name_j].append((name_i, corr))
+
+    result = []
+
+    for name, related in correlations_map.items():
+        avg_corr = round(np.mean([c for _, c in related]), 2)
+        strongest_pair = min(related, key=lambda x: x[1])  # most negative
+
+        result.append({
+            "name": name,
+            "average_correlation": avg_corr,
+            "strongest_negative_pair": strongest_pair[0],
+            "correlation": strongest_pair[1],
+        })
+
+    sub_strand_correlations = sorted(
+        result, key=lambda x: x["average_correlation"])
+    corr_insights_res = generate_llm_sub_strand_corr_insights(
+        sub_strand_correlations)
+
+    if not isinstance(corr_insights_res, list):
+        return {"error": corr_insights_res.get(
+                "error", "Unknown LLM error")}
+
+    return corr_insights_res
+
+
+# Output
+# [
+    # {
+    #     "pair": ["Elements and Compounds", "Acids, Bases and Indicators"],
+    #     "correlation": -0.67,
+    #     "insight": "Students who perform well in ...",
+    #     "suggestion": "Help students connect ...",
+    # }
+# ]
+
+# ------------------------------------------------------------------------ Exam performance clusters
+
+def extract_performance_feature_matrix(performances):
+    # Gather all possible feature names
+    all_bloom_skills = set()
+    all_grades = set()
+    all_strands = set()
+    all_sub_strands = set()
+
+    for perf in performances:
+        all_bloom_skills.update(entry["name"] for entry in json.loads(
+            perf.bloom_skill_scores or "[]"))
+        all_grades.update(entry["name"]
+                          for entry in json.loads(perf.grade_scores or "[]"))
+        all_strands.update(entry["name"]
+                           for entry in json.loads(perf.strand_scores or "[]"))
+        # CORRECT: Collect all sub-strand names from inside strand_scores
+        for strand in json.loads(perf.strand_scores or "[]"):
+            all_sub_strands.update(sub["name"]
+                                   for sub in strand.get("sub_strands", []))
+
+    # Sorted list for consistent ordering
+    bloom_skills = sorted(f"Skill-{s}" for s in all_bloom_skills)
+    grades = sorted(f"Grade-{g}" for g in all_grades)
+    strands = sorted(f"Strand-{s}" for s in all_strands)
+    sub_strands = sorted(f"SubStrand-{s}" for s in all_sub_strands)
+
+    # # All best/worst question IDs
+    # all_best_ans_ids = set()
+    # all_worst_ans_ids = set()
+    # for perf in performances:
+    #     all_best_ans_ids.update(json.loads(perf.best_5_answer_ids or "[]"))
+    #     all_worst_ans_ids.update(json.loads(perf.worst_5_answer_ids or "[]"))
+    # best_a_cols = sorted(f"BestQ-{qid}" for qid in all_best_ans_ids)
+    # worst_a_cols = sorted(f"WorstQ-{qid}" for qid in all_worst_ans_ids)
+
+    feature_columns = (
+        ["avg_score", "completion_rate", "class_avg_difference"]
+        + bloom_skills + grades + strands + sub_strands
+        # + best_a_cols + worst_a_cols
+    )
+
+    feature_matrix = []
+    id_list = []
+
+    for perf in performances:
+        row = []
+        row.append(perf.avg_score)
+        row.append(perf.completion_rate)
+        row.append(perf.class_avg_difference)
+
+        # Bloom skills
+        bloom_map = {f"Skill-{entry['name']}": entry["percentage"]
+                     for entry in json.loads(perf.bloom_skill_scores or "[]")}
+        for skill in bloom_skills:
+            row.append(bloom_map.get(skill, 0.0))
+
+        # Grades
+        grade_map = {f"Grade-{entry['name']}": entry["percentage"]
+                     for entry in json.loads(perf.grade_scores or "[]")}
+        for g in grades:
+            row.append(grade_map.get(g, 0.0))
+
+        # Strands
+        strand_map = {f"Strand-{entry['name']}": entry["percentage"]
+                      for entry in json.loads(perf.strand_scores or "[]")}
+        for s in strands:
+            row.append(strand_map.get(s, 0.0))
+
+        # Sub-strands (from nested in strand_scores)
+        all_sub_strand_scores = {}
+        for strand in json.loads(perf.strand_scores or "[]"):
+            for sub in strand.get("sub_strands", []):
+                all_sub_strand_scores[f"SubStrand-{sub['name']}"] = sub["percentage"]
+        for s in sub_strands:
+            row.append(all_sub_strand_scores.get(s, 0.0))
+
+        # # Binary columns for best/worst questions
+        # best_ids = set(json.loads(perf.best_5_answer_ids or "[]"))
+        # worst_ids = set(json.loads(perf.worst_5_answer_ids or "[]"))
+        # for q in best_q_cols:
+        #     qid = int(q.replace("BestQ-", ""))
+        #     row.append(1.0 if qid in best_ids else 0.0)
+        # for q in worst_q_cols:
+        #     qid = int(q.replace("WorstQ-", ""))
+        #     row.append(1.0 if qid in worst_ids else 0.0)
+
+        feature_matrix.append(row)
+        id_list.append(perf.id)
+
+    return feature_matrix, feature_columns, id_list
+
+
+def cluster_exam_performance(performances: List, use_pca: bool = True, pca_components: int = 3, max_k: int = 6):
+    # Step 1: Extract features
+    feature_matrix, feature_columns, id_list = extract_performance_feature_matrix(
+        performances)
+    X = np.array(feature_matrix)
+
+    # Step 2: Standardize features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Step 3: PCA
+    if use_pca and X_scaled.shape[1] > pca_components:
+        pca = PCA(n_components=pca_components)
+        X_reduced = pca.fit_transform(X_scaled)
+    else:
+        X_reduced = X_scaled  # Use full features if not enough columns or PCA not requested
+
+    n_samples = X_reduced.shape[0]
+    n_unique = np.unique(X_reduced, axis=0).shape[0]
+    k_max = max(2, min(max_k, n_samples, n_unique))
+
+    # Elbow method to find optimal k
+    n_samples = X_reduced.shape[0]
+    n_unique = np.unique(X_reduced, axis=0).shape[0]
+    k_max = max(2, min(max_k, n_samples, n_unique))
+
+    optimal_k = find_elbow(X_reduced, min_k=2, max_k=k_max)
+    optimal_k = min(optimal_k, n_unique, n_samples)
+
+    # Final KMeans clustering
+    final_kmeans = KMeans(n_clusters=optimal_k, random_state=42)
+    labels = final_kmeans.fit_predict(X_reduced)
+
+    return labels, optimal_k, feature_columns, id_list
+
+
+def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[str, Any]]:
+    try:
+        # Delete past clusters and their follow-up exams
+        existing_clusters = ExamPerformanceCluster.objects.filter(
+            exam_id=exam.id)
+        cluster_ids = list(existing_clusters.values_list('id', flat=True))
+        if cluster_ids:
+            Exam.objects.filter(
+                performance_cluster_id__in=cluster_ids, type="FollowUp").delete()
+        existing_clusters.delete()
+
+        # Create clusters
+        labels, optimal_k, _, _ = cluster_exam_performance(
+            performances)
+        clusters = [[] for _ in range(optimal_k)]
+        for perf, label in zip(performances, labels):
+            clusters[label].append(perf)
+
+        for cluster_index, group in enumerate(clusters):
+            if not group:
+                continue
+
+            # Aggregate scores and expectation levels
+            all_scores = [perf.avg_score for perf in group]
+            all_expectation_levels = [
+                perf.avg_expectation_level for perf in group]
+
+            # Aggregate Bloom skill distribution
+            bloom_skill_map = defaultdict(list)
+            for perf in group:
+                for entry in json.loads(perf.bloom_skill_scores or "[]"):
+                    bloom_skill_map[entry["name"]].append(entry["percentage"])
+            bloom_skill_distribution = sorted(
+                [
+                    {"name": name, "percentage": round(
+                        sum(vals) / len(vals), 2)}
+                    for name, vals in bloom_skill_map.items()
+                ],
+                key=lambda item: item["percentage"],
+                reverse=True
+            )
+
+            # Aggregate strand and sub-strand distribution
+            strand_map = defaultdict(list)
+            sub_strand_map = defaultdict(lambda: defaultdict(list))
+            for perf in group:
+                for strand in json.loads(perf.strand_scores or "[]"):
+                    strand_map[strand["name"]].append(strand["percentage"])
+                    for sub in strand.get("sub_strands", []):
+                        sub_strand_map[strand["name"]][sub["name"]].append(
+                            sub["percentage"])
+
+            strand_distribution = []
+            for strand_name, strand_vals in strand_map.items():
+                strand_avg = round(sum(strand_vals) / len(strand_vals), 2)
+                sub_strands = sorted(
+                    [
+                        {"name": sub_name, "percentage": round(
+                            sum(vals) / len(vals), 2)}
+                        for sub_name, vals in sub_strand_map[strand_name].items()
+                    ],
+                    key=lambda item: item["percentage"],
+                    reverse=True
+                )
+                strand_distribution.append({
+                    "name": strand_name,
+                    "percentage": strand_avg,
+                    "sub_strands": sub_strands
+                })
+
+            # Compute averages
+            avg_score = round(sum(all_scores) / len(all_scores),
+                              2) if all_scores else 0.0
+            # Use mode or most common expectation level
+            try:
+                avg_expectation_level = mode(all_expectation_levels)
+            except:
+                avg_expectation_level = Counter(all_expectation_levels).most_common(1)[
+                    0][0] if all_expectation_levels else ""
+
+            best_question_counter = Counter()
+            worst_question_counter = Counter()
+            for perf in group:
+                best_question_counter.update(
+                    json.loads(perf.best_5_answer_ids or "[]"))
+                worst_question_counter.update(
+                    json.loads(perf.worst_5_answer_ids or "[]"))
+
+            # # Top N defining questions for this cluster
+            # top_best_questions = [qid for qid,
+            #                       _ in best_question_counter.most_common(5)]
+            # top_worst_questions = [qid for qid,
+            #                        _ in worst_question_counter.most_common(5)]
+
+            # Score variance
+            score_stddev = round(float(np.std(all_scores)),
+                                 2) if all_scores else 0.0
+            score_range = [round(float(min(all_scores)), 2), round(
+                float(max(all_scores)), 2)] if all_scores else [0.0, 0.0]
+            score_variance = {
+                "min": score_range[0],
+                "max": score_range[1],
+                "std_dev": score_stddev,
+            }
+
+            # Save to DB
+            cluster_obj = ExamPerformanceCluster.objects.create(
+                exam=exam,
+                cluster_label=f"Cluster {chr(65 + cluster_index)}",
+                avg_score=avg_score,
+                avg_expectation_level=avg_expectation_level,
+                bloom_skill_scores=json.dumps(bloom_skill_distribution),
+                strand_scores=json.dumps(strand_distribution),
+                cluster_size=len(group),
+                # top_best_question_ids=json.dumps(top_best_questions),
+                # top_worst_question_ids=json.dumps(top_worst_questions),
+                score_variance=json.dumps(score_variance),
+            )
+
+            # Assign this cluster to each StudentExamSessionPerformance
+            for perf in group:
+                perf.cluster = cluster_obj
+                perf.save(update_fields=["cluster"])
+
+        return None
+
+    except Exception as e:
+        return {"error": f"Cluster Generation Failed for examId {exam.id}: {e}"}
+
+
+def generate_all_cluster_follow_ups(exam) -> Union[None, Dict[str, Any]]:
+    clusters = ExamPerformanceCluster.objects.filter(exam=exam)
+    questions = ExamQuestion.objects.filter(exam=exam)
+
+    if not clusters.exists() or not questions.exists():
+        return {"error": f"No performance clusters found for exam {exam.id}"}
+
+    failed_generations = []
+    for cluster in clusters:
+        error_res = generate_cluster_follow_up_quizzes(
+            exam, cluster, questions)
+        if error_res:
+            failed_generations.append(error_res)
+
+    if failed_generations:
+        return {"error": "Some updates failed", "details": failed_generations}
+
+    return None
+
+
+def generate_cluster_follow_up_quizzes(exam, cluster, questions) -> Union[None, Dict[str, Any]]:
+    try:
+        exam_questions = [
+            {
+                "question": q.description,
+                "expected_answer": q.expected_answer,
+                "strand": q.strand,
+                "sub_strand": q.sub_strand,
+                "bloom_skill": q.bloom_skill,
+            }
+            for q in questions
+        ]
+        cluster_performance = {
+            "cluster_label": cluster.cluster_label,
+            "avg_score": cluster.avg_score,
+            "cluster_size": cluster.cluster_size,
+            "avg_expectation_level": cluster.avg_expectation_level,
+            "score_variance": json.loads(cluster.score_variance or '{}'),
+            "bloom_skill_scores": json.loads(cluster.bloom_skill_scores or '[]'),
+            "strand_scores": json.loads(cluster.strand_scores or '[]'),
+            "top_best_question_ids": json.loads(cluster.top_best_question_ids or '[]'),
+            "top_worst_question_ids": json.loads(cluster.top_worst_question_ids or '[]'),
+        }
+
+        follow_up_quiz_res = generate_llm_follow_up_quiz(
+            exam_questions=exam_questions,
+            cluster_performance=cluster_performance,
+        )
+        if not isinstance(follow_up_quiz_res, list):
+            return {"error": follow_up_quiz_res.get("error", "Unknown LLM error")}
+
+        # Create the Exam
+        follow_up_exam = Exam.objects.create(
+            start_date_time=exam.start_date_time,
+            end_date_time=exam.end_date_time,
+            status="Complete",
+            type="FollowUp",
+            source_exam=exam,
+            classroom=exam.classroom,
+            teacher=exam.teacher,
+            performance_cluster=cluster,
+        )
+
+        # create exam questions
+        for idx, item in enumerate(follow_up_quiz_res):
+            ExamQuestion.objects.create(
+                number=idx+1,
+                grade=int(item.get("grade")),
+                strand=item.get("strand"),
+                sub_strand=item.get("sub_strand"),
+                bloom_skill=item.get("bloom_skill"),
+                description=item.get("question"),
+                expected_answer=item.get("expected_answer"),
+                exam=follow_up_exam
+            )
+
+        return None
+
+    except Exception as e:
+        return {"cluster_id": cluster.id,  "reason": f"Error {str(e)}"}
+
+# ------------------------------------------------------------------------ Question exam performance
+
+
+def generate_exam_question_performance(exam) -> Union[None, Dict[str, Any]]:
+    questions = exam.questions.all()
+
+    if not questions.exists():
+        return {"error": "No questions found for this exam."}
+
+    try:
+        for question in questions:
+            answers = StudentExamSessionAnswer.objects.filter(
+                question=question, session__exam=exam)
+
+            if not answers.exists():
+                continue  # No answers for this question, skip
+
+            # Compute average score
+            scored_answers = [a.score for a in answers if a.score is not None]
+            if not scored_answers:
+                avg_score = 0.0
+            else:
+                avg_score = round(sum(scored_answers) / len(scored_answers), 2)
+
+            # Score distribution per expectation level
+            level_counts = defaultdict(int)
+            level_answers_dict = defaultdict(list)
+
+            for answer in answers:
+                level = answer.expectation_level or "Unclassified"
+                level_counts[level] += 1
+                level_answers_dict[level].append(answer.id)
+
+            answers_by_level = [
+                {"name": level, "ids": ids}
+                for level, ids in level_answers_dict.items()
+                if ids
+            ]
+
+            # Filter out levels with count == 0
+            score_distribution = [
+                {"name": k, "count": v}
+                for k, v in level_counts.items()
+                if v > 0
+            ]
+
+            # Save or update ExamQuestionPerformance
+            avg_score = round(sum(scored_answers) / len(scored_answers), 2)
+            avg_expectation_level = get_answer_expectation_level(avg_score)
+            with transaction.atomic():
+                ExamQuestionPerformance.objects.update_or_create(
+                    question=question,
+                    defaults={
+                        "avg_score": avg_score,
+                        "avg_expectation_level": avg_expectation_level,
+                        "score_distribution": json.dumps(score_distribution),
+                        "answers_by_level": json.dumps(answers_by_level),
+                    }
+                )
+        return None
+
+    except Exception as e:
+        return {"error": f"Error while generating question performance: {str(e)}"}
+
+# ------------------------------------------------------------------------ Class Aggregate Performance
+
+
+def update_class_aggregate_performance(classroom) -> Union[None, Dict[str, Any]]:
+    try:
+        performances = ClassExamPerformance.objects.filter(
+            exam__classroom=classroom)
+
+        if not performances.exists():
+            return {"error": "Classroom performances not found"}
+
+        avg_score = mean([p.avg_score for p in performances])
+
+        # ==== Overall Bloom Skill Aggregation ====
+        bloom_totals = defaultdict(list)
+        for perf in performances:
+            for entry in json.loads(perf.bloom_skill_scores or "[]"):
+                bloom_totals[entry["name"]].append(entry["percentage"])
+        bloom_skill_scores = [
+            {"name": name, "percentage": round(mean(scores), 2)}
+            for name, scores in bloom_totals.items()
+        ]
+
+        # ==== Strand-Level Aggregation ====
+        strand_scores_map = defaultdict(lambda: {
+            "avg_scores": [],
+            "score_min": [],
+            "score_max": [],
+            "score_std_dev": [],
+            "bloom_map": defaultdict(list),
+            "sub_strand_map": defaultdict(list),
+        })
+
+        for perf in performances:
+            strands = json.loads(perf.strand_analysis or "[]")
+            for strand in strands:
+                strand_name = strand["name"]
+                entry = strand_scores_map[strand_name]
+
+                entry["avg_scores"].append(strand.get("avg_score", 0))
+
+                variance = strand.get("score_variance", {})
+                entry["score_min"].append(variance.get("min", 0))
+                entry["score_max"].append(variance.get("max", 0))
+                entry["score_std_dev"].append(variance.get("std_dev", 0))
+
+                for b in strand.get("bloom_skill_scores", []):
+                    entry["bloom_map"][b["name"]].append(b["percentage"])
+
+                for sub in strand.get("sub_strand_scores", []):
+                    entry["sub_strand_map"][sub["name"]].append(
+                        sub["percentage"])
+
+        strand_scores = []
+        for strand_name, data in strand_scores_map.items():
+            strand_scores.append({
+                "name": strand_name,
+                "avg_score": round(mean(data["avg_scores"]), 2),
+                "score_variance": {
+                    "min": round(mean(data["score_min"]), 2),
+                    "max": round(mean(data["score_max"]), 2),
+                    "std_dev": round(mean(data["score_std_dev"]), 2),
+                },
+                "bloom_skill_scores": [
+                    {"name": name, "percentage": round(mean(vals), 2)}
+                    for name, vals in data["bloom_map"].items()
+                ],
+                "sub_strand_scores": [
+                    {"name": name, "percentage": round(mean(vals), 2)}
+                    for name, vals in data["sub_strand_map"].items()
+                ]
+            })
+
+        # ==== Grade-Level Aggregation ====
+        grade_score_map = defaultdict(list)
+        for perf in performances:
+            for entry in json.loads(perf.grade_scores or "[]"):
+                grade_score_map[entry["name"]].append(entry["percentage"])
+
+        grade_scores = [
+            {"name": name, "percentage": round(mean(scores), 2)}
+            for name, scores in grade_score_map.items()
+        ]
+
+        # Save or update the aggregate object
+        ClassAggregatePerformance.objects.update_or_create(
+            classroom=classroom,
+            defaults={
+                "exam_count": len(performances),
+                "avg_score": avg_score,
+                "bloom_skill_scores": json.dumps(bloom_skill_scores),
+                "strand_analysis": json.dumps(strand_scores),
+                "grade_scores": json.dumps(grade_scores),
+            },
+        )
+
+        return None
+
+    except Exception as e:
+        return {"error": f"Error while generating class id: {classroom.id} aggregate performance: {str(e)}"}
+
+
+# ------------------------------------------------------------------------ Student Aggregate Performance
+
+def update_all_student_aggregates(performances) -> Union[None, Dict[str, Any]]:
+    errors = []
+    try:
+        students = performances.values_list(
+            'session__student', flat=True).distinct()
+        student_objs = Student.objects.filter(id__in=students)
+
+        for student in student_objs:
+            error_res = update_student_aggregate_performance(student)
+            if error_res:
+                errors.append({"student_id": student.id,
+                              "error": error_res["error"]})
+
+        if errors:
+            return {"error": "Some aggregates failed", "details": errors}
+        return None
+
+    except Exception as e:
+        return {"error": f"Unexpected error during aggregate generation: {str(e)}"}
+
+
+def update_student_aggregate_performance(student) -> Union[None, Dict[str, Any]]:
+    try:
+        performances = StudentExamSessionPerformance.objects.filter(
+            session__student=student)
+
+        if not performances.exists():
+            return {"error": "Classroom performances not found"}
+
+        avg_score = mean([p.avg_score for p in performances])
+
+        # ==== Bloom Skills Aggregation ====
+        bloom_totals = defaultdict(list)
+        for perf in performances:
+            for entry in json.loads(perf.bloom_skill_scores or "[]"):
+                bloom_totals[entry["name"]].append(entry["percentage"])
+
+        bloom_skill_scores = [
+            {"name": name, "percentage": round(mean(vals), 2)}
+            for name, vals in bloom_totals.items()
+        ]
+
+        # ==== Grade Scores Aggregation ====
+        grade_totals = defaultdict(list)
+        for perf in performances:
+            for entry in json.loads(perf.grade_scores or "[]"):
+                grade_totals[entry["name"]].append(entry["percentage"])
+
+        grade_scores = [
+            {"name": name, "percentage": round(mean(vals), 2)}
+            for name, vals in grade_totals.items()
+        ]
+
+        # ==== Strand Scores Aggregation ====
+        strand_map = defaultdict(lambda: {
+            "grade": None,
+            "scores": [],
+            "bloom_skills": defaultdict(list),
+            "sub_strands": defaultdict(list)
+        })
+
+        for perf in performances:
+            strands = json.loads(perf.strand_scores or "[]")
+            for strand in strands:
+                strand_name = strand["name"]
+                strand_entry = strand_map[strand_name]
+                strand_entry["grade"] = strand.get(
+                    "grade", strand_entry["grade"])
+                strand_entry["scores"].append(strand["percentage"])
+
+                for bloom in strand.get("bloom_skills", []):
+                    strand_entry["bloom_skills"][bloom["name"]].append(
+                        bloom["percentage"])
+
+                for sub in strand.get("sub_strands", []):
+                    strand_entry["sub_strands"][sub["name"]].append(
+                        sub["percentage"])
+
+        strand_scores = []
+        for name, data in strand_map.items():
+            strand_scores.append({
+                "name": name,
+                "grade": data["grade"],
+                "percentage": round(mean(data["scores"]), 2),
+                "bloom_skills": [
+                    {"name": n, "percentage": round(mean(v), 2)}
+                    for n, v in data["bloom_skills"].items()
+                ],
+                "sub_strands": [
+                    {"name": n, "percentage": round(mean(v), 2)}
+                    for n, v in data["sub_strands"].items()
+                ]
+            })
+
+        StudentAggregatePerformance.objects.update_or_create(
+            student=student,
+            defaults={
+                "exam_count": len(performances),
+                "avg_score": avg_score,
+                "bloom_skill_scores": json.dumps(bloom_skill_scores),
+                "grade_scores": json.dumps(grade_scores),
+                "strand_scores": json.dumps(strand_scores),
+            }
+        )
+        return None
+    except Exception as e:
+        return {"error": f"Error while generating student id: {student.id} aggregate performance: {str(e)}"}
+
+
+def retry_exam_analysis(exam) -> Response:
+    try:
+        if exam.status == "Analysing":
+            return Response({"message": "Exam is already being analysed."}, status=HTTP_400_BAD_REQUEST)
+
+        # Clear previous error and set back to Analysing
+        exam.status = "Analysing"
+        exam.generation_error = None
+        exam.save()
+
+        # Re-trigger async generation
+        generate_exam_analysis.delay(exam.id)
+
+        return Response({"message": "Exam analysis retry initiated.", "exam_id": exam.id, "status": "Analysing"},
                         status=HTTP_202_ACCEPTED)
 
     except Exception as e:

@@ -92,3 +92,8 @@ EXAM_STATUSES = [
     ("Analysing", "Analysing"),
     ("Archive", "Archive"),
 ]
+
+EXAM_TYPES = [
+    ("Standard", "Standard"),
+    ("FollowUp", "FollowUp"),
+]
