@@ -995,11 +995,26 @@ def get_class_performance_aggregate(request):
         return Response({"error": "Missing 'classroom_id' query parameter."}, status=HTTP_400_BAD_REQUEST)
 
     try:
-        agg = ClassExamAggregatePerformance.objects.get(classroom__id=classroom_id)
-        serializer = ClassExamAggregatePerformanceSerializer(agg)
+        agg = ClassAggregatePerformance.objects.get(classroom__id=classroom_id)
+        serializer = ClassAggregatePerformanceSerializer(agg)
         return Response(serializer.data, status=HTTP_200_OK)
-    except ClassExamAggregatePerformance.DoesNotExist:
+    except ClassAggregatePerformance.DoesNotExist:
         return Response({"error": "No aggregate performance found for that classroom."}, status=HTTP_404_NOT_FOUND)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
+def get_student_performance_aggregate(request):
+    student_id = request.query_params.get("student_id")
+    if not student_id:
+        return Response({"error": "Missing student_id in query params."}, status=HTTP_400_BAD_REQUEST)
+
+    try:
+        agg = StudentAggregatePerformance.objects.get(student__id=student_id)
+        serializer = StudentAggregatePerformanceSerializer(agg)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except StudentAggregatePerformance.DoesNotExist:
+        return Response({"error": "Student aggregate performance not found."}, status=HTTP_404_NOT_FOUND)
 
 # ================================================================== GENERATION FUNCTIONS
 # =======================================================================================
@@ -1360,10 +1375,20 @@ def generate_exam_analysis(exam_id):
             return
 
         # 6. updateCreate ClassAggregatePerformance
-        error_res = update_classroom_aggregate_performance(exam.classroom)
+        error_res = update_class_aggregate_performance(exam.classroom)
         if error_res:
             exam.status = "Failed"
             exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
+
+        # 7. updateCreate StudentAggregatePerformance
+        error_res = update_all_student_aggregates(performances)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            if "details" in error_res:
+                exam.generation_error += f" | Students: {json.dumps(error_res['details'])}"
             exam.save()
             return
 
@@ -2320,7 +2345,7 @@ def generate_exam_question_performance(exam) -> Union[None, Dict[str, Any]]:
 # ------------------------------------------------------------------------ Class Aggregate Performance
 
 
-def update_classroom_aggregate_performance(classroom) -> Union[None, Dict[str, Any]]:
+def update_class_aggregate_performance(classroom) -> Union[None, Dict[str, Any]]:
     try:
         performances = ClassExamPerformance.objects.filter(
             exam__classroom=classroom)
@@ -2402,9 +2427,10 @@ def update_classroom_aggregate_performance(classroom) -> Union[None, Dict[str, A
         ]
 
         # Save or update the aggregate object
-        ClassExamAggregatePerformance.objects.update_or_create(
+        ClassAggregatePerformance.objects.update_or_create(
             classroom=classroom,
             defaults={
+                "exam_count": len(performances),
                 "avg_score": avg_score,
                 "bloom_skill_scores": json.dumps(bloom_skill_scores),
                 "strand_analysis": json.dumps(strand_scores),
@@ -2415,7 +2441,118 @@ def update_classroom_aggregate_performance(classroom) -> Union[None, Dict[str, A
         return None
 
     except Exception as e:
-        return {"error": f"Error while generating question performance: {str(e)}"}
+        return {"error": f"Error while generating class id: {classroom.id} aggregate performance: {str(e)}"}
+
+
+# ------------------------------------------------------------------------ Student Aggregate Performance
+
+def update_all_student_aggregates(performances) -> Union[None, Dict[str, Any]]:
+    errors = []
+    try:
+        students = performances.values_list(
+            'session__student', flat=True).distinct()
+        student_objs = Student.objects.filter(id__in=students)
+
+        for student in student_objs:
+            error_res = update_student_aggregate_performance(student)
+            if error_res:
+                errors.append({"student_id": student.id,
+                              "error": error_res["error"]})
+
+        if errors:
+            return {"error": "Some aggregates failed", "details": errors}
+        return None
+
+    except Exception as e:
+        return {"error": f"Unexpected error during aggregate generation: {str(e)}"}
+
+
+def update_student_aggregate_performance(student) -> Union[None, Dict[str, Any]]:
+    try:
+        performances = StudentExamSessionPerformance.objects.filter(
+            session__student=student)
+
+        if not performances.exists():
+            return {"error": "Classroom performances not found"}
+
+        avg_score = mean([p.avg_score for p in performances])
+
+        # ==== Bloom Skills Aggregation ====
+        bloom_totals = defaultdict(list)
+        for perf in performances:
+            for entry in json.loads(perf.bloom_skill_scores or "[]"):
+                bloom_totals[entry["name"]].append(entry["percentage"])
+
+        bloom_skill_scores = [
+            {"name": name, "percentage": round(mean(vals), 2)}
+            for name, vals in bloom_totals.items()
+        ]
+
+        # ==== Grade Scores Aggregation ====
+        grade_totals = defaultdict(list)
+        for perf in performances:
+            for entry in json.loads(perf.grade_scores or "[]"):
+                grade_totals[entry["name"]].append(entry["percentage"])
+
+        grade_scores = [
+            {"name": name, "percentage": round(mean(vals), 2)}
+            for name, vals in grade_totals.items()
+        ]
+
+        # ==== Strand Scores Aggregation ====
+        strand_map = defaultdict(lambda: {
+            "grade": None,
+            "scores": [],
+            "bloom_skills": defaultdict(list),
+            "sub_strands": defaultdict(list)
+        })
+
+        for perf in performances:
+            strands = json.loads(perf.strand_scores or "[]")
+            for strand in strands:
+                strand_name = strand["name"]
+                strand_entry = strand_map[strand_name]
+                strand_entry["grade"] = strand.get(
+                    "grade", strand_entry["grade"])
+                strand_entry["scores"].append(strand["percentage"])
+
+                for bloom in strand.get("bloom_skills", []):
+                    strand_entry["bloom_skills"][bloom["name"]].append(
+                        bloom["percentage"])
+
+                for sub in strand.get("sub_strands", []):
+                    strand_entry["sub_strands"][sub["name"]].append(
+                        sub["percentage"])
+
+        strand_scores = []
+        for name, data in strand_map.items():
+            strand_scores.append({
+                "name": name,
+                "grade": data["grade"],
+                "percentage": round(mean(data["scores"]), 2),
+                "bloom_skills": [
+                    {"name": n, "percentage": round(mean(v), 2)}
+                    for n, v in data["bloom_skills"].items()
+                ],
+                "sub_strands": [
+                    {"name": n, "percentage": round(mean(v), 2)}
+                    for n, v in data["sub_strands"].items()
+                ]
+            })
+
+        StudentAggregatePerformance.objects.update_or_create(
+            student=student,
+            defaults={
+                "exam_count": len(performances),
+                "avg_score": avg_score,
+                "bloom_skill_scores": json.dumps(bloom_skill_scores),
+                "grade_scores": json.dumps(grade_scores),
+                "strand_scores": json.dumps(strand_scores),
+            }
+        )
+        return None
+    except Exception as e:
+        return {"error": f"Error while generating student id: {student.id} aggregate performance: {str(e)}"}
 
 
 def retry_exam_analysis(exam) -> Response:

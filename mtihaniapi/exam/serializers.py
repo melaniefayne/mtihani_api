@@ -448,15 +448,15 @@ class ExamQuestionPerformanceSerializer(serializers.ModelSerializer):
         return _safe_json_parse(obj.answers_by_level)
 
 
-class ClassExamAggregatePerformanceSerializer(serializers.ModelSerializer):
+class ClassAggregatePerformanceSerializer(serializers.ModelSerializer):
     bloom_skill_scores = serializers.SerializerMethodField()
     grade_scores = serializers.SerializerMethodField()
     strand_analysis = serializers.SerializerMethodField()
 
     class Meta:
-        model = ClassExamAggregatePerformance
+        model = ClassAggregatePerformance
         fields = [
-            "id", "avg_score", "avg_expectation_level",
+            "id", "exam_count", "avg_score", "avg_expectation_level",
             "bloom_skill_scores", "strand_analysis", "grade_scores",
             "created_at", "updated_at",
         ]
@@ -469,3 +469,36 @@ class ClassExamAggregatePerformanceSerializer(serializers.ModelSerializer):
 
     def get_strand_analysis(self, obj):
         return parse_json_field(obj, "strand_analysis")
+
+
+class StudentAggregatePerformanceSerializer(serializers.ModelSerializer):
+    bloom_skill_scores = serializers.SerializerMethodField()
+    grade_scores = serializers.SerializerMethodField()
+    strand_scores = serializers.SerializerMethodField()
+    student_id = serializers.ReadOnlyField(source='student.id')
+    student_name = serializers.ReadOnlyField(source='student.name')
+
+    class Meta:
+        model = StudentAggregatePerformance
+        fields = [
+            "id",
+            "exam_count",
+            "student_id",
+            "student_name",
+            "avg_score",
+            "avg_expectation_level",
+            "bloom_skill_scores",
+            "grade_scores",
+            "strand_scores",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_bloom_skill_scores(self, obj):
+        return parse_json_field(obj, "bloom_skill_scores")
+
+    def get_grade_scores(self, obj):
+        return parse_json_field(obj, "grade_scores")
+
+    def get_strand_scores(self, obj):
+        return parse_json_field(obj, "strand_scores")

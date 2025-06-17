@@ -212,9 +212,17 @@ class ExamPerformanceClusterAdmin(admin.ModelAdmin):
     exam_title.short_description = "Exam"
 
 
-@admin.register(ClassExamAggregatePerformance)
-class ClassExamAggregatePerformanceAdmin(admin.ModelAdmin):
+@admin.register(ClassAggregatePerformance)
+class ClassAggregatePerformanceAdmin(admin.ModelAdmin):
     list_display = ('classroom', 'avg_score',
                     'avg_expectation_level', 'updated_at')
     search_fields = ('classroom__name',)
     readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(StudentAggregatePerformance)
+class StudentAggregatePerformanceAdmin(admin.ModelAdmin):
+    list_display = ("student", "avg_score",
+                    "avg_expectation_level", "updated_at")
+    search_fields = ("student__name",)
+    readonly_fields = ("created_at", "updated_at")
