@@ -971,6 +971,21 @@ def get_student_exam_cluster(request):
     except StudentExamSessionPerformance.DoesNotExist:
         return Response({"detail": "Performance not found for session."}, status=HTTP_404_NOT_FOUND)
 
+
+@api_view(["GET"])
+def get_student_exam_performance(request):
+    student_session_id = request.GET.get("student_session_id")
+    if not student_session_id:
+        return Response({"message": "Missing student_session_id parameter."}, status=HTTP_400_BAD_REQUEST)
+    try:
+        performance = StudentExamSessionPerformance.objects.select_related(
+            'session__student', 'session__exam').get(session_id=student_session_id)
+        serializer = StudentExamSessionPerformanceSerializer(performance)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except StudentExamSessionPerformance.DoesNotExist:
+        return Response({"detail": "Performance not found for this student session."}, status=HTTP_404_NOT_FOUND)
+
+
 # ================================================================== GENERATION FUNCTIONS
 # =======================================================================================
 # =======================================================================================
@@ -1403,11 +1418,11 @@ def generate_student_exam_performance(session) -> Union[None, Dict[str, Any]]:
         avg_score = round((total_score / total_possible_score) * 100, 2)
 
         # Question Performance
-        scored_answers = [(ans.question.id, ans.score)
+        scored_answers = [(ans.id, ans.score)
                           for ans in answers if ans.score is not None]
         sorted_answers = sorted(scored_answers, key=lambda x: x[1])
-        best_5 = [qid for qid, _ in sorted_answers[-5:]][::-1]
-        worst_5 = [qid for qid, _ in sorted_answers[:5]]
+        best_5 = [aid for aid, _ in sorted_answers[-5:]][::-1]
+        worst_5 = [aid for aid, _ in sorted_answers[:5]]
 
         # Completion Rate
         unanswered_questions = total_questions - answered_questions
@@ -1421,7 +1436,7 @@ def generate_student_exam_performance(session) -> Union[None, Dict[str, Any]]:
             if ans.question.strand not in strand_grade_map:
                 strand_grade_map[ans.question.strand] = ans.question.grade
 
-        for idx, (strand, strand_vals) in enumerate(strand_scores.items()):
+        for _, (strand, strand_vals) in enumerate(strand_scores.items()):
             sub_strands = strand_sub_strand_scores[strand]
             formatted_subs = format_scores(sub_strands)
             formatted_blooms = format_scores(strand_bloom_scores[strand])
@@ -1450,8 +1465,8 @@ def generate_student_exam_performance(session) -> Union[None, Dict[str, Any]]:
                     "questions_answered": answered_questions,
                     "questions_unanswered": unanswered_questions,
                     "completion_rate": completion_rate,
-                    "best_5_question_ids": json.dumps(best_5),
-                    "worst_5_question_ids": json.dumps(worst_5)
+                    "best_5_answer_ids": json.dumps(best_5),
+                    "worst_5_answer_ids": json.dumps(worst_5)
                 }
             )
 
@@ -1902,19 +1917,19 @@ def extract_performance_feature_matrix(performances):
     strands = sorted(f"Strand-{s}" for s in all_strands)
     sub_strands = sorted(f"SubStrand-{s}" for s in all_sub_strands)
 
-    # All best/worst question IDs
-    all_best_qids = set()
-    all_worst_qids = set()
-    for perf in performances:
-        all_best_qids.update(json.loads(perf.best_5_question_ids or "[]"))
-        all_worst_qids.update(json.loads(perf.worst_5_question_ids or "[]"))
-    best_q_cols = sorted(f"BestQ-{qid}" for qid in all_best_qids)
-    worst_q_cols = sorted(f"WorstQ-{qid}" for qid in all_worst_qids)
+    # # All best/worst question IDs
+    # all_best_ans_ids = set()
+    # all_worst_ans_ids = set()
+    # for perf in performances:
+    #     all_best_ans_ids.update(json.loads(perf.best_5_answer_ids or "[]"))
+    #     all_worst_ans_ids.update(json.loads(perf.worst_5_answer_ids or "[]"))
+    # best_a_cols = sorted(f"BestQ-{qid}" for qid in all_best_ans_ids)
+    # worst_a_cols = sorted(f"WorstQ-{qid}" for qid in all_worst_ans_ids)
 
     feature_columns = (
         ["avg_score", "completion_rate", "class_avg_difference"]
         + bloom_skills + grades + strands + sub_strands
-        + best_q_cols + worst_q_cols
+        # + best_a_cols + worst_a_cols
     )
 
     feature_matrix = []
@@ -1952,15 +1967,15 @@ def extract_performance_feature_matrix(performances):
         for s in sub_strands:
             row.append(all_sub_strand_scores.get(s, 0.0))
 
-        # Binary columns for best/worst questions
-        best_ids = set(json.loads(perf.best_5_question_ids or "[]"))
-        worst_ids = set(json.loads(perf.worst_5_question_ids or "[]"))
-        for q in best_q_cols:
-            qid = int(q.replace("BestQ-", ""))
-            row.append(1.0 if qid in best_ids else 0.0)
-        for q in worst_q_cols:
-            qid = int(q.replace("WorstQ-", ""))
-            row.append(1.0 if qid in worst_ids else 0.0)
+        # # Binary columns for best/worst questions
+        # best_ids = set(json.loads(perf.best_5_answer_ids or "[]"))
+        # worst_ids = set(json.loads(perf.worst_5_answer_ids or "[]"))
+        # for q in best_q_cols:
+        #     qid = int(q.replace("BestQ-", ""))
+        #     row.append(1.0 if qid in best_ids else 0.0)
+        # for q in worst_q_cols:
+        #     qid = int(q.replace("WorstQ-", ""))
+        #     row.append(1.0 if qid in worst_ids else 0.0)
 
         feature_matrix.append(row)
         id_list.append(perf.id)
@@ -2088,15 +2103,15 @@ def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[s
             worst_question_counter = Counter()
             for perf in group:
                 best_question_counter.update(
-                    json.loads(perf.best_5_question_ids or "[]"))
+                    json.loads(perf.best_5_answer_ids or "[]"))
                 worst_question_counter.update(
-                    json.loads(perf.worst_5_question_ids or "[]"))
+                    json.loads(perf.worst_5_answer_ids or "[]"))
 
-            # Top N defining questions for this cluster
-            top_best_questions = [qid for qid,
-                                  _ in best_question_counter.most_common(5)]
-            top_worst_questions = [qid for qid,
-                                   _ in worst_question_counter.most_common(5)]
+            # # Top N defining questions for this cluster
+            # top_best_questions = [qid for qid,
+            #                       _ in best_question_counter.most_common(5)]
+            # top_worst_questions = [qid for qid,
+            #                        _ in worst_question_counter.most_common(5)]
 
             # Score variance
             score_stddev = round(float(np.std(all_scores)),
@@ -2118,8 +2133,8 @@ def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[s
                 bloom_skill_scores=json.dumps(bloom_skill_distribution),
                 strand_scores=json.dumps(strand_distribution),
                 cluster_size=len(group),
-                top_best_question_ids=json.dumps(top_best_questions),
-                top_worst_question_ids=json.dumps(top_worst_questions),
+                # top_best_question_ids=json.dumps(top_best_questions),
+                # top_worst_question_ids=json.dumps(top_worst_questions),
                 score_variance=json.dumps(score_variance),
             )
 

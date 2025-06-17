@@ -27,4 +27,5 @@ urlpatterns = [
     path('get-student-exam-answers', get_student_exam_answers),
     path('get-question-performance', get_question_performance),
     path('get-student-exam-cluster', get_student_exam_cluster),
+    path('get-student-exam-performance', get_student_exam_performance),
 ]

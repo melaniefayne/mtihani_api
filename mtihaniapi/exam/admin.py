@@ -107,8 +107,8 @@ class StudentExamSessionPerformanceAdmin(admin.ModelAdmin):
         'bloom_skill_scores',
         'strand_scores',
         'grade_scores',
-        'best_5_question_ids',
-        'worst_5_question_ids',
+        'best_5_answer_ids',
+        'worst_5_answer_ids',
     )
 
     def has_add_permission(self, request):

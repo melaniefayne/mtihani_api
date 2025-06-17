@@ -250,8 +250,8 @@ class StudentExamSessionPerformanceSerializer(serializers.ModelSerializer):
     bloom_skill_scores = serializers.SerializerMethodField()
     grade_scores = serializers.SerializerMethodField()
     strand_scores = serializers.SerializerMethodField()
-    best_5_question_ids = serializers.SerializerMethodField()
-    worst_5_question_ids = serializers.SerializerMethodField()
+    best_5_answers = serializers.SerializerMethodField()
+    worst_5_answers = serializers.SerializerMethodField()
 
     class Meta:
         model = StudentExamSessionPerformance
@@ -270,8 +270,8 @@ class StudentExamSessionPerformanceSerializer(serializers.ModelSerializer):
             'questions_answered',
             'questions_unanswered',
             'completion_rate',
-            'best_5_question_ids',
-            'worst_5_question_ids',
+            'best_5_answers',
+            'worst_5_answers',
             'created_at',
             'updated_at',
         ]
@@ -305,14 +305,24 @@ class StudentExamSessionPerformanceSerializer(serializers.ModelSerializer):
     def get_strand_scores(self, obj):
         return self._parse_json_field(obj.strand_scores)
 
-    def get_best_5_question_ids(self, obj):
-        return self._parse_json_field(obj.best_5_question_ids)
+    def get_best_5_answers(self, obj):
+        ids = self._parse_json_field(obj.best_5_answer_ids)
+        answers = StudentExamSessionAnswer.objects.filter(id__in=ids)
+        # Maintain original order
+        answers_dict = {a.id: a for a in answers}
+        ordered_answers = [answers_dict[i] for i in ids if i in answers_dict]
+        return FullStudentExamSessionAnswerSerializer(ordered_answers, many=True).data
 
-    def get_worst_5_question_ids(self, obj):
-        return self._parse_json_field(obj.worst_5_question_ids)
+    def get_worst_5_answers(self, obj):
+        ids = self._parse_json_field(obj.worst_5_answer_ids)
+        answers = StudentExamSessionAnswer.objects.filter(id__in=ids)
+        answers_dict = {a.id: a for a in answers}
+        ordered_answers = [answers_dict[i] for i in ids if i in answers_dict]
+        return FullStudentExamSessionAnswerSerializer(ordered_answers, many=True).data
 
 
 class StudentExamSessionPerformanceMiniSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
     exam_id = serializers.SerializerMethodField()
     student_id = serializers.SerializerMethodField()
     student_name = serializers.SerializerMethodField()
@@ -320,9 +330,12 @@ class StudentExamSessionPerformanceMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentExamSessionPerformance
         fields = [
-            "id", "exam_id", "student_id", "student_name", "avg_score", "avg_expectation_level"
+            "id", "status", "exam_id", "student_id", "student_name", "avg_score", "avg_expectation_level"
         ]
 
+    def get_status(self, obj):
+        return obj.session.exam.status if obj.session and obj.session.exam else None
+    
     def get_exam_id(self, obj):
         return obj.session.exam.id if obj.session and obj.session.exam else None
 

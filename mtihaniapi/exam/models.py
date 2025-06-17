@@ -155,8 +155,8 @@ class StudentExamSessionPerformance(models.Model):
     questions_unanswered = models.IntegerField(default=0)
     completion_rate = models.FloatField(default=0.0)
 
-    best_5_question_ids = models.TextField(blank=True)
-    worst_5_question_ids = models.TextField(blank=True)
+    best_5_answer_ids = models.TextField(blank=True)
+    worst_5_answer_ids = models.TextField(blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
