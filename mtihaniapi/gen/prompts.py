@@ -15,15 +15,15 @@ Note: Some skills may appear more than once in the list. Treat each repetition a
 
 **Question Format Guidelines:**
 - Each question may contain multiple sentences (e.g., a scenario followed by a prompt), but it must be phrased as a short paragraph that fits on one line — no line breaks, bullet points, or numbered lists.
-- For **lower-order skills** (e.g., Remembering, Understanding): Use short, direct questions like “What is…”, “List two…”, “State…”.
-- For **higher-order skills** (e.g., Applying, Analyzing, Evaluating, Creating):
+- For **lower-order skills** (i.e., Remembering, Understanding, Evaluating): Use short, direct questions like “What is…”, “List two…”, “State…”.
+- For **higher-order skills** (i.e., Applying, Analysing):
     - Begin each question with a **short, varied real-life scenario** that clearly reflects the sub_strand concept (e.g., classroom experiments, school gardens, home or market settings).
     - Follow the scenario with a prompt that encourages explanation, evaluation, justification, or problem-solving.
     - You may use longer sentences for such questions, but keep them clear, grammatically correct, and age-appropriate.
 - For repeated skills, vary the real-life setting (e.g., classroom, home, farm, market, lab) and character names to avoid overlap in phrasing or examples.
 
 **Stylistic Expectations:**
-- Use Kenyan contexts and names (e.g., Amina, Brian, Zawadi, Musa), but vary them across questions.
+- Use Kenyan contexts and names but vary them across questions.
 - Vary characters, situations, and sentence structures across the batch, even though the topic is the same.
 - Integrate cross-disciplinary logic (biology, chemistry, physics) **only if clearly relevant to the sub_strand**.
 
@@ -47,26 +47,52 @@ Return ONLY the valid JSON array with `question` and `expected_answer` fields. N
 
 
 MOCK_EXAM_ANSWERS_PROMPT_TEXT = """
-You are an AI trained to simulate how students from Junior Secondary School in Kenya (Grades 7–9, ages 11–14) would answer science exam questions in a real test environment.
+would answer science exam questions under exam conditions.
 
-Each student has an average term score, which reflects their general academic performance and ability to understand and express scientific ideas. Use this score to determine how well they are likely to answer each question.
+Each student has an `avg_score`, representing their general performance and ability to understand, reason, and express scientific ideas. Use this to tailor the **depth**, **clarity**, **accuracy**, and **style** of each student's response.
 
-Scoring guidance:
-- **Below 50% (Basic Understanding)**: Responses may be short, unclear, contain misconceptions, or lack depth.
-- **50% to 74% (Moderate Understanding)**: Responses should be mostly correct but may include minor errors, limited explanation, or simple phrasing.
-- **75% and above (High Understanding)**: Responses should be clear, accurate, well-explained, and demonstrate logical thinking with vocabulary suitable for a Kenyan learner aged 11–14.
+---
 
-**Rules for Responses**
-- Write in a **natural and authentic tone**, like a real student from Kenya would.
-- Avoid overly polished textbook definitions or technical jargon.
-- Each student's answer should **feel different** based on their score, especially for open-ended or evaluative questions.
-- Do not copy expected answers directly. Use them to guide the correctness level.
+**Scoring Guidance (based on avg_score):**
 
-You will be given:
-- A list of exam questions, each with an `id`, `question`, and `expected_answer` (for your internal use only),
-- A list of students, each with an `id` and `avg_score`.
+- **Below 50% – Very Limited Understanding**  
+  Responses may be short, confused, off-topic, or show major misconceptions. Language may be disjointed or imprecise.
 
-**Your task:** Simulate how each student might answer each question.
+- **50–59% – Basic Understanding**  
+  Responses are partially correct but vague or simplistic. Minor errors are common. Student may struggle with vocabulary or logic.
+
+- **60–74% – Moderate Understanding**  
+  Responses are mostly correct with some explanation. There may be shallow reasoning, missing links, or small inaccuracies.
+
+- **75–84% – Good Understanding**  
+  Responses are clear, mostly accurate, and show logical thinking. Language is appropriate for a Kenyan student in this age group.
+
+- **85% and above – Excellent Understanding**  
+  Responses are confident, well-structured, detailed, and precise. Student shows strong reasoning and age-appropriate scientific vocabulary.
+
+---
+
+**Important Simulation Guidelines:**
+
+- **Answers must vary clearly based on avg_score** — reflect the student’s ability in vocabulary, phrasing, explanation quality, and logic.
+- For **lower-scoring students**, it's okay to:
+  - Use simple or broken grammar.
+  - Show confusion, uncertainty, or factual errors.
+  - Skip steps in reasoning or use general terms.
+- For **higher-scoring students**, aim for:
+  - Clear, articulate phrasing.
+  - Full and accurate explanations with some technical terms (suitable for a 13-year-old Kenyan learner).
+- **Do not reuse or lightly paraphrase** answers across students — each response must feel unique and consistent with the student's score.
+- Responses should feel like **real Kenyan students writing in a school test**, not like polished textbook entries or AI responses.
+
+---
+
+**Your task:**
+You will receive:
+- A list of exam questions (`id`, `question`, `expected_answer`) – use `expected_answer` only for correctness reference.
+- A list of students (`id`, `avg_score`).
+
+Simulate how **each student** would realistically answer **each question**.
 
 Return ONLY a valid JSON array (no explanation, no markdown)
 **Return Format (strictly):**
@@ -77,7 +103,7 @@ A valid **JSON array**. Each item in the array must have the structure:
   "answers": [
     {{
       "question_id": "[question_id]",
-      "answer": "[the student's simulated answer]"
+      "answer": "[simulated student answer based on avg_score]"
     }},
     ...
   ]
@@ -127,15 +153,15 @@ No markdown, no extra explanation — just a clean JSON array.
 
 CLASSROOM_EXAM_INSIGHTS_PROMPT = """
 You are an educational advisor analyzing classroom exam results. Below are the summary statistics for the class:
-	•	average_score: The mean score of all students on the exam (percentage).
-	•	average_expectation_level: The expectation category most students fall into (such as “Below”, “Approaching”, “Meets”, or “Exceeds”).
-	•	score_distribution: A breakdown of the range or spread of scores (e.g., min, max, standard deviation, quartiles, or a frequency count per band).
-	•	expectation_level_distribution: The percentage of students in each expectation level (e.g., “Exceeds: 20%, Meets: 50%, Approaching: 25%, Below: 5%”).
-	•	bloom_skill_scores: The performance for each bloom skill tested
+- average_score: The mean score of all students on the exam (percentage).
+- average_expectation_level: The expectation category most students fall into (such as “Below”, “Approaching”, “Meets”, or “Exceeds”).
+- score_distribution: A breakdown of the range or spread of scores (e.g., min, max, standard deviation, quartiles, or a frequency count per band).
+- expectation_level_distribution: The percentage of students in each expectation level (e.g., “Exceeds: 20%, Meets: 50%, Approaching: 25%, Below: 5%”).
+- bloom_skill_scores: The performance for each bloom skill tested
 
 Your task:
-	•	Generate a concise set of general insights describing overall class performance, strengths, weaknesses, and possible areas of concern or pride, using the information provided.
-	•	Where helpful, highlight score gaps, celebrate strengths, and note any patterns in how students are distributed across expectation levels.
+- Generate a concise set of general insights describing overall class performance, strengths, weaknesses, and possible areas of concern or pride, using the information provided.
+- Where helpful, highlight score gaps, celebrate strengths, and note any patterns in how students are distributed across expectation levels.
 
 **Return Format (strictly):**
 A valid **JSON array** of insights like so:
@@ -152,19 +178,19 @@ Now, provide general classroom performance insights for the following data:
 
 STRAND_PERFORMANCE_INSIGHTS_PROMPT = """
 You are an education advisor helping a science teacher analyze exam performance data. For each strand, you are given a detailed summary, including:
-	•	The strand name and grade
-	•	The average score and expectation level
-	•	The bloom skill scores for the strand
-	•	The score variance, with least and max scores and the standard deviation
-	•	Sub-strand scores, showing which sub-strands are above or below the strand average
-	•	Lists of top and bottom performing students for that strand
+- The strand name and grade
+- The average score and expectation level
+- The bloom skill scores for the strand
+- The score variance, with least and max scores and the standard deviation
+- Sub-strand scores, showing which sub-strands are above or below the strand average
+- Lists of top and bottom performing students for that strand
 
 Your task:
-	•	Carefully review the data for each strand
-	•	For each strand, generate:
-	•	a list of insights (in clear, detailed, teacher-friendly language) describing student performance patterns, struggles, and strengths. Use specific examples or scenarios where possible.
-	•	a list of practical suggestions for how a teacher can address weaknesses, leverage strengths, or support struggling students, based on the data.
-	•	Where possible, reference actual sub-strand names, expectation levels, and score differences in your explanations.
+- Carefully review the data for each strand
+- For each strand, generate:
+- a list of insights (in clear, detailed, teacher-friendly language) describing student performance patterns, struggles, and strengths. Use specific examples or scenarios where possible.
+- a list of practical suggestions for how a teacher can address weaknesses, leverage strengths, or support struggling students, based on the data.
+- Where possible, reference actual sub-strand names, expectation levels, and score differences in your explanations.
 
 **Return Format (strictly):**
 A valid **JSON array**. Each item in the array must have the structure:
@@ -184,14 +210,14 @@ Now, using the format above, generate insights and suggestions for the following
 FLAGGED_SUB_STRAND_INSIGHTS_PROMPT = """
 You are an educational assessment advisor helping a science teacher interpret student performance data.
 Below, you have a list of sub-strand pairs (topics), each with a correlation value representing how student performance in the two sub-strands is related.
-	•	A strong negative correlation (e.g., -0.6) means that students who do well in one topic tend to do poorly in the other.
-	•	A strong positive correlation (e.g., +0.6) means students tend to do similarly well (or poorly) in both topics.
+- A strong negative correlation (e.g., -0.6) means that students who do well in one topic tend to do poorly in the other.
+- A strong positive correlation (e.g., +0.6) means students tend to do similarly well (or poorly) in both topics.
 
 Your task:
 For each sub-strand pair, write:
-	•	a brief, clear insight (1–2 sentences) explaining what this correlation means for student learning (in plain, teacher-friendly language, mentioning both sub-strand names).
+- a brief, clear insight (1–2 sentences) explaining what this correlation means for student learning (in plain, teacher-friendly language, mentioning both sub-strand names).
 Where possible, give a concrete example scenario involving these two sub-strands, e.g., “If a student masters ‘Sub-strand A’ but struggles in ‘Sub-strand B’, or vice versa, this pattern may appear.”
-	•	a brief, practical suggestion (1–2 sentences) for what the teacher can do to address this pattern (e.g., strategies, interventions, or follow-up activities).
+- a brief, practical suggestion (1–2 sentences) for what the teacher can do to address this pattern (e.g., strategies, interventions, or follow-up activities).
 
 **Return Format (strictly):**
 A valid **JSON array**. Each item in the array must have the structure:

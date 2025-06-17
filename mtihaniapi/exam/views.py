@@ -38,7 +38,7 @@ from statistics import mode, stdev
 APP_QUESTION_COUNT = 25
 APP_BLOOM_SKILL_COUNT = 3
 BLOOM_SKILLS = [
-    "Knowledge", "Comprehension", "Application", "Analysis", "Synthesis", "Evaluation"
+    "Remembering", "Understanding", "Applying", "Analysing", "Evaluating", "Creating"
 ]
 
 
@@ -596,7 +596,7 @@ def mock_exam_answers(request):
 
                 question = ExamQuestion.objects.get(id=question_id)
 
-                session_answer, _ = StudentExamSessionAnswer.objects.update_or_create(
+                StudentExamSessionAnswer.objects.update_or_create(
                     session=session,
                     question=question,
                     defaults={"description": answer_text}

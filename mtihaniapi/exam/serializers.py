@@ -169,6 +169,9 @@ JSON_FILED_DEFAULTS = {
     "strand_analysis": [],
     "strand_student_mastery": [],
     "flagged_sub_strands": [],
+    "strand_scores": [],
+    "best_5_answer_ids": [],
+    "worst_5_answer_ids": [],
 }
 
 
@@ -288,27 +291,17 @@ class StudentExamSessionPerformanceSerializer(serializers.ModelSerializer):
     def get_student_name(self, obj):
         return obj.session.student.name if obj.session and obj.session.student else None
 
-    # JSON fields
-    def _parse_json_field(self, s):
-        import json
-        if not s:
-            return []
-        try:
-            return json.loads(s)
-        except Exception:
-            return []
-
     def get_bloom_skill_scores(self, obj):
-        return parse_json_field(obj.bloom_skill_scores)
+        return parse_json_field(obj, "bloom_skill_scores")
 
     def get_grade_scores(self, obj):
-        return parse_json_field(obj.grade_scores)
+        return parse_json_field(obj, "grade_scores")
 
     def get_strand_scores(self, obj):
-        return parse_json_field(obj.strand_scores)
+        return parse_json_field(obj, "strand_scores")
 
     def get_best_5_answers(self, obj):
-        ids = parse_json_field(obj.best_5_answer_ids)
+        ids = parse_json_field(obj, "best_5_answer_ids")
         answers = StudentExamSessionAnswer.objects.filter(id__in=ids)
         # Maintain original order
         answers_dict = {a.id: a for a in answers}
@@ -316,7 +309,7 @@ class StudentExamSessionPerformanceSerializer(serializers.ModelSerializer):
         return FullStudentExamSessionAnswerSerializer(ordered_answers, many=True).data
 
     def get_worst_5_answers(self, obj):
-        ids = parse_json_field(obj.worst_5_answer_ids)
+        ids = parse_json_field(obj, "worst_5_answer_ids")
         answers = StudentExamSessionAnswer.objects.filter(id__in=ids)
         answers_dict = {a.id: a for a in answers}
         ordered_answers = [answers_dict[i] for i in ids if i in answers_dict]
@@ -382,25 +375,14 @@ class ExamPerformanceClusterSerializer(serializers.ModelSerializer):
         performances = obj.performances.all()
         return StudentExamSessionPerformanceMiniSerializer(performances, many=True).data
 
-    # All JSON fields (reuse from earlier style)
-    def _parse_json_field(self, obj, field, default):
-        import json
-        raw = getattr(obj, field, None)
-        if not raw:
-            return default
-        try:
-            return json.loads(raw)
-        except Exception:
-            return default
-
     def get_score_variance(self, obj):
-        return parse_json_field(obj, "score_variance", {})
+        return parse_json_field(obj, "score_variance")
 
     def get_bloom_skill_scores(self, obj):
-        return parse_json_field(obj, "bloom_skill_scores", [])
+        return parse_json_field(obj, "bloom_skill_scores")
 
     def get_strand_scores(self, obj):
-        return parse_json_field(obj, "strand_scores", [])
+        return parse_json_field(obj, "strand_scores")
 
     # def get_top_best_questions(self, obj):
     #     import json

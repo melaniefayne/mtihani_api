@@ -6,7 +6,7 @@ dotenv.load_dotenv()
 APP_QUESTION_COUNT = 25
 APP_BLOOM_SKILL_COUNT = 3
 BLOOM_SKILLS = [
-    "Knowledge", "Comprehension", "Application", "Analysis", "Synthesis", "Evaluation"
+    "Remembering", "Understanding", "Applying", "Analysing", "Evaluating", "Creating"
 ]
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -23,9 +23,12 @@ FLOWISE_HEADERS = {"Authorization": f"Bearer {FLOWISE_API_KEY}"}
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CURRICULUM_FILE = os.path.join(BASE_DIR, "data", "cbc_data.json")
-QUESTION_LIST_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "question_list.json")
-QUESTION_BRD_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "question_breakdown.json")
-ANSWERS_LIST_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "answers_list.json")
+QUESTION_LIST_OUTPUT_FILE = os.path.join(
+    BASE_DIR, "output", "question_list.json")
+QUESTION_BRD_OUTPUT_FILE = os.path.join(
+    BASE_DIR, "output", "question_breakdown.json")
+ANSWERS_LIST_OUTPUT_FILE = os.path.join(
+    BASE_DIR, "output", "answers_list.json")
 GRADES_LIST_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "grades_list.json")
 
 JSS_SCIENCE_STRANDS = [
