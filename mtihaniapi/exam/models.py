@@ -239,3 +239,21 @@ class ExamPerformanceCluster(models.Model):
 
     def __str__(self):
         return f"{self.cluster_label} (Exam ID: {self.exam_id})"
+
+
+class ClassExamAggregatePerformance(models.Model):
+    classroom = models.OneToOneField(
+        Classroom, on_delete=models.CASCADE, related_name='aggregate_exam_performance'
+    )
+
+    avg_score = models.FloatField()
+    avg_expectation_level = models.CharField(max_length=100, blank=True)
+    grade_scores = models.TextField(blank=True)
+    bloom_skill_scores = models.TextField(blank=True)
+    strand_analysis = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
+        super().save(*args, **kwargs)

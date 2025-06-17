@@ -210,3 +210,11 @@ class ExamPerformanceClusterAdmin(admin.ModelAdmin):
         return obj.exam.title if hasattr(obj.exam, "title") else obj.exam.id
 
     exam_title.short_description = "Exam"
+
+
+@admin.register(ClassExamAggregatePerformance)
+class ClassExamAggregatePerformanceAdmin(admin.ModelAdmin):
+    list_display = ('classroom', 'avg_score',
+                    'avg_expectation_level', 'updated_at')
+    search_fields = ('classroom__name',)
+    readonly_fields = ('created_at', 'updated_at')

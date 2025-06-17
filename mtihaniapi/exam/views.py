@@ -973,6 +973,7 @@ def get_student_exam_cluster(request):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacherOrStudent])
 def get_student_exam_performance(request):
     student_session_id = request.GET.get("student_session_id")
     if not student_session_id:
@@ -985,6 +986,20 @@ def get_student_exam_performance(request):
     except StudentExamSessionPerformance.DoesNotExist:
         return Response({"detail": "Performance not found for this student session."}, status=HTTP_404_NOT_FOUND)
 
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTeacher])
+def get_class_performance_aggregate(request):
+    classroom_id = request.query_params.get('classroom_id')
+    if not classroom_id:
+        return Response({"error": "Missing 'classroom_id' query parameter."}, status=HTTP_400_BAD_REQUEST)
+
+    try:
+        agg = ClassExamAggregatePerformance.objects.get(classroom__id=classroom_id)
+        serializer = ClassExamAggregatePerformanceSerializer(agg)
+        return Response(serializer.data, status=HTTP_200_OK)
+    except ClassExamAggregatePerformance.DoesNotExist:
+        return Response({"error": "No aggregate performance found for that classroom."}, status=HTTP_404_NOT_FOUND)
 
 # ================================================================== GENERATION FUNCTIONS
 # =======================================================================================
@@ -1336,8 +1351,16 @@ def generate_exam_analysis(exam_id):
             exam.save()
             return
 
-        # updateCreate ExamQuestionPerformance
+        # 6. updateCreate ExamQuestionPerformance
         error_res = generate_exam_question_performance(exam)
+        if error_res:
+            exam.status = "Failed"
+            exam.generation_error = error_res.get("error", "An error occurred")
+            exam.save()
+            return
+
+        # 6. updateCreate ClassAggregatePerformance
+        error_res = update_classroom_aggregate_performance(exam.classroom)
         if error_res:
             exam.status = "Failed"
             exam.generation_error = error_res.get("error", "An error occurred")
@@ -2289,6 +2312,106 @@ def generate_exam_question_performance(exam) -> Union[None, Dict[str, Any]]:
                         "answers_by_level": json.dumps(answers_by_level),
                     }
                 )
+        return None
+
+    except Exception as e:
+        return {"error": f"Error while generating question performance: {str(e)}"}
+
+# ------------------------------------------------------------------------ Class Aggregate Performance
+
+
+def update_classroom_aggregate_performance(classroom) -> Union[None, Dict[str, Any]]:
+    try:
+        performances = ClassExamPerformance.objects.filter(
+            exam__classroom=classroom)
+
+        if not performances.exists():
+            return {"error": "Classroom performances not found"}
+
+        avg_score = mean([p.avg_score for p in performances])
+
+        # ==== Overall Bloom Skill Aggregation ====
+        bloom_totals = defaultdict(list)
+        for perf in performances:
+            for entry in json.loads(perf.bloom_skill_scores or "[]"):
+                bloom_totals[entry["name"]].append(entry["percentage"])
+        bloom_skill_scores = [
+            {"name": name, "percentage": round(mean(scores), 2)}
+            for name, scores in bloom_totals.items()
+        ]
+
+        # ==== Strand-Level Aggregation ====
+        strand_scores_map = defaultdict(lambda: {
+            "avg_scores": [],
+            "score_min": [],
+            "score_max": [],
+            "score_std_dev": [],
+            "bloom_map": defaultdict(list),
+            "sub_strand_map": defaultdict(list),
+        })
+
+        for perf in performances:
+            strands = json.loads(perf.strand_analysis or "[]")
+            for strand in strands:
+                strand_name = strand["name"]
+                entry = strand_scores_map[strand_name]
+
+                entry["avg_scores"].append(strand.get("avg_score", 0))
+
+                variance = strand.get("score_variance", {})
+                entry["score_min"].append(variance.get("min", 0))
+                entry["score_max"].append(variance.get("max", 0))
+                entry["score_std_dev"].append(variance.get("std_dev", 0))
+
+                for b in strand.get("bloom_skill_scores", []):
+                    entry["bloom_map"][b["name"]].append(b["percentage"])
+
+                for sub in strand.get("sub_strand_scores", []):
+                    entry["sub_strand_map"][sub["name"]].append(
+                        sub["percentage"])
+
+        strand_scores = []
+        for strand_name, data in strand_scores_map.items():
+            strand_scores.append({
+                "name": strand_name,
+                "avg_score": round(mean(data["avg_scores"]), 2),
+                "score_variance": {
+                    "min": round(mean(data["score_min"]), 2),
+                    "max": round(mean(data["score_max"]), 2),
+                    "std_dev": round(mean(data["score_std_dev"]), 2),
+                },
+                "bloom_skill_scores": [
+                    {"name": name, "percentage": round(mean(vals), 2)}
+                    for name, vals in data["bloom_map"].items()
+                ],
+                "sub_strand_scores": [
+                    {"name": name, "percentage": round(mean(vals), 2)}
+                    for name, vals in data["sub_strand_map"].items()
+                ]
+            })
+
+        # ==== Grade-Level Aggregation ====
+        grade_score_map = defaultdict(list)
+        for perf in performances:
+            for entry in json.loads(perf.grade_scores or "[]"):
+                grade_score_map[entry["name"]].append(entry["percentage"])
+
+        grade_scores = [
+            {"name": name, "percentage": round(mean(scores), 2)}
+            for name, scores in grade_score_map.items()
+        ]
+
+        # Save or update the aggregate object
+        ClassExamAggregatePerformance.objects.update_or_create(
+            classroom=classroom,
+            defaults={
+                "avg_score": avg_score,
+                "bloom_skill_scores": json.dumps(bloom_skill_scores),
+                "strand_analysis": json.dumps(strand_scores),
+                "grade_scores": json.dumps(grade_scores),
+            },
+        )
+
         return None
 
     except Exception as e:

@@ -159,6 +159,30 @@ class FullStudentExamSessionAnswerSerializer(StudentExamSessionAnswerSerializer)
         ]
 
 
+JSON_FILED_DEFAULTS = {
+    "expectation_level_distribution": [],
+    "score_distribution": [],
+    "score_variance": {},
+    "bloom_skill_scores": [],
+    "general_insights": [],
+    "grade_scores": [],
+    "strand_analysis": [],
+    "strand_student_mastery": [],
+    "flagged_sub_strands": [],
+}
+
+
+def parse_json_field(obj, field):
+    raw = getattr(obj, field, None)
+    default = JSON_FILED_DEFAULTS.get(field, None)
+    if not raw:
+        return default
+    try:
+        return json.loads(raw)
+    except Exception:
+        return default
+
+
 class ClassExamPerformanceSerializer(serializers.ModelSerializer):
     # Declare all fields as SerializerMethodField for JSON parsing
     expectation_level_distribution = serializers.SerializerMethodField()
@@ -192,54 +216,32 @@ class ClassExamPerformanceSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    _json_field_defaults = {
-        "expectation_level_distribution": [],
-        "score_distribution": [],
-        "score_variance": {},
-        "bloom_skill_scores": [],
-        "general_insights": [],
-        "grade_scores": [],
-        "strand_analysis": [],
-        "strand_student_mastery": [],
-        "flagged_sub_strands": [],
-    }
-
-    def _parse_json_field(self, obj, field):
-        raw = getattr(obj, field, None)
-        default = self._json_field_defaults.get(field, None)
-        if not raw:
-            return default
-        try:
-            return json.loads(raw)
-        except Exception:
-            return default
-
     def get_expectation_level_distribution(self, obj):
-        return self._parse_json_field(obj, "expectation_level_distribution")
+        return parse_json_field(obj, "expectation_level_distribution")
 
     def get_score_distribution(self, obj):
-        return self._parse_json_field(obj, "score_distribution")
+        return parse_json_field(obj, "score_distribution")
 
     def get_score_variance(self, obj):
-        return self._parse_json_field(obj, "score_variance")
+        return parse_json_field(obj, "score_variance")
 
     def get_bloom_skill_scores(self, obj):
-        return self._parse_json_field(obj, "bloom_skill_scores")
+        return parse_json_field(obj, "bloom_skill_scores")
 
     def get_general_insights(self, obj):
-        return self._parse_json_field(obj, "general_insights")
+        return parse_json_field(obj, "general_insights")
 
     def get_grade_scores(self, obj):
-        return self._parse_json_field(obj, "grade_scores")
+        return parse_json_field(obj, "grade_scores")
 
     def get_strand_analysis(self, obj):
-        return self._parse_json_field(obj, "strand_analysis")
+        return parse_json_field(obj, "strand_analysis")
 
     def get_strand_student_mastery(self, obj):
-        return self._parse_json_field(obj, "strand_student_mastery")
+        return parse_json_field(obj, "strand_student_mastery")
 
     def get_flagged_sub_strands(self, obj):
-        return self._parse_json_field(obj, "flagged_sub_strands")
+        return parse_json_field(obj, "flagged_sub_strands")
 
 
 class StudentExamSessionPerformanceSerializer(serializers.ModelSerializer):
@@ -297,16 +299,16 @@ class StudentExamSessionPerformanceSerializer(serializers.ModelSerializer):
             return []
 
     def get_bloom_skill_scores(self, obj):
-        return self._parse_json_field(obj.bloom_skill_scores)
+        return parse_json_field(obj.bloom_skill_scores)
 
     def get_grade_scores(self, obj):
-        return self._parse_json_field(obj.grade_scores)
+        return parse_json_field(obj.grade_scores)
 
     def get_strand_scores(self, obj):
-        return self._parse_json_field(obj.strand_scores)
+        return parse_json_field(obj.strand_scores)
 
     def get_best_5_answers(self, obj):
-        ids = self._parse_json_field(obj.best_5_answer_ids)
+        ids = parse_json_field(obj.best_5_answer_ids)
         answers = StudentExamSessionAnswer.objects.filter(id__in=ids)
         # Maintain original order
         answers_dict = {a.id: a for a in answers}
@@ -314,7 +316,7 @@ class StudentExamSessionPerformanceSerializer(serializers.ModelSerializer):
         return FullStudentExamSessionAnswerSerializer(ordered_answers, many=True).data
 
     def get_worst_5_answers(self, obj):
-        ids = self._parse_json_field(obj.worst_5_answer_ids)
+        ids = parse_json_field(obj.worst_5_answer_ids)
         answers = StudentExamSessionAnswer.objects.filter(id__in=ids)
         answers_dict = {a.id: a for a in answers}
         ordered_answers = [answers_dict[i] for i in ids if i in answers_dict]
@@ -335,7 +337,7 @@ class StudentExamSessionPerformanceMiniSerializer(serializers.ModelSerializer):
 
     def get_status(self, obj):
         return obj.session.exam.status if obj.session and obj.session.exam else None
-    
+
     def get_exam_id(self, obj):
         return obj.session.exam.id if obj.session and obj.session.exam else None
 
@@ -392,13 +394,13 @@ class ExamPerformanceClusterSerializer(serializers.ModelSerializer):
             return default
 
     def get_score_variance(self, obj):
-        return self._parse_json_field(obj, "score_variance", {})
+        return parse_json_field(obj, "score_variance", {})
 
     def get_bloom_skill_scores(self, obj):
-        return self._parse_json_field(obj, "bloom_skill_scores", [])
+        return parse_json_field(obj, "bloom_skill_scores", [])
 
     def get_strand_scores(self, obj):
-        return self._parse_json_field(obj, "strand_scores", [])
+        return parse_json_field(obj, "strand_scores", [])
 
     # def get_top_best_questions(self, obj):
     #     import json
@@ -444,3 +446,26 @@ class ExamQuestionPerformanceSerializer(serializers.ModelSerializer):
 
     def get_answers_by_level(self, obj):
         return _safe_json_parse(obj.answers_by_level)
+
+
+class ClassExamAggregatePerformanceSerializer(serializers.ModelSerializer):
+    bloom_skill_scores = serializers.SerializerMethodField()
+    grade_scores = serializers.SerializerMethodField()
+    strand_analysis = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ClassExamAggregatePerformance
+        fields = [
+            "id", "avg_score", "avg_expectation_level",
+            "bloom_skill_scores", "strand_analysis", "grade_scores",
+            "created_at", "updated_at",
+        ]
+
+    def get_bloom_skill_scores(self, obj):
+        return parse_json_field(obj, "bloom_skill_scores")
+
+    def get_grade_scores(self, obj):
+        return parse_json_field(obj, "grade_scores")
+
+    def get_strand_analysis(self, obj):
+        return parse_json_field(obj, "strand_analysis")
