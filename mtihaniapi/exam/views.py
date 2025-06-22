@@ -596,7 +596,7 @@ def mock_exam_answers(request):
 
                 question = ExamQuestion.objects.get(id=question_id)
 
-                StudentExamSessionAnswer.objects.update_or_create(
+                StudentExamSessionAnswer.objects.get_or_create(
                     session=session,
                     question=question,
                     defaults={"description": answer_text}

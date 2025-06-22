@@ -6,7 +6,7 @@ import random
 import json
 from typing import List, Dict, Any
 import json
-from itertools import cycle, groupby
+from itertools import cycle, groupby, islice
 from gen.constants import *
 
 
@@ -50,12 +50,10 @@ def generate_question_plan(
     question_count: int,
     bloom_skill_count: int,
 ) -> list:
-    """Plan questions across Bloom skills and strands fairly."""
     selected = parsed_curriculum.get("selected", [])
     current_number = 1
     question_plan = []
 
-    # Group sub-strands by strand name
     strand_groups = defaultdict(list)
     for item in selected:
         grade = item["grade"]
@@ -79,8 +77,8 @@ def generate_question_plan(
     if not strand_groups:
         return []
 
-    # Create a round-robin cycle of strand keys
     strand_cycle = cycle(strand_groups.keys())
+    bloom_skill_cycle = cycle(BLOOM_SKILLS)
 
     while len(question_plan) < question_count:
         strand_key = next(strand_cycle)
@@ -89,8 +87,9 @@ def generate_question_plan(
             continue
 
         target = random.choice(items)
-        bloom_skills = random.sample(BLOOM_SKILLS, min(
-            bloom_skill_count, len(BLOOM_SKILLS)))
+
+        # Fair: assign the next N bloom skills in round robin order
+        bloom_skills = list(islice(bloom_skill_cycle, bloom_skill_count))
 
         question_plan.append({
             "number": current_number,
@@ -234,7 +233,7 @@ def get_uncovered_strands_up_to_grade(
         g = item.get("grade")
         if g is not None and 7 <= g <= grade:
             for strand in item.get("strands", []):
-                strand_name =  f"{strand['name']} (G{g})"
+                strand_name = f"{strand['name']} (G{g})"
                 if strand_name not in tested_strands:
                     missing_strands.append(strand_name)
 
