@@ -16,6 +16,12 @@ python3 gen/curriculum.py
 lsof -i :6379
 kill 3180
 
+rm -rf ~/.cache/pip
+pip install --no-cache-dir --no-deps -r requirements.txt
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install transformers
+pip install sentence-transformers
+
 # migrations
 python manage.py makemigrations && python manage.py migrate
 python manage.py makemigrations learner && python manage.py migrate learner
