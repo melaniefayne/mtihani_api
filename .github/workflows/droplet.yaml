@@ -13,7 +13,7 @@ jobs:
       - name: Deploy to droplet via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.SERVER_IP` }}
+          host: ${{ secrets.SERVER_IP }}
           username: root
           key: ${{ secrets.SSH_KEY }}
           port: 22 # Use the correct SSH port if it's not 22
