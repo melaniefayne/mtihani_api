@@ -3,7 +3,6 @@ from mtihaniapi import settings
 from .models import Exam, ExamQuestion
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.http import HttpResponse
 import math
 import itertools

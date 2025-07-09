@@ -26,6 +26,7 @@ pip install sentence-transformers
 python manage.py makemigrations && python manage.py migrate
 python manage.py makemigrations learner && python manage.py migrate learner
 python manage.py makemigrations exam && python manage.py migrate exam
+python manage.py makemigrations rag && python manage.py migrate rag   
 python manage.py createsuperuser
 
 # commands

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     'learner',
     'exam',
+    'rag',
 
     'corsheaders',
     'rest_framework'
