@@ -22,7 +22,7 @@ jobs:
             pushd /var/www/mtihani
             git pull origin main
             pushd /var/www/mtihani/mtihaniapi
-            /var/www/mtihani/.venv/bin/python celery -A mtihaniapi control terminate
+            /var/www/mtihani/.venv/bin/python -m celery -A mtihaniapi control shutdown
             echo "Deployment complete!"
 
  
