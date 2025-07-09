@@ -1,0 +1,52 @@
+[
+    {
+        "id": 162,
+        "question": "In a science class, Amina is asked to list two common laboratory apparatus used for measuring liquid volumes. What are these apparatus?",
+        "expected_answer": "Graduated cylinder and pipette."
+    },
+    {
+        "id": 163,
+        "question": "In a school science experiment, Amina mixed iron filings with sulfur powder and heated the mixture to form a new substance. Explain how this experiment demonstrates the formation of a compound from elements.",
+        "expected_answer": "The experiment shows that when iron filings (an element) and sulfur powder (another element) are heated together, they react to form iron sulfide, a compound, which has different properties from the original elements."
+    },
+    {
+        "id": 164,
+        "question": "In a small town in Kenya, the local river has become polluted due to waste from nearby factories. Evaluate the impact of this pollution on the community's health and suggest which type of pollution is most likely responsible.",
+        "expected_answer": "The pollution can lead to waterborne diseases affecting human health, and the most likely type of pollution is water pollution."
+    },
+    {
+        "id": 165,
+        "question": "What are the two poles of a magnet called?",
+        "expected_answer": "The two poles of a magnet are called the North Pole and the South Pole."
+    },
+    {
+        "id": 166,
+        "question": "In a school garden, Amina observes that some plants are wilting despite being watered regularly. She wonders if the cells in the plant leaves are functioning properly. Explain how the structure of plant cells helps them retain water and how this might affect the plant's health.",
+        "expected_answer": "Plant cells have a rigid cell wall and large central vacuole that help retain water, maintaining turgor pressure, which keeps the plant upright and healthy."
+    },
+    {
+        "id": 167,
+        "question": "Amina noticed that her family uses a lot of plastic bags for shopping, which often end up as waste in the environment. Evaluate the impact of this practice on the environment and suggest a scientific approach to reduce plastic waste.",
+        "expected_answer": "Plastic waste contributes to environmental pollution and harms wildlife. A scientific approach to reduce plastic waste includes using biodegradable bags or recycling plastic materials."
+    },
+    {
+        "id": 168,
+        "question": "What is the basic structure of an atom, including its main components?",
+        "expected_answer": "An atom consists of a nucleus containing protons and neutrons, surrounded by electrons in shells."
+    },
+    {
+        "id": 169,
+        "question": "In a health class, Amina learns about the importance of understanding changes during adolescence. She notices her younger brother, Ali, is experiencing mood swings and rapid growth. How can Amina apply her knowledge to help Ali manage these developmental challenges effectively?",
+        "expected_answer": "Amina can encourage Ali to maintain a balanced diet, get regular exercise, and talk about his feelings to manage stress and understand the changes he is experiencing."
+    },
+    {
+        "id": 170,
+        "question": "In a small village in Kenya, Amina uses a solar panel to power her radio. Evaluate the transformation of energy that occurs when the solar panel is used to operate the radio.",
+        "expected_answer": "The solar panel converts solar energy into electrical energy, which is then used to power the radio, transforming it into sound energy."
+    },
+    {
+        "id": 171,
+        "question": "What is the function of the nucleus in both plant and animal cells?",
+        "expected_answer": "The nucleus controls cell activities and contains genetic material (DNA)."
+    }
+]

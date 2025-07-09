@@ -1,0 +1,605 @@
+{
+    "avg_score": 74.1,
+    "avg_expecation_level": "Meeting",
+    "avg_expectation_level_distribution": [
+        {
+            "name": "Exceeding",
+            "percentage": 70.0
+        },
+        {
+            "name": "Approaching",
+            "percentage": 30.0
+        }
+    ],
+    "score_distribution": [
+        {
+            "name": "50-59",
+            "count": 3
+        },
+        {
+            "name": "80-89",
+            "count": 7
+        }
+    ],
+    "bloom_skill_scores": [
+        {
+            "name": "Synthesis",
+            "percentage": 81.67
+        },
+        {
+            "name": "Knowledge",
+            "percentage": 81.0
+        },
+        {
+            "name": "Application",
+            "percentage": 73.44
+        },
+        {
+            "name": "Analysis",
+            "percentage": 68.5
+        },
+        {
+            "name": "Comprehension",
+            "percentage": 71.25
+        },
+        {
+            "name": "Evaluation",
+            "percentage": 65.0
+        }
+    ],
+    "grade_scores": [
+        {
+            "name": "7",
+            "percentage": 75.21
+        },
+        {
+            "name": "8",
+            "percentage": 73.08
+        }
+    ],
+    "strand_analysis": [
+        {
+            "strand_name": "Scientific Investigation",
+            "avg_score": 72.0,
+            "avg_expectation_level": "Meeting",
+            "bloom_skill_score_distribution": [
+                {
+                    "name": "Knowledge",
+                    "percentage": 90.0
+                },
+                {
+                    "name": "Analysis",
+                    "percentage": 67.5
+                },
+                {
+                    "name": "Evaluation",
+                    "percentage": 67.5
+                },
+                {
+                    "name": "Application",
+                    "percentage": 67.5
+                }
+            ],
+            "score_distribution": {
+                "min": 50.0,
+                "max": 80.0,
+                "std_dev": 12.95
+            },
+            "sub_strand_score_distribution": [
+                {
+                    "name": "Laboratory Safety",
+                    "percentage": 78.75
+                },
+                {
+                    "name": "Laboratory Apparatus and Instruments",
+                    "percentage": 67.5
+                },
+                {
+                    "name": "Introduction to Integrated Science",
+                    "percentage": 67.5
+                }
+            ]
+        },
+        {
+            "strand_name": "Mixtures, Elements and Compounds",
+            "avg_score": 78.5,
+            "avg_expectation_level": "Meeting",
+            "bloom_skill_score_distribution": [
+                {
+                    "name": "Synthesis",
+                    "percentage": 85.0
+                },
+                {
+                    "name": "Knowledge",
+                    "percentage": 82.5
+                },
+                {
+                    "name": "Analysis",
+                    "percentage": 72.5
+                },
+                {
+                    "name": "Application",
+                    "percentage": 70.0
+                }
+            ],
+            "score_distribution": {
+                "min": 60.0,
+                "max": 85.0,
+                "std_dev": 10.55
+            },
+            "sub_strand_score_distribution": [
+                {
+                    "name": "Acids, Bases and Indicators",
+                    "percentage": 92.5
+                },
+                {
+                    "name": "Classes of Fire",
+                    "percentage": 85.0
+                },
+                {
+                    "name": "Physical and Chemical Changes",
+                    "percentage": 72.5
+                },
+                {
+                    "name": "Elements and Compounds",
+                    "percentage": 71.25
+                }
+            ]
+        },
+        {
+            "strand_name": "Living Things and Their Environment",
+            "avg_score": 71.5,
+            "avg_expectation_level": "Meeting",
+            "bloom_skill_score_distribution": [
+                {
+                    "name": "Knowledge",
+                    "percentage": 75.0
+                },
+                {
+                    "name": "Comprehension",
+                    "percentage": 72.5
+                },
+                {
+                    "name": "Analysis",
+                    "percentage": 67.5
+                }
+            ],
+            "score_distribution": {
+                "min": 45.0,
+                "max": 80.0,
+                "std_dev": 13.95
+            },
+            "sub_strand_score_distribution": [
+                {
+                    "name": "Human Reproductive System",
+                    "percentage": 72.5
+                },
+                {
+                    "name": "Human Excretory System",
+                    "percentage": 67.5
+                }
+            ]
+        },
+        {
+            "strand_name": "Force and Energy",
+            "avg_score": 74.5,
+            "avg_expectation_level": "Meeting",
+            "bloom_skill_score_distribution": [
+                {
+                    "name": "Synthesis",
+                    "percentage": 80.0
+                },
+                {
+                    "name": "Application",
+                    "percentage": 71.25
+                },
+                {
+                    "name": "Comprehension",
+                    "percentage": 70.0
+                }
+            ],
+            "score_distribution": {
+                "min": 60.0,
+                "max": 80.0,
+                "std_dev": 8.96
+            },
+            "sub_strand_score_distribution": [
+                {
+                    "name": "Electrical Energy",
+                    "percentage": 92.5
+                },
+                {
+                    "name": "Transformation of Energy",
+                    "percentage": 70.83
+                },
+                {
+                    "name": "Pressure",
+                    "percentage": 67.5
+                }
+            ]
+        },
+        {
+            "strand_name": "Living Things and the Environment",
+            "avg_score": 74.0,
+            "avg_expectation_level": "Meeting",
+            "bloom_skill_score_distribution": [
+                {
+                    "name": "Application",
+                    "percentage": 76.88
+                },
+                {
+                    "name": "Evaluation",
+                    "percentage": 62.5
+                }
+            ],
+            "score_distribution": {
+                "min": 40.0,
+                "max": 90.0,
+                "std_dev": 19.69
+            },
+            "sub_strand_score_distribution": [
+                {
+                    "name": "The Cell",
+                    "percentage": 85.0
+                },
+                {
+                    "name": "Movement of Materials In and Out of the Cell",
+                    "percentage": 71.66
+                },
+                {
+                    "name": "Reproduction in Human Beings",
+                    "percentage": 70.0
+                }
+            ]
+        }
+    ],
+    "strand_student_mastery": {
+        "strands": [
+            "Scientific Investigation",
+            "Mixtures, Elements and Compounds",
+            "Living Things and Their Environment",
+            "Force and Energy",
+            "Living Things and the Environment"
+        ],
+        "students": [
+            {
+                "name": "Sharon Njeri",
+                "scores": [
+                    80.0,
+                    85.0,
+                    80.0,
+                    80.0,
+                    90.0
+                ]
+            },
+            {
+                "name": "Grace Wanjiru",
+                "scores": [
+                    80.0,
+                    85.0,
+                    80.0,
+                    80.0,
+                    85.0
+                ]
+            },
+            {
+                "name": "Kevin Omondi",
+                "scores": [
+                    80.0,
+                    85.0,
+                    80.0,
+                    80.0,
+                    85.0
+                ]
+            },
+            {
+                "name": "Faith Mwikali",
+                "scores": [
+                    80.0,
+                    85.0,
+                    80.0,
+                    80.0,
+                    85.0
+                ]
+            },
+            {
+                "name": "Linet Cherono",
+                "scores": [
+                    80.0,
+                    85.0,
+                    80.0,
+                    80.0,
+                    85.0
+                ]
+            },
+            {
+                "name": "Moses Kipkoech",
+                "scores": [
+                    80.0,
+                    85.0,
+                    80.0,
+                    80.0,
+                    85.0
+                ]
+            },
+            {
+                "name": "Wycliffe Mwangi",
+                "scores": [
+                    80.0,
+                    85.0,
+                    80.0,
+                    80.0,
+                    85.0
+                ]
+            },
+            {
+                "name": "Tamara Imali",
+                "scores": [
+                    50.0,
+                    60.0,
+                    45.0,
+                    65.0,
+                    60.0
+                ]
+            },
+            {
+                "name": "Brian Otieno",
+                "scores": [
+                    55.0,
+                    65.0,
+                    55.0,
+                    60.0,
+                    40.0
+                ]
+            },
+            {
+                "name": "Elijah Kibet",
+                "scores": [
+                    55.0,
+                    65.0,
+                    55.0,
+                    60.0,
+                    40.0
+                ]
+            }
+        ]
+    },
+    "bloom_skill_mastery": {
+        "skills": [
+            "Synthesis",
+            "Knowledge",
+            "Application",
+            "Analysis",
+            "Comprehension",
+            "Evaluation"
+        ],
+        "students": [
+            {
+                "name": "Sharon Njeri",
+                "scores": [
+                    91.67,
+                    90.0,
+                    84.38,
+                    75.0,
+                    75.0,
+                    75.0
+                ]
+            },
+            {
+                "name": "Grace Wanjiru",
+                "scores": [
+                    91.67,
+                    90.0,
+                    81.25,
+                    75.0,
+                    75.0,
+                    75.0
+                ]
+            },
+            {
+                "name": "Kevin Omondi",
+                "scores": [
+                    91.67,
+                    90.0,
+                    81.25,
+                    75.0,
+                    75.0,
+                    75.0
+                ]
+            },
+            {
+                "name": "Faith Mwikali",
+                "scores": [
+                    91.67,
+                    90.0,
+                    81.25,
+                    75.0,
+                    75.0,
+                    75.0
+                ]
+            },
+            {
+                "name": "Linet Cherono",
+                "scores": [
+                    91.67,
+                    90.0,
+                    81.25,
+                    75.0,
+                    75.0,
+                    75.0
+                ]
+            },
+            {
+                "name": "Moses Kipkoech",
+                "scores": [
+                    91.67,
+                    90.0,
+                    81.25,
+                    75.0,
+                    75.0,
+                    75.0
+                ]
+            },
+            {
+                "name": "Wycliffe Mwangi",
+                "scores": [
+                    91.67,
+                    90.0,
+                    81.25,
+                    75.0,
+                    75.0,
+                    75.0
+                ]
+            },
+            {
+                "name": "Tamara Imali",
+                "scores": [
+                    58.33,
+                    50.0,
+                    56.25,
+                    60.0,
+                    62.5,
+                    50.0
+                ]
+            },
+            {
+                "name": "Brian Otieno",
+                "scores": [
+                    58.33,
+                    65.0,
+                    53.12,
+                    50.0,
+                    62.5,
+                    37.5
+                ]
+            },
+            {
+                "name": "Elijah Kibet",
+                "scores": [
+                    58.33,
+                    65.0,
+                    53.12,
+                    50.0,
+                    62.5,
+                    37.5
+                ]
+            }
+        ]
+    },
+    "sub_strand_correlation": {
+        "correlations": [
+            {
+                "pair": [
+                    "Acids, Bases and Indicators",
+                    "Physical and Chemical Changes"
+                ],
+                "correlation": -0.68,
+                "insight": "Strong negative correlation - may indicate serious conceptual confusion."
+            },
+            {
+                "pair": [
+                    "Classes of Fire",
+                    "Physical and Chemical Changes"
+                ],
+                "correlation": 0.28,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Electrical Energy",
+                    "Physical and Chemical Changes"
+                ],
+                "correlation": 0.28,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Elements and Compounds",
+                    "Physical and Chemical Changes"
+                ],
+                "correlation": 0.28,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Human Excretory System",
+                    "Physical and Chemical Changes"
+                ],
+                "correlation": 0.28,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Introduction to Integrated Science",
+                    "Physical and Chemical Changes"
+                ],
+                "correlation": 0.28,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Laboratory Apparatus and Instruments",
+                    "Physical and Chemical Changes"
+                ],
+                "correlation": 0.28,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Physical and Chemical Changes",
+                    "Pressure"
+                ],
+                "correlation": 0.28,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Physical and Chemical Changes",
+                    "The Cell"
+                ],
+                "correlation": 0.28,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Acids, Bases and Indicators",
+                    "Movement of Materials In and Out of the Cell"
+                ],
+                "correlation": 0.21,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Acids, Bases and Indicators",
+                    "Transformation of Energy"
+                ],
+                "correlation": 0.21,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Acids, Bases and Indicators",
+                    "Reproduction in Human Beings"
+                ],
+                "correlation": -0.17,
+                "insight": "Slight negative correlation - check for cognitive mismatch."
+            },
+            {
+                "pair": [
+                    "Human Reproductive System",
+                    "Physical and Chemical Changes"
+                ],
+                "correlation": 0.05,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            },
+            {
+                "pair": [
+                    "Laboratory Safety",
+                    "Physical and Chemical Changes"
+                ],
+                "correlation": 0.05,
+                "insight": "Weak correlation - learning in these sub-strands may not reinforce well."
+            }
+        ]
+    }
+}

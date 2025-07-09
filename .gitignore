@@ -8,5 +8,4 @@ db.sqlite3
 # Redis dump files
 dump.rdb
 
-mtihaniapi/gen/data/
 mtihaniapi/gen/output/
