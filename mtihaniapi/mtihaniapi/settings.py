@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-4-i$7*8gtkg#p=t0q$abtsbd&1(k4vs#%g9@d#)&*^^)lm2u5b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["mtihani-api.loopy.co.ke", "127.0.0.1", "localhost"]
 
 
 # Application definition
