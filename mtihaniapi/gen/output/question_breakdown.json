@@ -1,0 +1,243 @@
+[
+    {
+        "grade": 7,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Acids, Bases and Indicators",
+        "learning_outcomes": [
+            "Identify acids and bases using a litmus paper",
+            "Prepare an acid-base indicator from plant extracts",
+            "Describe the physical properties of acids and bases",
+            "Outline applications of acids, bases and indicators in real life",
+            "Appreciate the uses of acids and bases in real life"
+        ],
+        "skills_to_assess": [
+            "Ability to identify acids and bases",
+            "Ability to outline applications of acids and bases in real life"
+        ],
+        "skills_to_test": [
+            {
+                "number": 7,
+                "skills_to_test": [
+                    "Remembering",
+                    "Understanding"
+                ]
+            }
+        ]
+    },
+    {
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Electrical Energy",
+        "learning_outcomes": [
+            "Identify sources of electricity in the environment",
+            "Demonstrate flow of electric current using simple electric circuits",
+            "Identify common electrical appliances used in day-to-day life",
+            "Identify safety measures observed when handling electrical appliances",
+            "Appreciate the use of electricity in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to identify common electrical appliances used in day-to-day life",
+            "Ability to identify safety measures observed when handling electrical appliances",
+            "Ability to identify sources of electricity in the environment"
+        ],
+        "skills_to_test": [
+            {
+                "number": 4,
+                "skills_to_test": [
+                    "Remembering",
+                    "Understanding"
+                ]
+            }
+        ]
+    },
+    {
+        "grade": 7,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Human Reproductive System",
+        "learning_outcomes": [
+            "Identify parts of the human male and female reproductive systems",
+            "Describe functions of parts of the male and female reproductive system",
+            "Describe the physical changes that take place in boys and girls during adolescence",
+            "Develop a plan to manage developmental challenges during adolescence",
+            "Appreciate that physical changes in boys and girls during adolescence have social and reproductive implications"
+        ],
+        "skills_to_assess": [
+            "Ability to describe functions of parts of the male and female reproductive system",
+            "Ability to develop a plan to manage developmental challenges during adolescence"
+        ],
+        "skills_to_test": [
+            {
+                "number": 3,
+                "skills_to_test": [
+                    "Evaluating",
+                    "Creating"
+                ]
+            }
+        ]
+    },
+    {
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Introduction to Integrated Science",
+        "learning_outcomes": [
+            "Outline the components of Integrated Science as a field of study",
+            "Explain the importance of science in daily life",
+            "Show interest in learning Integrated Science at junior school"
+        ],
+        "skills_to_assess": [
+            "Ability to explain the importance of science in daily life"
+        ],
+        "skills_to_test": [
+            {
+                "number": 1,
+                "skills_to_test": [
+                    "Remembering",
+                    "Understanding"
+                ]
+            }
+        ]
+    },
+    {
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Laboratory Apparatus and Instruments",
+        "learning_outcomes": [
+            "Describe the basic skills in science",
+            "Use and care for apparatus and instruments in the laboratory",
+            "Use the SI units for basic and derived quantities in science",
+            "Appreciate consumer protection when handling different apparatus, instruments and other materials in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to use and care for apparatus and instruments in the laboratory"
+        ],
+        "skills_to_test": [
+            {
+                "number": 6,
+                "skills_to_test": [
+                    "Evaluating",
+                    "Creating"
+                ]
+            }
+        ]
+    },
+    {
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Magnetism",
+        "learning_outcomes": [
+            "Demonstrate the properties of a magnet",
+            "Classify materials as magnetic or non-magnetic",
+            "Identify the uses of magnets in day-to-day life",
+            "Appreciate the applications of magnets in day-to-day life"
+        ],
+        "skills_to_assess": [
+            "Ability to demonstrate the properties of a magnet",
+            "Ability to identify the uses of magnets in day-to-day life"
+        ],
+        "skills_to_test": [
+            {
+                "number": 9,
+                "skills_to_test": [
+                    "Evaluating",
+                    "Creating"
+                ]
+            }
+        ]
+    },
+    {
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "Movement of Materials In and Out of the Cell",
+        "learning_outcomes": [
+            "Describe the processes of diffusion and osmosis",
+            "Demonstrate diffusion and osmosis using simple experiments",
+            "Relate diffusion and osmosis to movement of materials in living organisms",
+            "Appreciate the importance of diffusion and osmosis in living organisms"
+        ],
+        "skills_to_assess": [
+            "Ability to demonstrate and explain diffusion and osmosis"
+        ],
+        "skills_to_test": [
+            {
+                "number": 5,
+                "skills_to_test": [
+                    "Applying",
+                    "Analysing"
+                ]
+            }
+        ]
+    },
+    {
+        "grade": 9,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Pollution",
+        "learning_outcomes": [
+            "Identify and describe different types of pollution",
+            "Explain the causes and effects of pollution on human health and the environment",
+            "Suggest measures for pollution control and prevention",
+            "Show concern for pollution in the environment"
+        ],
+        "skills_to_assess": [
+            "Ability to describe different types of pollution and their causes",
+            "Ability to explain the effects of pollution on human health and the environment"
+        ],
+        "skills_to_test": [
+            {
+                "number": 8,
+                "skills_to_test": [
+                    "Applying",
+                    "Analysing"
+                ]
+            }
+        ]
+    },
+    {
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "Reproduction in Human Beings",
+        "learning_outcomes": [
+            "Describe the parts and functions of the human reproductive system",
+            "Explain the process of fertilisation and development of the embryo",
+            "Practise appropriate hygiene and care during puberty",
+            "Demonstrate responsible behaviour regarding sexuality",
+            "Appreciate the importance of reproductive health and responsibility"
+        ],
+        "skills_to_assess": [
+            "Ability to describe parts of the reproductive system and their functions"
+        ],
+        "skills_to_test": [
+            {
+                "number": 10,
+                "skills_to_test": [
+                    "Remembering",
+                    "Understanding"
+                ]
+            }
+        ]
+    },
+    {
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Structure of the Atom",
+        "learning_outcomes": [
+            "Describe the structure of the atom",
+            "Determine the mass number of elements",
+            "Draw electron arrangements in atoms using dot or cross diagrams",
+            "Classify elements into metals and non-metals",
+            "Show interest in classifying elements into metals and non-metals"
+        ],
+        "skills_to_assess": [
+            "Ability to classify elements into metals and non-metals",
+            "Ability to describe the structure of the atom"
+        ],
+        "skills_to_test": [
+            {
+                "number": 2,
+                "skills_to_test": [
+                    "Applying",
+                    "Analysing"
+                ]
+            }
+        ]
+    }
+]

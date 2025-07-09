@@ -1,0 +1,150 @@
+
+Question 1
+--------------------
+Grade: 7
+Strand: Scientific Investigation
+Sub Strand: Introduction to Integrated Science
+
+Bloom Skill 1: Remembering
+      Q: List two main components that make up Integrated Science as a field of study.
+      A: Biology and Chemistry, or Biology and Physics, or Chemistry and Physics (any two of the three main branches: Biology, Chemistry, and Physics)
+
+Bloom Skill 2: Understanding
+      Q: Amina notices that her grandmother uses traditional herbs to treat common illnesses in their Mombasa home while also consulting modern doctors for serious conditions. Explain how this situation demonstrates the importance of science in daily life.
+      A: Science helps us understand how both traditional and modern medicines work, allows us to test their effectiveness and safety, and enables people to make informed decisions about healthcare by combining traditional knowledge with scientific research.
+
+
+Question 2
+--------------------
+Grade: 7
+Strand: Mixtures, Elements and Compounds
+Sub Strand: Mixtures
+
+Bloom Skill 1: Applying
+      Q: Wanjiku is helping her mother prepare tea at home and notices that the sugar has completely dissolved in the hot water, forming a clear solution. What method should she use to recover the sugar crystals from this sweet solution, and briefly explain how this method works?
+      A: She should use evaporation by heating the solution gently until the water turns to vapor, leaving behind the sugar crystals as the water evaporates.
+
+Bloom Skill 2: Analysing
+      Q: During a science practical at Moi Primary School, Kamau observed that when salt water is heated, steam rises and condenses on a cool surface as pure water, while salt remains in the original container. Why does the salt not evaporate with the water during this separation process?
+      A: Salt has a much higher boiling point than water, so when the mixture is heated, only the water evaporates and turns to steam while the salt remains as a solid residue.
+
+
+Question 3
+--------------------
+Grade: 9
+Strand: Living Things and Their Environment
+Sub Strand: Pollution
+
+Bloom Skill 1: Evaluating
+      Q: Wanjiku notices that the river near her school has changed from clear water to a brownish color with a foul smell, and she observes that fewer fish are visible compared to last year. Evaluate whether industrial waste discharge upstream is the most likely cause of this change and justify your reasoning.
+      A: Yes, industrial waste discharge upstream is most likely the cause because it explains both the brownish color (chemical pollutants) and foul smell (organic waste decomposition), while the reduced fish population indicates water pollution that affects aquatic life, which is consistent with industrial contamination.
+
+Bloom Skill 2: Creating
+      Q: Kamau's community is experiencing increased respiratory problems due to smoke from a nearby factory, and the local water source has become contaminated with chemical runoff. Create a comprehensive action plan that addresses both air and water pollution problems in his community.
+      A: The action plan should include: reporting to environmental authorities, organizing community meetings to raise awareness, petitioning local government for stricter factory regulations, establishing alternative clean water sources, planting trees to filter air, creating community gardens away from pollution sources, and forming a monitoring committee to track pollution levels and health impacts.
+
+
+Question 4
+--------------------
+Grade: 7
+Strand: Force and Energy
+Sub Strand: Magnetism
+
+Bloom Skill 1: Remembering
+      Q: List two properties of a magnet that Amina observed when she brought a bar magnet close to iron nails during a science experiment.
+      A: Attraction of magnetic materials and repulsion between like poles (or attraction between unlike poles).
+
+Bloom Skill 2: Understanding
+      Q: Explain why Koech's compass needle always points in the same direction when he uses it during geography field trips around his school compound.
+      A: The compass needle is magnetized and aligns itself with Earth's magnetic field, always pointing towards magnetic north.
+
+
+Question 5
+--------------------
+Grade: 8
+Strand: Living Things and the Environment
+Sub Strand: Reproduction in Human Beings
+
+Bloom Skill 1: Applying
+      Q: Amina, a Form 2 student at Mombasa Secondary School, notices that her younger brother Rashid has started experiencing voice changes and growth spurts at age 13. Using your knowledge of human reproduction, explain what biological process Rashid is undergoing and recommend three specific hygiene practices he should adopt during this period.
+      A: Rashid is undergoing puberty, which is triggered by hormonal changes that prepare his reproductive system for maturity. Three hygiene practices he should adopt are: regular bathing to manage increased body odor from active sweat glands, washing his face twice daily to prevent acne from increased oil production, and changing underwear daily to maintain genital hygiene.
+
+Bloom Skill 2: Analysing
+      Q: During a health education session at Kisumu Girls High School, the nurse explains that fertilisation occurs when a sperm cell meets an egg cell, but some students are confused about where exactly this happens in the female reproductive system. Analyse the journey of both gametes and determine the specific location where fertilisation typically occurs, giving reasons why this location is ideal for the process.
+      A: Fertilisation typically occurs in the fallopian tubes (oviducts), specifically in the ampulla region. This location is ideal because the egg travels from the ovary into the fallopian tube where it can survive for about 24 hours, while sperm can swim up through the cervix, uterus, and into the fallopian tubes where they remain viable for several days, creating the optimal meeting point for successful fertilisation.
+
+
+Question 6
+--------------------
+Grade: 7
+Strand: Scientific Investigation
+Sub Strand: Laboratory Safety
+
+Bloom Skill 1: Evaluating
+      Q: During a chemistry practical at Moi Secondary School, Wanjiku noticed that some students were not wearing safety goggles while heating substances, others were eating snacks near chemical bottles, and the fire extinguisher had not been serviced for two years. Evaluate which of these safety violations poses the greatest immediate risk to student safety and justify your reasoning.
+      A: Not wearing safety goggles while heating substances poses the greatest immediate risk because heated chemicals can splatter or produce harmful vapors that could cause serious eye injuries or blindness, which can occur instantly and cause permanent damage.
+
+Bloom Skill 2: Creating
+      Q: Your school's science laboratory has experienced several minor accidents including chemical spills, cuts from broken glass, and students feeling dizzy from chemical fumes. Create a comprehensive safety protocol that addresses prevention of these three types of accidents and includes specific emergency response procedures for each.
+      A: Prevention: Use safety goggles and aprons, handle glassware carefully, ensure proper ventilation and work in fume hoods. Emergency response: For spills - evacuate area and use spill kits with neutralizing agents; for cuts - apply direct pressure, elevate wound, and seek medical attention; for chemical exposure/dizziness - move to fresh air immediately, loosen clothing, and monitor breathing while getting medical help.
+
+
+Question 7
+--------------------
+Grade: 7
+Strand: Mixtures, Elements and Compounds
+Sub Strand: Mixtures
+
+Bloom Skill 1: Remembering
+      Q: What is the name of the separation method used to obtain pure water from a salt water solution?
+      A: Distillation
+
+Bloom Skill 2: Understanding
+      Q: Explain why evaporation is considered a suitable method for separating homogeneous mixtures where one component is a liquid and the other is a dissolved solid.
+      A: Evaporation works because the liquid component has a lower boiling point and can be converted to vapor, leaving behind the dissolved solid which has a higher boiling point and remains as residue.
+
+
+Question 8
+--------------------
+Grade: 7
+Strand: Living Things and Their Environment
+Sub Strand: Human Reproductive System
+
+Bloom Skill 1: Applying
+      Q: Amina, a 13-year-old student at Mombasa Secondary School, has been experiencing irregular menstrual cycles and mood swings, which are affecting her concentration in class and relationships with friends. How can she apply knowledge of adolescent development to create a practical plan for managing these challenges?
+      A: Amina can track her menstrual cycle using a calendar to predict patterns, practice stress management techniques like deep breathing, maintain a balanced diet rich in iron and calcium, engage in regular physical exercise, get adequate sleep, communicate openly with trusted adults like parents or school counselors, and join peer support groups to share experiences with other girls going through similar changes.
+
+Bloom Skill 2: Analysing
+      Q: Kipchoge, a 14-year-old boy from Nakuru, notices that his voice is cracking frequently during school presentations, he's experiencing rapid growth spurts that make him clumsy during sports, and he's developing body odor despite regular bathing. Analyze why these specific changes are occurring and explain their connection to his reproductive system development.
+      A: These changes occur because Kipchoge's body is producing increased levels of testosterone during puberty, which causes the larynx to grow and vocal cords to thicken (voice cracking), stimulates rapid bone and muscle growth (growth spurts and clumsiness), and activates sebaceous and sweat glands (body odor), all of which are natural processes preparing his body for reproductive maturity.
+
+
+Question 9
+--------------------
+Grade: 7
+Strand: Force and Energy
+Sub Strand: Electrical Energy
+
+Bloom Skill 1: Evaluating
+      Q: Amina's family uses a solar panel to charge their phone and power LED lights, while her neighbor Kiptoo relies on a diesel generator for the same purposes. Evaluate which source of electricity is better for long-term use in rural Kenya, considering cost, environmental impact, and reliability.
+      A: Solar panel is better for long-term use because it has lower operating costs after initial setup, produces no pollution or noise, requires minimal maintenance, and provides sustainable energy from sunlight which is abundant in Kenya, while diesel generators have ongoing fuel costs and environmental pollution.
+
+Bloom Skill 2: Creating
+      Q: Design a simple safety checklist that Grace should follow when using electrical appliances like iron box, electric kettle, and radio in her home to prevent electrical accidents.
+      A: Safety checklist: Check for damaged cords before use, keep hands dry when handling appliances, unplug appliances when not in use, avoid overloading sockets, keep electrical appliances away from water, and switch off the main power when cleaning appliances.
+
+
+Question 10
+--------------------
+Grade: 8
+Strand: Living Things and the Environment
+Sub Strand: Movement of Materials In and Out of the Cell
+
+Bloom Skill 1: Remembering
+      Q: What is the name of the process by which water molecules move through a semi-permeable membrane from a region of high water concentration to a region of low water concentration?
+      A: Osmosis
+
+Bloom Skill 2: Understanding
+      Q: Akinyi placed a drop of food coloring in a glass of water and observed it spreading throughout the water without stirring. Explain why the food coloring spread evenly in the water.
+      A: The food coloring spread evenly due to diffusion, where particles move from an area of high concentration to an area of low concentration until they are evenly distributed throughout the water.
+

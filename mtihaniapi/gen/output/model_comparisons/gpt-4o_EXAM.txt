@@ -1,0 +1,150 @@
+
+Question 1
+--------------------
+Grade: 7
+Strand: Scientific Investigation
+Sub Strand: Laboratory Safety
+
+Bloom Skill 1: Remembering
+      Q: In a science class, Amina notices a bottle with a skull and crossbones symbol on it. What does this symbol indicate about the contents of the bottle?
+      A: The skull and crossbones symbol indicates that the contents of the bottle are toxic or poisonous.
+
+Bloom Skill 2: Understanding
+      Q: During a chemistry experiment, James accidentally spills a chemical on his hand. Explain why it is important for him to immediately rinse his hand with plenty of water and inform the teacher.
+      A: It is important for James to rinse his hand with water to dilute and remove the chemical, preventing skin damage or absorption, and informing the teacher ensures he receives proper first aid and the incident is documented.
+
+
+Question 2
+--------------------
+Grade: 7
+Strand: Mixtures, Elements and Compounds
+Sub Strand: Acids, Bases and Indicators
+
+Bloom Skill 1: Applying
+      Q: In a school science experiment, Amina uses red cabbage juice to test the acidity of different household liquids like lemon juice and soap solution. Explain how she can determine which liquid is an acid and which is a base using the cabbage juice.
+      A: Amina can determine the acidity by observing the color change of the cabbage juice; it turns pink in acids like lemon juice and greenish-yellow in bases like soap solution.
+
+Bloom Skill 2: Analysing
+      Q: During a visit to a local farm, James notices that the farmer uses lime to treat acidic soil. Analyze why the farmer uses lime and how it affects the soil's acidity.
+      A: The farmer uses lime because it is a base that neutralizes the acidic soil, raising the pH and improving soil conditions for plant growth.
+
+
+Question 3
+--------------------
+Grade: 9
+Strand: Living Things and Their Environment
+Sub Strand: Pollution
+
+Bloom Skill 1: Evaluating
+      Q: In Nairobi, a factory releases smoke into the air, causing nearby residents to complain about breathing difficulties. Evaluate the impact of this air pollution on both human health and the environment.
+      A: Air pollution from the factory can lead to respiratory problems in humans, such as asthma and bronchitis, and can also harm the environment by contributing to acid rain and damaging plant life.
+
+Bloom Skill 2: Creating
+      Q: Imagine you are part of a school environmental club in Mombasa tasked with reducing water pollution in a nearby river. Create a plan outlining three measures your club could implement to prevent further pollution of the river.
+      A: The plan could include organizing community clean-up events to remove trash from the riverbanks, setting up educational workshops to inform locals about proper waste disposal, and collaborating with local authorities to monitor and regulate industrial waste discharge into the river.
+
+
+Question 4
+--------------------
+Grade: 7
+Strand: Force and Energy
+Sub Strand: Electrical Energy
+
+Bloom Skill 1: Remembering
+      Q: What are two common sources of electricity found in the environment in Kenya?
+      A: Hydroelectric power from rivers and solar energy from sunlight.
+
+Bloom Skill 2: Understanding
+      Q: Amina noticed that her phone charger gets warm after being plugged in for a while. Explain why it is important to handle electrical appliances like chargers with care.
+      A: Handling electrical appliances with care is important to prevent overheating, which can cause damage to the appliance or even start a fire, ensuring safety and prolonging the appliance's lifespan.
+
+
+Question 5
+--------------------
+Grade: 8
+Strand: Living Things and the Environment
+Sub Strand: Reproduction in Human Beings
+
+Bloom Skill 1: Applying
+      Q: Amina noticed that her younger brother, who is in Grade 7, is curious about how babies are formed. She decides to explain the process of fertilisation to him using simple terms. How would Amina describe the process of fertilisation and the development of the embryo to her brother?
+      A: Amina would explain that fertilisation occurs when a sperm cell from the father joins with an egg cell from the mother, forming a zygote, which then develops into an embryo as it grows and divides.
+
+Bloom Skill 2: Analysing
+      Q: During a science class, Mr. Otieno asked his students to discuss why it is important for teenagers to understand the changes that occur during puberty. What are some reasons the students might give for the importance of understanding puberty?
+      A: The students might say that understanding puberty helps teenagers manage physical and emotional changes, practice good hygiene, and make informed decisions about their health and relationships.
+
+
+Question 6
+--------------------
+Grade: 7
+Strand: Scientific Investigation
+Sub Strand: Introduction to Integrated Science
+
+Bloom Skill 1: Evaluating
+      Q: In a small village in Kenya, Amina notices that the crops in her family's farm grow better when they use compost instead of chemical fertilizers. Evaluate the impact of using compost on the environment and explain why it might be a better choice for sustainable farming.
+      A: Using compost improves soil health by adding organic matter, reduces chemical runoff into water sources, and promotes biodiversity, making it a more environmentally friendly and sustainable option.
+
+Bloom Skill 2: Creating
+      Q: Imagine you are a scientist tasked with designing a simple experiment to demonstrate the importance of sunlight for plant growth. Create a plan outlining the steps you would take and the materials you would need to conduct this experiment in your school garden.
+      A: To demonstrate the importance of sunlight, plant two identical seedlings in separate pots. Place one pot in a sunny area and the other in a dark room. Water both equally and observe their growth over two weeks. Materials needed include pots, soil, water, and seedlings.
+
+
+Question 7
+--------------------
+Grade: 9
+Strand: Mixtures, Elements and Compounds
+Sub Strand: Metals and Alloys
+
+Bloom Skill 1: Remembering
+      Q: What are two physical properties of metals that make them useful in constructing buildings?
+      A: Metals are strong and malleable, which makes them suitable for constructing buildings.
+
+Bloom Skill 2: Understanding
+      Q: Achieng noticed that the iron gate at her home was starting to rust after the rainy season. Explain why rusting occurs and how it can be prevented.
+      A: Rusting occurs when iron reacts with oxygen and moisture, forming iron oxide. It can be prevented by painting, galvanizing, or applying oil to the metal surface to block moisture and air.
+
+
+Question 8
+--------------------
+Grade: 9
+Strand: Living Things and Their Environment
+Sub Strand: Conservation of the Environment
+
+Bloom Skill 1: Applying
+      Q: In your school, the science club has decided to start a tree planting project to improve the environment. Explain how this initiative can contribute to environmental conservation and suggest two ways students can actively participate in this project.
+      A: Planting trees helps in environmental conservation by reducing carbon dioxide levels, providing habitats for wildlife, and preventing soil erosion. Students can participate by planting and watering the trees and educating others about the importance of trees.
+
+Bloom Skill 2: Analysing
+      Q: During a visit to Lake Nakuru, Amina noticed that the water level has significantly decreased over the years. Analyze the possible causes of this environmental change and propose one solution to address it.
+      A: Possible causes of the decreased water level include climate change, deforestation, and overuse of water resources. A solution could be implementing sustainable water management practices to ensure the lake's water is used efficiently and conserved.
+
+
+Question 9
+--------------------
+Grade: 7
+Strand: Force and Energy
+Sub Strand: Magnetism
+
+Bloom Skill 1: Evaluating
+      Q: Amina noticed that her fridge door stays closed because of a magnet. Evaluate how the properties of magnets make them suitable for this purpose and suggest any two other household items that might use magnets similarly.
+      A: Magnets attract metal, keeping the fridge door closed securely. Other items include magnetic cabinet latches and magnetic knife holders.
+
+Bloom Skill 2: Creating
+      Q: Imagine you are designing a new toy car that uses magnets to move without touching the ground. Create a brief explanation of how you would use magnets to achieve this and describe one potential challenge you might face.
+      A: I would use magnets with like poles facing each other to create repulsion, allowing the car to hover. A challenge could be maintaining stability and direction.
+
+
+Question 10
+--------------------
+Grade: 8
+Strand: Living Things and the Environment
+Sub Strand: Reproduction in Human Beings
+
+Bloom Skill 1: Remembering
+      Q: What are the main parts of the male reproductive system?
+      A: The main parts of the male reproductive system are the testes, vas deferens, prostate gland, seminal vesicles, and penis.
+
+Bloom Skill 2: Understanding
+      Q: Explain the function of the ovaries in the female reproductive system.
+      A: The ovaries produce egg cells (ova) and hormones such as estrogen and progesterone, which are important for reproduction and regulating the menstrual cycle.
+

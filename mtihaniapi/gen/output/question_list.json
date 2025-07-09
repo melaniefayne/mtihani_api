@@ -1,0 +1,182 @@
+[
+    {
+        "number": 1,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Laboratory Safety",
+        "bloom_skill": "Remembering",
+        "description": "What is the meaning of the hazard symbol with a flame and a circle with a diagonal line through it?",
+        "expected_answer": "It indicates that the substance is flammable and should be kept away from open flames or heat sources."
+    },
+    {
+        "number": 1,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Laboratory Safety",
+        "bloom_skill": "Understanding",
+        "description": "During a chemistry experiment, a student accidentally spills a corrosive liquid on their hand; what immediate First Aid steps should they take?",
+        "expected_answer": "They should immediately rinse the affected area under running water for at least 15 minutes, remove any contaminated clothing, and seek medical attention if necessary."
+    },
+    {
+        "number": 2,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Structure of the Atom",
+        "bloom_skill": "Applying",
+        "description": "During a science fair in Nairobi, Akinyi demonstrates how metals conduct electricity by using a copper wire, while her friend Karanja uses a plastic ruler. Explain how the structure of atoms in copper and plastic differs to account for this observation.",
+        "expected_answer": "Copper is a metal with free-moving electrons in its outer shell, allowing it to conduct electricity, while plastic is a non-metal with tightly bound electrons that do not conduct electricity."
+    },
+    {
+        "number": 2,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Structure of the Atom",
+        "bloom_skill": "Analysing",
+        "description": "In a chemistry lab in Mombasa, students observe that sodium reacts violently with water but magnesium reacts more slowly. Analyze how the electron arrangement in sodium and magnesium atoms influences their reactivity with water.",
+        "expected_answer": "Sodium has one electron in its outer shell, making it highly reactive, while magnesium has two electrons in its outer shell, making it less reactive than sodium."
+    },
+    {
+        "number": 3,
+        "grade": 9,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Conservation of the Environment",
+        "bloom_skill": "Evaluating",
+        "description": "Your school is planning a tree-planting activity to conserve the environment, but some students argue that it is a waste of time; evaluate the importance of this activity in preventing soil erosion and improving air quality.",
+        "expected_answer": "Tree planting prevents soil erosion by holding soil together with roots and improves air quality by absorbing carbon dioxide and releasing oxygen, making it essential for environmental conservation."
+    },
+    {
+        "number": 3,
+        "grade": 9,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Conservation of the Environment",
+        "bloom_skill": "Creating",
+        "description": "Design a simple poster for your community to encourage the use of reusable bags instead of plastic bags, including at least three reasons why plastic bags harm the environment.",
+        "expected_answer": "A poster with a clear message like 'Say No to Plastic Bags' and reasons such as pollution, harm to animals, and non-biodegradability, encouraging the use of reusable bags."
+    },
+    {
+        "number": 4,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Magnetism",
+        "bloom_skill": "Remembering",
+        "description": "What are the two poles of a magnet called?",
+        "expected_answer": "The two poles of a magnet are called the north pole and the south pole."
+    },
+    {
+        "number": 4,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Magnetism",
+        "bloom_skill": "Understanding",
+        "description": "Amae is playing with a magnet and notices that it attracts some objects but not others. Explain why this happens.",
+        "expected_answer": "Magnets attract objects made of magnetic materials like iron, nickel, and cobalt, but not non-magnetic materials like wood or plastic."
+    },
+    {
+        "number": 5,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "Reproduction in Human Beings",
+        "bloom_skill": "Applying",
+        "description": "During a school health talk, Wanjiku learns that the uterus is a key part of the female reproductive system. She wants to explain to her classmates how the uterus functions during pregnancy. Describe the role of the uterus in the development of a baby, using at least two key processes.",
+        "expected_answer": "The uterus provides a safe environment for the embryo to develop into a baby by nourishing it through the placenta and protecting it from harm. It also expands to accommodate the growing fetus and contracts during childbirth to help deliver the baby."
+    },
+    {
+        "number": 5,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "Reproduction in Human Beings",
+        "bloom_skill": "Analysing",
+        "description": "A group of students in Grade 8 is discussing how to maintain good hygiene during puberty. They argue about whether washing with soap and water daily is enough to stay clean. Analyze the importance of daily hygiene practices during puberty and suggest two additional measures to ensure cleanliness and health.",
+        "expected_answer": "Daily hygiene is crucial during puberty to prevent infections and body odor caused by increased sweat and oil production. Additional measures include wearing clean clothes daily and using mild, pH-balanced soaps to avoid skin irritation."
+    },
+    {
+        "number": 6,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Introduction to Integrated Science",
+        "bloom_skill": "Evaluating",
+        "description": "During a science fair in Nairobi, a student named Akinyi demonstrates how a simple solar oven made from cardboard and aluminum foil can cook food using sunlight. Explain why this experiment is important in daily life, especially in rural areas of Kenya.",
+        "expected_answer": "This experiment shows how science can provide affordable and sustainable solutions for cooking, reducing the need for firewood and improving energy efficiency in rural areas."
+    },
+    {
+        "number": 6,
+        "grade": 7,
+        "strand": "Scientific Investigation",
+        "sub_strand": "Introduction to Integrated Science",
+        "bloom_skill": "Creating",
+        "description": "Design a simple experiment to investigate how the type of soil affects plant growth in a school garden in Kisumu, using only basic materials like pots, soil samples, and water.",
+        "expected_answer": "Collect different soil samples (sandy, clay, loam), plant the same seeds in each, water them equally, and observe growth over two weeks to compare which soil type supports the best growth."
+    },
+    {
+        "number": 7,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Water Hardness",
+        "bloom_skill": "Remembering",
+        "description": "What are the two main types of water hardness and how do they differ?",
+        "expected_answer": "The two main types of water hardness are temporary and permanent hardness; temporary hardness is caused by dissolved bicarbonate salts of calcium and magnesium, which can be removed by boiling, while permanent hardness is caused by dissolved sulfates, chlorides, and nitrates of calcium and magnesium, which cannot be removed by boiling."
+    },
+    {
+        "number": 7,
+        "grade": 9,
+        "strand": "Mixtures, Elements and Compounds",
+        "sub_strand": "Water Hardness",
+        "bloom_skill": "Understanding",
+        "description": "During a science fair, Mwangi noticed that water from a nearby spring left white deposits on the kettle after boiling, while rainwater did not; explain why this happens.",
+        "expected_answer": "The spring water is temporarily hard due to dissolved calcium and magnesium bicarbonates, which decompose into insoluble carbonates when boiled, forming white deposits, whereas rainwater is soft and does not contain these dissolved salts."
+    },
+    {
+        "number": 8,
+        "grade": 9,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Conservation of the Environment",
+        "bloom_skill": "Applying",
+        "description": "During a school clean-up day, you notice that some students are throwing litter into a nearby river; how can you apply the concept of the 3Rs (Reduce, Reuse, Recycle) to address this issue?",
+        "expected_answer": "By reducing waste by using less disposable items, reusing materials like bottles, and recycling paper and plastics, students can prevent litter from polluting the river."
+    },
+    {
+        "number": 8,
+        "grade": 9,
+        "strand": "Living Things and Their Environment",
+        "sub_strand": "Conservation of the Environment",
+        "bloom_skill": "Analysing",
+        "description": "Analyse the impact of deforestation in the Mau Forest on the water supply in Nairobi, explaining how cutting down trees affects the water cycle and availability of clean water.",
+        "expected_answer": "Deforestation reduces the forest's ability to absorb and release water, disrupting the water cycle and leading to decreased rainfall and water shortages in Nairobi."
+    },
+    {
+        "number": 9,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Electrical Energy",
+        "bloom_skill": "Evaluating",
+        "description": "During a science fair in Nairobi, a student named Akinyi demonstrates a simple circuit using a battery, wires, and a bulb. She notices that the bulb lights up when the circuit is complete but dims when she adds a second bulb in series. Explain why the brightness of the bulbs changes and suggest a way to maintain the same brightness for both bulbs.",
+        "expected_answer": "The brightness decreases because the current is shared between the two bulbs in series, reducing the voltage across each. To maintain the same brightness, the bulbs should be connected in parallel, allowing each bulb to receive the full voltage from the battery."
+    },
+    {
+        "number": 9,
+        "grade": 7,
+        "strand": "Force and Energy",
+        "sub_strand": "Electrical Energy",
+        "bloom_skill": "Creating",
+        "description": "Design a simple electrical circuit using a 9V battery, two bulbs, and connecting wires that ensures both bulbs light up with equal brightness. Describe the arrangement of the components in your circuit.",
+        "expected_answer": "Connect both bulbs in parallel to the battery, ensuring each bulb has its own separate path for current flow. This way, each bulb receives the full voltage, maintaining equal brightness."
+    },
+    {
+        "number": 10,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "The Cell",
+        "bloom_skill": "Remembering",
+        "description": "What is the function of the cell membrane in both plant and animal cells?",
+        "expected_answer": "The cell membrane controls the movement of substances in and out of the cell, maintaining homeostasis."
+    },
+    {
+        "number": 10,
+        "grade": 8,
+        "strand": "Living Things and the Environment",
+        "sub_strand": "The Cell",
+        "bloom_skill": "Understanding",
+        "description": "During a science lesson, Mwangi observed that plant cells have a rigid outer layer while animal cells do not; explain why this difference exists.",
+        "expected_answer": "Plant cells have a cell wall made of cellulose for structural support and protection, while animal cells lack this rigid layer to allow flexibility and movement."
+    }
+]

@@ -1,0 +1,42 @@
+[
+    {
+        "question": "Why is it important for the cell membrane to be selectively permeable, and how does this relate to everyday life?",
+        "expected_answer": "The cell membrane's selective permeability allows essential nutrients to enter the cell while keeping harmful substances out, similar to how a security system protects a house by allowing only authorized people to enter.",
+        "grade": 7,
+        "strand": "Living Things and Their Environment (G7)",
+        "sub_strand": "The Cell",
+        "bloom_skill": "Comprehension"
+    },
+    {
+        "question": "Describe a simple experiment you could conduct at home to observe the process of diffusion using common kitchen items.",
+        "expected_answer": "Place a drop of food coloring in a glass of water and observe how the color spreads without stirring, demonstrating diffusion.",
+        "grade": 7,
+        "strand": "Living Things and Their Environment (G7)",
+        "sub_strand": "The Cell",
+        "bloom_skill": "Application"
+    },
+    {
+        "question": "Explain how the structure of a cell membrane is similar to a school gate and its function.",
+        "expected_answer": "Like a school gate that controls who enters and exits the school, the cell membrane regulates the movement of substances in and out of the cell.",
+        "grade": 7,
+        "strand": "Living Things and Their Environment (G7)",
+        "sub_strand": "The Cell",
+        "bloom_skill": "Analysis"
+    },
+    {
+        "question": "How can you demonstrate the presence of carbon dioxide in your breath using a simple home experiment?",
+        "expected_answer": "Blow into a glass of lime water; if it turns cloudy, it indicates the presence of carbon dioxide.",
+        "grade": 7,
+        "strand": "Living Things and Their Environment (G7)",
+        "sub_strand": "The Cell",
+        "bloom_skill": "Application"
+    },
+    {
+        "question": "Discuss how the concept of a cell membrane can be related to the packaging of food items in a supermarket.",
+        "expected_answer": "Just as a cell membrane protects the cell and controls what enters and exits, food packaging protects the contents and controls exposure to air and contaminants.",
+        "grade": 7,
+        "strand": "Living Things and Their Environment (G7)",
+        "sub_strand": "The Cell",
+        "bloom_skill": "Synthesis"
+    }
+]

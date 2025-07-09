@@ -1,0 +1,150 @@
+
+Question 1
+--------------------
+Grade: 7
+Strand: Scientific Investigation
+Sub Strand: Laboratory Safety
+
+Bloom Skill 1: Remembering
+      Q: What is the meaning of the hazard symbol with a flame and a circle with a diagonal line through it?
+      A: It indicates that the substance is flammable and should be kept away from open flames or heat sources.
+
+Bloom Skill 2: Understanding
+      Q: During a chemistry experiment, a student accidentally spills a corrosive liquid on their hand; what immediate First Aid steps should they take?
+      A: They should immediately rinse the affected area under running water for at least 15 minutes, remove any contaminated clothing, and seek medical attention if necessary.
+
+
+Question 2
+--------------------
+Grade: 9
+Strand: Mixtures, Elements and Compounds
+Sub Strand: Structure of the Atom
+
+Bloom Skill 1: Applying
+      Q: During a science fair in Nairobi, Akinyi demonstrates how metals conduct electricity by using a copper wire, while her friend Karanja uses a plastic ruler. Explain how the structure of atoms in copper and plastic differs to account for this observation.
+      A: Copper is a metal with free-moving electrons in its outer shell, allowing it to conduct electricity, while plastic is a non-metal with tightly bound electrons that do not conduct electricity.
+
+Bloom Skill 2: Analysing
+      Q: In a chemistry lab in Mombasa, students observe that sodium reacts violently with water but magnesium reacts more slowly. Analyze how the electron arrangement in sodium and magnesium atoms influences their reactivity with water.
+      A: Sodium has one electron in its outer shell, making it highly reactive, while magnesium has two electrons in its outer shell, making it less reactive than sodium.
+
+
+Question 3
+--------------------
+Grade: 9
+Strand: Living Things and Their Environment
+Sub Strand: Conservation of the Environment
+
+Bloom Skill 1: Evaluating
+      Q: Your school is planning a tree-planting activity to conserve the environment, but some students argue that it is a waste of time; evaluate the importance of this activity in preventing soil erosion and improving air quality.
+      A: Tree planting prevents soil erosion by holding soil together with roots and improves air quality by absorbing carbon dioxide and releasing oxygen, making it essential for environmental conservation.
+
+Bloom Skill 2: Creating
+      Q: Design a simple poster for your community to encourage the use of reusable bags instead of plastic bags, including at least three reasons why plastic bags harm the environment.
+      A: A poster with a clear message like 'Say No to Plastic Bags' and reasons such as pollution, harm to animals, and non-biodegradability, encouraging the use of reusable bags.
+
+
+Question 4
+--------------------
+Grade: 7
+Strand: Force and Energy
+Sub Strand: Magnetism
+
+Bloom Skill 1: Remembering
+      Q: What are the two poles of a magnet called?
+      A: The two poles of a magnet are called the north pole and the south pole.
+
+Bloom Skill 2: Understanding
+      Q: Amae is playing with a magnet and notices that it attracts some objects but not others. Explain why this happens.
+      A: Magnets attract objects made of magnetic materials like iron, nickel, and cobalt, but not non-magnetic materials like wood or plastic.
+
+
+Question 5
+--------------------
+Grade: 8
+Strand: Living Things and the Environment
+Sub Strand: Reproduction in Human Beings
+
+Bloom Skill 1: Applying
+      Q: During a school health talk, Wanjiku learns that the uterus is a key part of the female reproductive system. She wants to explain to her classmates how the uterus functions during pregnancy. Describe the role of the uterus in the development of a baby, using at least two key processes.
+      A: The uterus provides a safe environment for the embryo to develop into a baby by nourishing it through the placenta and protecting it from harm. It also expands to accommodate the growing fetus and contracts during childbirth to help deliver the baby.
+
+Bloom Skill 2: Analysing
+      Q: A group of students in Grade 8 is discussing how to maintain good hygiene during puberty. They argue about whether washing with soap and water daily is enough to stay clean. Analyze the importance of daily hygiene practices during puberty and suggest two additional measures to ensure cleanliness and health.
+      A: Daily hygiene is crucial during puberty to prevent infections and body odor caused by increased sweat and oil production. Additional measures include wearing clean clothes daily and using mild, pH-balanced soaps to avoid skin irritation.
+
+
+Question 6
+--------------------
+Grade: 7
+Strand: Scientific Investigation
+Sub Strand: Introduction to Integrated Science
+
+Bloom Skill 1: Evaluating
+      Q: During a science fair in Nairobi, a student named Akinyi demonstrates how a simple solar oven made from cardboard and aluminum foil can cook food using sunlight. Explain why this experiment is important in daily life, especially in rural areas of Kenya.
+      A: This experiment shows how science can provide affordable and sustainable solutions for cooking, reducing the need for firewood and improving energy efficiency in rural areas.
+
+Bloom Skill 2: Creating
+      Q: Design a simple experiment to investigate how the type of soil affects plant growth in a school garden in Kisumu, using only basic materials like pots, soil samples, and water.
+      A: Collect different soil samples (sandy, clay, loam), plant the same seeds in each, water them equally, and observe growth over two weeks to compare which soil type supports the best growth.
+
+
+Question 7
+--------------------
+Grade: 9
+Strand: Mixtures, Elements and Compounds
+Sub Strand: Water Hardness
+
+Bloom Skill 1: Remembering
+      Q: What are the two main types of water hardness and how do they differ?
+      A: The two main types of water hardness are temporary and permanent hardness; temporary hardness is caused by dissolved bicarbonate salts of calcium and magnesium, which can be removed by boiling, while permanent hardness is caused by dissolved sulfates, chlorides, and nitrates of calcium and magnesium, which cannot be removed by boiling.
+
+Bloom Skill 2: Understanding
+      Q: During a science fair, Mwangi noticed that water from a nearby spring left white deposits on the kettle after boiling, while rainwater did not; explain why this happens.
+      A: The spring water is temporarily hard due to dissolved calcium and magnesium bicarbonates, which decompose into insoluble carbonates when boiled, forming white deposits, whereas rainwater is soft and does not contain these dissolved salts.
+
+
+Question 8
+--------------------
+Grade: 9
+Strand: Living Things and Their Environment
+Sub Strand: Conservation of the Environment
+
+Bloom Skill 1: Applying
+      Q: During a school clean-up day, you notice that some students are throwing litter into a nearby river; how can you apply the concept of the 3Rs (Reduce, Reuse, Recycle) to address this issue?
+      A: By reducing waste by using less disposable items, reusing materials like bottles, and recycling paper and plastics, students can prevent litter from polluting the river.
+
+Bloom Skill 2: Analysing
+      Q: Analyse the impact of deforestation in the Mau Forest on the water supply in Nairobi, explaining how cutting down trees affects the water cycle and availability of clean water.
+      A: Deforestation reduces the forest's ability to absorb and release water, disrupting the water cycle and leading to decreased rainfall and water shortages in Nairobi.
+
+
+Question 9
+--------------------
+Grade: 7
+Strand: Force and Energy
+Sub Strand: Electrical Energy
+
+Bloom Skill 1: Evaluating
+      Q: During a science fair in Nairobi, a student named Akinyi demonstrates a simple circuit using a battery, wires, and a bulb. She notices that the bulb lights up when the circuit is complete but dims when she adds a second bulb in series. Explain why the brightness of the bulbs changes and suggest a way to maintain the same brightness for both bulbs.
+      A: The brightness decreases because the current is shared between the two bulbs in series, reducing the voltage across each. To maintain the same brightness, the bulbs should be connected in parallel, allowing each bulb to receive the full voltage from the battery.
+
+Bloom Skill 2: Creating
+      Q: Design a simple electrical circuit using a 9V battery, two bulbs, and connecting wires that ensures both bulbs light up with equal brightness. Describe the arrangement of the components in your circuit.
+      A: Connect both bulbs in parallel to the battery, ensuring each bulb has its own separate path for current flow. This way, each bulb receives the full voltage, maintaining equal brightness.
+
+
+Question 10
+--------------------
+Grade: 8
+Strand: Living Things and the Environment
+Sub Strand: The Cell
+
+Bloom Skill 1: Remembering
+      Q: What is the function of the cell membrane in both plant and animal cells?
+      A: The cell membrane controls the movement of substances in and out of the cell, maintaining homeostasis.
+
+Bloom Skill 2: Understanding
+      Q: During a science lesson, Mwangi observed that plant cells have a rigid outer layer while animal cells do not; explain why this difference exists.
+      A: Plant cells have a cell wall made of cellulose for structural support and protection, while animal cells lack this rigid layer to allow flexibility and movement.
+

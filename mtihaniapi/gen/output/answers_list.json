@@ -1,0 +1,452 @@
+[
+    {
+        "id": 20,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "Graduated cylinder and pipette are used to measure liquids."
+            },
+            {
+                "question_id": "163",
+                "answer": "When iron and sulfur are heated, they form iron sulfide, a compound with different properties."
+            },
+            {
+                "question_id": "164",
+                "answer": "Pollution can cause diseases from dirty water. Water pollution is likely the cause."
+            },
+            {
+                "question_id": "165",
+                "answer": "North Pole and South Pole."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have a cell wall and vacuole to keep water, helping the plant stay healthy."
+            },
+            {
+                "question_id": "167",
+                "answer": "Plastic bags pollute the environment. We can use biodegradable bags to reduce waste."
+            },
+            {
+                "question_id": "168",
+                "answer": "An atom has a nucleus with protons and neutrons, and electrons around it."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can help Ali by encouraging exercise, a good diet, and talking about his feelings."
+            },
+            {
+                "question_id": "170",
+                "answer": "Solar panels change sunlight to electricity, which powers the radio to make sound."
+            },
+            {
+                "question_id": "171",
+                "answer": "The nucleus controls cell activities and holds DNA."
+            }
+        ]
+    },
+    {
+        "id": 12,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "The two common laboratory apparatus used for measuring liquid volumes are the graduated cylinder and the pipette."
+            },
+            {
+                "question_id": "163",
+                "answer": "This experiment demonstrates the formation of a compound because when iron filings and sulfur powder are heated, they chemically react to form iron sulfide, which is a compound with distinct properties from the original elements."
+            },
+            {
+                "question_id": "164",
+                "answer": "The pollution of the river can lead to serious health issues such as waterborne diseases in the community. The most likely type of pollution responsible is water pollution."
+            },
+            {
+                "question_id": "165",
+                "answer": "The two poles of a magnet are called the North Pole and the South Pole."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have a rigid cell wall and a large central vacuole that help retain water, maintaining turgor pressure, which is essential for keeping the plant upright and healthy."
+            },
+            {
+                "question_id": "167",
+                "answer": "The use of plastic bags contributes significantly to environmental pollution and poses a threat to wildlife. A scientific approach to reduce plastic waste includes using biodegradable alternatives or recycling plastic materials."
+            },
+            {
+                "question_id": "168",
+                "answer": "An atom consists of a nucleus containing protons and neutrons, surrounded by electrons in shells."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can help Ali manage his developmental challenges by encouraging him to maintain a balanced diet, engage in regular physical activity, and openly discuss his feelings to better understand and cope with the changes he is experiencing."
+            },
+            {
+                "question_id": "170",
+                "answer": "The solar panel converts solar energy into electrical energy, which is then used to power the radio, transforming it into sound energy."
+            },
+            {
+                "question_id": "171",
+                "answer": "The nucleus functions as the control center of the cell, regulating cell activities and containing genetic material (DNA)."
+            }
+        ]
+    },
+    {
+        "id": 15,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "Umm, maybe beaker and test tube?"
+            },
+            {
+                "question_id": "163",
+                "answer": "Iron and sulfur make something new when heated, I think."
+            },
+            {
+                "question_id": "164",
+                "answer": "Pollution makes people sick. Water pollution is bad."
+            },
+            {
+                "question_id": "165",
+                "answer": "North and South."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have walls to keep water, but not sure how it works."
+            },
+            {
+                "question_id": "167",
+                "answer": "Plastic bags are bad for the earth. Maybe use less plastic?"
+            },
+            {
+                "question_id": "168",
+                "answer": "Atoms have a center and things around it."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can tell Ali to eat well and talk about feelings."
+            },
+            {
+                "question_id": "170",
+                "answer": "Solar panels change sun to power for the radio."
+            },
+            {
+                "question_id": "171",
+                "answer": "Nucleus controls the cell and has DNA."
+            }
+        ]
+    },
+    {
+        "id": 18,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "Graduated cylinder and pipette are used to measure liquid volumes in the lab."
+            },
+            {
+                "question_id": "163",
+                "answer": "When iron filings and sulfur powder are heated, they react to form iron sulfide, a compound with different properties from the original elements."
+            },
+            {
+                "question_id": "164",
+                "answer": "Pollution in the river can cause health problems like waterborne diseases. Water pollution is likely responsible."
+            },
+            {
+                "question_id": "165",
+                "answer": "The two poles of a magnet are called the North Pole and the South Pole."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have a cell wall and a large vacuole that help retain water, maintaining turgor pressure and keeping the plant healthy."
+            },
+            {
+                "question_id": "167",
+                "answer": "Plastic waste harms the environment. Using biodegradable bags or recycling can help reduce plastic waste."
+            },
+            {
+                "question_id": "168",
+                "answer": "An atom has a nucleus with protons and neutrons, and electrons orbiting around it."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can help Ali by encouraging a balanced diet, regular exercise, and open communication about his feelings."
+            },
+            {
+                "question_id": "170",
+                "answer": "The solar panel converts solar energy into electrical energy, which powers the radio, turning it into sound energy."
+            },
+            {
+                "question_id": "171",
+                "answer": "The nucleus controls cell activities and contains genetic material (DNA)."
+            }
+        ]
+    },
+    {
+        "id": 21,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "Maybe beaker and flask?"
+            },
+            {
+                "question_id": "163",
+                "answer": "Iron and sulfur make something new when heated."
+            },
+            {
+                "question_id": "164",
+                "answer": "Pollution makes people sick. Water pollution is bad."
+            },
+            {
+                "question_id": "165",
+                "answer": "North and South."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have walls to keep water, but not sure how it works."
+            },
+            {
+                "question_id": "167",
+                "answer": "Plastic bags are bad for the earth. Maybe use less plastic?"
+            },
+            {
+                "question_id": "168",
+                "answer": "Atoms have a center and things around it."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can tell Ali to eat well and talk about feelings."
+            },
+            {
+                "question_id": "170",
+                "answer": "Solar panels change sun to power for the radio."
+            },
+            {
+                "question_id": "171",
+                "answer": "Nucleus controls the cell and has DNA."
+            }
+        ]
+    },
+    {
+        "id": 14,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "The two common laboratory apparatus used for measuring liquid volumes are the graduated cylinder and the pipette."
+            },
+            {
+                "question_id": "163",
+                "answer": "This experiment demonstrates the formation of a compound because when iron filings and sulfur powder are heated, they chemically react to form iron sulfide, which is a compound with distinct properties from the original elements."
+            },
+            {
+                "question_id": "164",
+                "answer": "The pollution of the river can lead to serious health issues such as waterborne diseases in the community. The most likely type of pollution responsible is water pollution."
+            },
+            {
+                "question_id": "165",
+                "answer": "The two poles of a magnet are called the North Pole and the South Pole."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have a rigid cell wall and a large central vacuole that help retain water, maintaining turgor pressure, which is essential for keeping the plant upright and healthy."
+            },
+            {
+                "question_id": "167",
+                "answer": "The use of plastic bags contributes significantly to environmental pollution and poses a threat to wildlife. A scientific approach to reduce plastic waste includes using biodegradable alternatives or recycling plastic materials."
+            },
+            {
+                "question_id": "168",
+                "answer": "An atom consists of a nucleus containing protons and neutrons, surrounded by electrons in shells."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can help Ali manage his developmental challenges by encouraging him to maintain a balanced diet, engage in regular physical activity, and openly discuss his feelings to better understand and cope with the changes he is experiencing."
+            },
+            {
+                "question_id": "170",
+                "answer": "The solar panel converts solar energy into electrical energy, which is then used to power the radio, transforming it into sound energy."
+            },
+            {
+                "question_id": "171",
+                "answer": "The nucleus functions as the control center of the cell, regulating cell activities and containing genetic material (DNA)."
+            }
+        ]
+    },
+    {
+        "id": 19,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "Graduated cylinder and pipette are used to measure liquids."
+            },
+            {
+                "question_id": "163",
+                "answer": "When iron and sulfur are heated, they form iron sulfide, a compound with different properties."
+            },
+            {
+                "question_id": "164",
+                "answer": "Pollution can cause diseases from dirty water. Water pollution is likely the cause."
+            },
+            {
+                "question_id": "165",
+                "answer": "North Pole and South Pole."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have a cell wall and vacuole to keep water, helping the plant stay healthy."
+            },
+            {
+                "question_id": "167",
+                "answer": "Plastic bags pollute the environment. We can use biodegradable bags to reduce waste."
+            },
+            {
+                "question_id": "168",
+                "answer": "An atom has a nucleus with protons and neutrons, and electrons around it."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can help Ali by encouraging exercise, a good diet, and talking about his feelings."
+            },
+            {
+                "question_id": "170",
+                "answer": "Solar panels change sunlight to electricity, which powers the radio to make sound."
+            },
+            {
+                "question_id": "171",
+                "answer": "The nucleus controls cell activities and holds DNA."
+            }
+        ]
+    },
+    {
+        "id": 16,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "Umm, maybe beaker and test tube?"
+            },
+            {
+                "question_id": "163",
+                "answer": "Iron and sulfur make something new when heated, I think."
+            },
+            {
+                "question_id": "164",
+                "answer": "Pollution makes people sick. Water pollution is bad."
+            },
+            {
+                "question_id": "165",
+                "answer": "North and South."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have walls to keep water, but not sure how it works."
+            },
+            {
+                "question_id": "167",
+                "answer": "Plastic bags are bad for the earth. Maybe use less plastic?"
+            },
+            {
+                "question_id": "168",
+                "answer": "Atoms have a center and things around it."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can tell Ali to eat well and talk about feelings."
+            },
+            {
+                "question_id": "170",
+                "answer": "Solar panels change sun to power for the radio."
+            },
+            {
+                "question_id": "171",
+                "answer": "Nucleus controls the cell and has DNA."
+            }
+        ]
+    },
+    {
+        "id": 17,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "I think beaker and flask?"
+            },
+            {
+                "question_id": "163",
+                "answer": "Iron and sulfur make something new when heated."
+            },
+            {
+                "question_id": "164",
+                "answer": "Pollution makes people sick. Water pollution is bad."
+            },
+            {
+                "question_id": "165",
+                "answer": "North and South."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have walls to keep water, but not sure how it works."
+            },
+            {
+                "question_id": "167",
+                "answer": "Plastic bags are bad for the earth. Maybe use less plastic?"
+            },
+            {
+                "question_id": "168",
+                "answer": "Atoms have a center and things around it."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can tell Ali to eat well and talk about feelings."
+            },
+            {
+                "question_id": "170",
+                "answer": "Solar panels change sun to power for the radio."
+            },
+            {
+                "question_id": "171",
+                "answer": "Nucleus controls the cell and has DNA."
+            }
+        ]
+    },
+    {
+        "id": 13,
+        "answers": [
+            {
+                "question_id": "162",
+                "answer": "The two common laboratory apparatus used for measuring liquid volumes are the graduated cylinder and the pipette."
+            },
+            {
+                "question_id": "163",
+                "answer": "This experiment demonstrates the formation of a compound because when iron filings and sulfur powder are heated, they chemically react to form iron sulfide, which is a compound with distinct properties from the original elements."
+            },
+            {
+                "question_id": "164",
+                "answer": "The pollution of the river can lead to serious health issues such as waterborne diseases in the community. The most likely type of pollution responsible is water pollution."
+            },
+            {
+                "question_id": "165",
+                "answer": "The two poles of a magnet are called the North Pole and the South Pole."
+            },
+            {
+                "question_id": "166",
+                "answer": "Plant cells have a rigid cell wall and a large central vacuole that help retain water, maintaining turgor pressure, which is essential for keeping the plant upright and healthy."
+            },
+            {
+                "question_id": "167",
+                "answer": "The use of plastic bags contributes significantly to environmental pollution and poses a threat to wildlife. A scientific approach to reduce plastic waste includes using biodegradable alternatives or recycling plastic materials."
+            },
+            {
+                "question_id": "168",
+                "answer": "An atom consists of a nucleus containing protons and neutrons, surrounded by electrons in shells."
+            },
+            {
+                "question_id": "169",
+                "answer": "Amina can help Ali manage his developmental challenges by encouraging him to maintain a balanced diet, engage in regular physical activity, and openly discuss his feelings to better understand and cope with the changes he is experiencing."
+            },
+            {
+                "question_id": "170",
+                "answer": "The solar panel converts solar energy into electrical energy, which is then used to power the radio, transforming it into sound energy."
+            },
+            {
+                "question_id": "171",
+                "answer": "The nucleus functions as the control center of the cell, regulating cell activities and containing genetic material (DNA)."
+            }
+        ]
+    }
+]

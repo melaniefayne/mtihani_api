@@ -1,0 +1,150 @@
+
+Question 1
+--------------------
+Grade: 7
+Strand: Scientific Investigation
+Sub Strand: Laboratory Safety
+
+Bloom Skill 1: Remembering
+      Q: List two common laboratory hazard symbols and explain what each represents.
+      A: The skull and crossbones symbol represents toxic substances that can cause death or serious harm if inhaled, swallowed, or absorbed through the skin; the flame symbol indicates flammable materials that can ignite easily.
+
+Bloom Skill 2: Understanding
+      Q: During a school science fair, Amina observes a peer accidentally mixing two chemicals that react violently. Explain why it is important to understand chemical compatibility before conducting experiments.
+      A: Understanding chemical compatibility is crucial to prevent dangerous reactions that can lead to explosions, fires, or the release of toxic gases, ensuring the safety of all participants and the integrity of the experiment.
+
+
+Question 2
+--------------------
+Grade: 7
+Strand: Mixtures, Elements and Compounds
+Sub Strand: Acids, Bases and Indicators
+
+Bloom Skill 1: Applying
+      Q: In a school science club, Kamau and his friends decide to use beetroot to create a natural pH indicator for their science fair project; they extract the juice and test it with various household substances. Explain how the color change in the beetroot extract can help determine the pH of the substances.
+      A: The beetroot extract changes color depending on the pH level of the substance it comes into contact with; acidic substances cause it to turn pink or red, while basic substances make it turn yellow or green, thus indicating the substance's pH.
+
+Bloom Skill 2: Analysing
+      Q: During a home science experiment, Amina observes that lemon juice turns blue litmus paper red and baking soda solution turns red litmus paper blue. Analyze why these changes in color occur and what they signify about the nature of lemon juice and baking soda solution.
+      A: The color change occurs because lemon juice is acidic, which turns blue litmus paper red, and baking soda solution is basic, which turns red litmus paper blue; this signifies that lemon juice has acidic properties and baking soda solution has basic properties.
+
+
+Question 3
+--------------------
+Grade: 7
+Strand: Living Things and Their Environment
+Sub Strand: Human Excretory System
+
+Bloom Skill 1: Evaluating
+      Q: After observing that her classmates often suffer from dehydration during sports activities, Amina decides to start a hydration awareness campaign in her school. She plans to include information on how dehydration affects the kidneys. Evaluate how maintaining proper hydration can impact the health and function of the kidneys.
+      A: Maintaining proper hydration helps the kidneys by ensuring they can effectively filter blood and remove waste products. Adequate water intake prevents the buildup of harmful substances in the kidneys, reduces the risk of kidney stones, and supports overall kidney function.
+
+Bloom Skill 2: Creating
+      Q: Charles, a health science student, is tasked with designing a school project to promote skin health among his peers. He decides to create a daily log app that tracks sun exposure, hydration, and use of skin care products. Explain how Charles can structure his app to encourage consistent logging and what features he might include to educate users about the importance of each tracked activity for skin health.
+      A: Charles can structure his app to include daily reminders and easy-to-use logging features to encourage consistent use. He might include educational tips on the effects of UV exposure, the benefits of hydration, and the importance of proper skin care, along with visual progress trackers and rewards for regular logging to motivate users and enhance their understanding of skin health.
+
+
+Question 4
+--------------------
+Grade: 7
+Strand: Force and Energy
+Sub Strand: Magnetism
+
+Bloom Skill 1: Remembering
+      Q: List two properties of a magnet that can be demonstrated using simple classroom materials.
+      A: A magnet has two poles, north and south, and it can attract iron objects.
+
+Bloom Skill 2: Understanding
+      Q: Explain why a magnet can hold a bunch of paper clips but not a plastic spoon.
+      A: A magnet can hold paper clips because they are made of iron, which is a magnetic material, whereas a plastic spoon is non-magnetic and thus not attracted to the magnet.
+
+
+Question 5
+--------------------
+Grade: 8
+Strand: Living Things and the Environment
+Sub Strand: Reproduction in Human Beings
+
+Bloom Skill 1: Applying
+      Q: During a school health club meeting, Makena and her friends discuss the importance of maintaining hygiene during puberty; Makena wonders how regular bathing and use of deodorants can help during this stage. Explain how these practices contribute to personal hygiene and comfort during puberty.
+      A: Regular bathing and the use of deodorants during puberty help manage the increased sweat and body odor due to hormonal changes, thus maintaining cleanliness and increasing comfort and self-confidence.
+
+Bloom Skill 2: Analysing
+      Q: In a biology class, Mr. Otieno sets up a discussion about the human reproductive system. He asks the students to analyze the role of hormones in the menstrual cycle. Describe how hormones like estrogen and progesterone influence the processes in the menstrual cycle.
+      A: Estrogen helps in the growth and thickening of the uterine lining, while progesterone maintains the lining and prepares the uterus for potential pregnancy; these hormones regulate the cycle and prepare the body for possible fertilization.
+
+
+Question 6
+--------------------
+Grade: 7
+Strand: Scientific Investigation
+Sub Strand: Laboratory Safety
+
+Bloom Skill 1: Evaluating
+      Q: In a scenario where a student spills a corrosive chemical on their skin during a laboratory session, evaluate the first aid measures that should be taken immediately.
+      A: The first aid measures include quickly rinsing the affected area with large amounts of water for at least 15 minutes to dilute and wash away the chemical, removing any contaminated clothing carefully, and seeking medical attention if necessary.
+
+Bloom Skill 2: Creating
+      Q: Imagine a school laboratory where students are tasked to redesign the layout to enhance safety; propose a plan that includes the placement of safety equipment and the flow of student movement.
+      A: The plan should include placing fire extinguishers and eyewash stations near the exits for easy access; arranging workstations in a way that minimizes congestion, ensuring clear and unobstructed paths to exits; and positioning chemical storage cabinets away from heat sources.
+
+
+Question 7
+--------------------
+Grade: 7
+Strand: Mixtures, Elements and Compounds
+Sub Strand: Mixtures
+
+Bloom Skill 1: Remembering
+      Q: What is the most common method used to separate a mixture of salt and water in a laboratory setting?
+      A: The most common method used to separate a mixture of salt and water is evaporation.
+
+Bloom Skill 2: Understanding
+      Q: In a scenario where Juma is trying to recover sugar dissolved in water at home, explain why he might choose to use evaporation over distillation.
+      A: Juma might choose evaporation over distillation because evaporation is simpler and requires less specialized equipment, making it more suitable and cost-effective for home use.
+
+
+Question 8
+--------------------
+Grade: 7
+Strand: Living Things and Their Environment
+Sub Strand: Human Reproductive System
+
+Bloom Skill 1: Applying
+      Q: During a school health club meeting, Makena and her friends discuss the challenges they face as they go through puberty; Makena mentions experiencing mood swings and acne, which make her self-conscious at school. How can Makena and her friends develop a plan to manage these developmental challenges effectively?
+      A: Makena and her friends can manage these challenges by maintaining good hygiene to manage acne, engaging in open discussions with a counselor for emotional support, keeping a journal to understand and manage mood swings, and educating themselves about puberty to better understand the changes they are experiencing.
+
+Bloom Skill 2: Analysing
+      Q: In a biology class, Mr. Otieno presents a case where a student, Kamau, is curious about how the human body prepares for reproduction. Mr. Otieno asks the class to analyze the functions of the testes and ovaries in the reproductive system. What are the primary functions of these organs?
+      A: The primary function of the testes is to produce sperm and the hormone testosterone, which are essential for male reproductive capabilities. The ovaries are responsible for producing eggs and the hormones estrogen and progesterone, crucial for female reproductive health and menstrual cycle regulation.
+
+
+Question 9
+--------------------
+Grade: 7
+Strand: Force and Energy
+Sub Strand: Magnetism
+
+Bloom Skill 1: Evaluating
+      Q: Given that a local supermarket uses magnetic sensors at its exits to prevent theft, evaluate how effective this technology is in reducing shoplifting incidents.
+      A: Magnetic sensors are highly effective in reducing shoplifting as they can detect tagged items, alerting staff when someone attempts to leave the store without paying.
+
+Bloom Skill 2: Creating
+      Q: Design a simple experiment to demonstrate how the strength of a magnet decreases with distance using everyday objects.
+      A: Place a series of paper clips in a line on a table, and slowly bring a magnet closer from one end, noting the distance at which the first paper clip is attracted; repeat by increasing the distance and observe how the magnetic effect decreases.
+
+
+Question 10
+--------------------
+Grade: 8
+Strand: Living Things and the Environment
+Sub Strand: Reproduction in Human Beings
+
+Bloom Skill 1: Remembering
+      Q: What are the primary functions of the testes in the male reproductive system?
+      A: The primary functions of the testes are to produce sperm and to secrete hormones, particularly testosterone.
+
+Bloom Skill 2: Understanding
+      Q: Explain the process of fertilization in human beings.
+      A: Fertilization occurs when a sperm cell from a male merges with an egg cell from a female, usually in the fallopian tube; this leads to the formation of a zygote, which eventually develops into an embryo.
+
