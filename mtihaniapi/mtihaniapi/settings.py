@@ -29,6 +29,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["mtihani-api.loopy.co.ke", "127.0.0.1", "localhost"]
 
+CSRF_TRUSTED_ORIGINS = ['https://mtihani-api.loopy.co.ke','https://*.127.0.0.1']
+
 
 # Application definition
 
