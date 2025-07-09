@@ -21,7 +21,8 @@ jobs:
             echo "Pulling latest changes on droplet..."
             pushd /var/www/mtihani
             git pull origin main
-            sudo systemctl restart supervisor
+            pushd /var/www/mtihani/mtihaniapi
+            /var/www/mtihani/.venv/bin/python celery -A mtihaniapi control terminate
             echo "Deployment complete!"
 
  
