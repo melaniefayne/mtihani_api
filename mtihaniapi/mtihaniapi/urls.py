@@ -5,7 +5,8 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 def home(request):
     return JsonResponse({"message": "API running :)"})
@@ -22,3 +23,6 @@ urlpatterns = [
     path('api/exam/', include('exam.urls')),
     path('api/rag/', include('rag.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

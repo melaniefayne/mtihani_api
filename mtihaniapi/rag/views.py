@@ -39,16 +39,20 @@ def upload_teacher_document(request):
 def list_teacher_documents(request):
     try:
         mine = request.GET.get('mine') == 'true'
-        approved = request.GET.get('approved') == 'true'
+        approved_param = request.GET.get('approved')
 
         docs = TeacherDocument.objects.all()
         if mine:
             docs = docs.filter(uploaded_by=request.user)
-        if approved:
+
+        if approved_param == 'true':
             docs = docs.filter(approved_for_rag=True)
+        elif approved_param == 'false':
+            docs = docs.filter(approved_for_rag=False)
+
 
         return Response({
-            "documents": TeacherDocumentSerializer(docs, many=True).data
+            "documents": TeacherDocumentSerializer(docs, many=True, context={'request': request}).data
         }, status=HTTP_200_OK)
 
     except Exception as e:
