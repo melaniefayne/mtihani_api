@@ -28,7 +28,7 @@ from gen.utils import *
 from utils import GlobalPagination
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
-from typing import Counter, Dict, Any, List, Optional, Union
+from typing import Counter, Dict, Any, List, Optional, Tuple, Union
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 import json
@@ -2031,40 +2031,64 @@ def extract_performance_feature_matrix(performances):
     return feature_matrix, feature_columns, id_list
 
 
-def cluster_exam_performance(performances: List, use_pca: bool = True, pca_components: int = 3, max_k: int = 6):
-    # Step 1: Extract features
-    feature_matrix, feature_columns, id_list = extract_performance_feature_matrix(
-        performances)
-    X = np.array(feature_matrix)
+def cluster_exam_performance(performances) -> Tuple[List[int], int, Optional[np.ndarray], Optional[np.ndarray]]:
+    """
+    Clusters exam performances based on scores and expectation levels.
 
-    # Step 2: Standardize features
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    Args:
+        performances: A list of performance objects (each with avg_score and avg_expectation_level).
 
-    # Step 3: PCA
-    if use_pca and X_scaled.shape[1] > pca_components:
-        pca = PCA(n_components=pca_components)
-        X_reduced = pca.fit_transform(X_scaled)
+    Returns:
+        Tuple of:
+        - labels: List[int] – cluster label for each performance
+        - optimal_k: int – number of clusters used
+        - reduced_data: Optional[np.ndarray] – PCA-reduced 2D data or raw data
+        - pca_components: Optional[np.ndarray] – PCA components (if used), else None
+    """
+    n_samples = len(performances)
+    if n_samples < 2:
+        # Not enough data to form clusters — assign all to one cluster
+        return [0] * n_samples, 1, None, None
+
+    # Build feature vectors from performances
+    feature_vectors = []
+    for perf in performances:
+        score = perf.avg_score or 0.0
+        level = perf.avg_expectation_level or 0.0
+        try:
+            level = float(level)
+        except ValueError:
+            level = 0.0
+        feature_vectors.append([score, level])
+
+    X = np.array(feature_vectors)
+    n_samples, n_features = X.shape
+
+    # Determine if PCA is possible
+    max_components = min(n_samples, n_features)
+    use_pca = n_features > 2 and max_components >= 2
+
+    if use_pca:
+        try:
+            pca = PCA(n_components=2)
+            reduced_data = pca.fit_transform(X)
+            pca_components = pca.components_
+        except Exception:
+            reduced_data = X
+            pca_components = None
     else:
-        X_reduced = X_scaled  # Use full features if not enough columns or PCA not requested
+        reduced_data = X
+        pca_components = None
 
-    n_samples = X_reduced.shape[0]
-    n_unique = np.unique(X_reduced, axis=0).shape[0]
-    k_max = max(2, min(max_k, n_samples, n_unique))
+    # Determine cluster count safely
+    optimal_k = min(3, n_samples)  # Max 3 clusters or n_samples
+    if optimal_k < 1:
+        return [0] * n_samples, 1, reduced_data, pca_components
 
-    # Elbow method to find optimal k
-    n_samples = X_reduced.shape[0]
-    n_unique = np.unique(X_reduced, axis=0).shape[0]
-    k_max = max(2, min(max_k, n_samples, n_unique))
+    kmeans = KMeans(n_clusters=optimal_k, n_init='auto', random_state=42)
+    labels = kmeans.fit_predict(reduced_data)
 
-    optimal_k = find_elbow(X_reduced, min_k=2, max_k=k_max)
-    optimal_k = min(optimal_k, n_unique, n_samples)
-
-    # Final KMeans clustering
-    final_kmeans = KMeans(n_clusters=optimal_k, random_state=42)
-    labels = final_kmeans.fit_predict(X_reduced)
-
-    return labels, optimal_k, feature_columns, id_list
+    return labels, optimal_k, reduced_data, pca_components
 
 
 def generate_exam_performance_clusters(exam, performances) -> Union[None, Dict[str, Any]]:
