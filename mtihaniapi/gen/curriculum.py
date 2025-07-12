@@ -246,7 +246,7 @@ if __name__ == "__main__":
         strand_ids=selected_strands, question_count=10)
 
 
-def get_all_strand_names(
+def get_all_sub_strand_names(
     curriculum_file: str = CURRICULUM_FILE,
 ) -> List[str]:
     cbc_data = load_curriculum(curriculum_file)
@@ -260,3 +260,19 @@ def get_all_strand_names(
                 strand_names.append(sub_strand['name'])
 
     return strand_names
+
+
+def get_strand_sub_strand_pairs(
+    curriculum_file: str = CURRICULUM_FILE,
+) -> List[List[str]]:
+    cbc_data = load_curriculum(curriculum_file)
+
+    pairs = []
+    for item in cbc_data:
+        for strand in item.get("strands", []):
+            strand_name = strand['name']
+            for sub_strand in strand.get('sub_strands', []):
+                sub_strand_name = sub_strand['name']
+                description = ". ".join(sub_strand.get('descriptions', []))
+                pairs.append((strand_name, sub_strand_name, description))
+    return pairs

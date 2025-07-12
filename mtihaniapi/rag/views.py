@@ -1,12 +1,15 @@
-from django.shortcuts import render
+from celery import shared_task
 from rest_framework.status import *
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rag.utils import *
 from rag.serializers import TeacherDocumentSerializer
-from rag.models import TeacherDocument
+from rag.models import TeacherDocument, SubStrandReference
 from permissions import IsAdmin, IsTeacherOrAdmin
 from rest_framework.response import Response
 from django.utils import timezone
+from gen.curriculum import get_strand_sub_strand_pairs
+from gen.utils import generate_llm_strand_context_list
 
 
 @api_view(['POST'])
@@ -20,7 +23,7 @@ def upload_teacher_document(request):
         if not file or not title:
             return Response({"message": "File and title are required."}, status=HTTP_400_BAD_REQUEST)
 
-        doc = TeacherDocument.objects.create(
+        TeacherDocument.objects.create(
             title=title,
             description=description,
             file=file,
@@ -50,7 +53,6 @@ def list_teacher_documents(request):
         elif approved_param == 'false':
             docs = docs.filter(approved_for_rag=False)
 
-
         return Response({
             "documents": TeacherDocumentSerializer(docs, many=True, context={'request': request}).data
         }, status=HTTP_200_OK)
@@ -73,7 +75,11 @@ def delete_teacher_document(request):
         if doc.uploaded_by != request.user:
             return Response({"message": "You can only delete your own documents."}, status=HTTP_403_FORBIDDEN)
 
+        # Delete the file from storage first
+        if doc.file:
+            doc.file.delete(save=False)
         doc.delete()
+
         return Response({"message": "Document deleted successfully."}, status=HTTP_200_OK)
 
     except Exception as e:
@@ -95,7 +101,7 @@ def approve_teacher_document(request):
         except TeacherDocument.DoesNotExist:
             return Response({"message": "Document not found."}, status=HTTP_404_NOT_FOUND)
 
-        if doc.approved_for_rag:
+        if doc.approved_for_rag and doc.status == "Success":
             return Response({"message": "Document already approved."}, status=HTTP_400_BAD_REQUEST)
 
         doc.approved_for_rag = True
@@ -103,8 +109,73 @@ def approve_teacher_document(request):
         doc.approved_at = timezone.now()
         doc.save()
 
+        # Trigger background task
+        generate_doc_samples.delay(doc.id)
+
         return Response({"message": "Document approved for RAG."}, status=HTTP_200_OK)
 
     except Exception as e:
         print(f"Error approving document: {e}")
         return Response({"message": "Something went wrong while approving the document."}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ==================================================================== RAG
+
+# =============================================
+# ==========ANY CHANGE TO THIS=================
+# =======!!!!RESTART CELERY!!!=================
+# =============================================
+
+@shared_task
+def generate_doc_samples(doc_id):
+    try:
+        doc = TeacherDocument.objects.get(id=doc_id)
+        doc.update_to_chunking()
+
+        cbc_data = get_strand_sub_strand_pairs()
+        doc_text = extract_text_from_file(doc)
+        extract_res = generate_llm_strand_context_list(
+            cbc_data=cbc_data,
+            reference_text=doc_text
+        )
+
+        if not isinstance(extract_res, list):
+            doc.status = "Failed"
+            doc.generation_error = extract_res.get(
+                "error", "Unknown LLM error")
+            doc.save()
+            return
+        
+        for ref in extract_res:
+            sub_strand = ref.get("sub_strand")
+            strand = ref.get("strand")
+            samples = ref.get("samples", [])
+
+            if not samples:
+                continue
+
+            new_text = samples_to_text(samples)
+
+            try:
+                obj = SubStrandReference.objects.get(sub_strand=sub_strand)
+                combined_text = (obj.reference_text or "") + "\n\n" + new_text
+                obj.reference_text = deduplicate_by_question(combined_text)
+                obj.last_updated = timezone.now()
+                obj.save()
+            except SubStrandReference.DoesNotExist:
+                SubStrandReference.objects.create(
+                    strand=strand,
+                    sub_strand=sub_strand,
+                    reference_text=new_text,
+                    created_from=doc,
+                )
+                
+        doc.update_to_success()
+
+    except Exception as e:
+        doc.status = "Failed"
+        doc.generation_error = f"Unexpected error: {str(e)}"
+        doc.save()
+        print(f"Background Sample Generation failed for Doc ID {doc.id}: {e}")
+
+

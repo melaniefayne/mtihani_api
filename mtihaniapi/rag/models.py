@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from utils import DOC_CHUNK_STATUSES
 
 class TeacherDocument(models.Model):
     title = models.CharField(max_length=255)
@@ -11,6 +12,11 @@ class TeacherDocument(models.Model):
     approved_for_rag = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True, blank=True)
     approved_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='approved_documents')
+    # 
+    status = models.CharField(
+        max_length=25, choices=DOC_CHUNK_STATUSES, default="Unapproved")
+    is_chunking = models.BooleanField(default=False)
+    generation_error = models.TextField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.file and not self.extension:
@@ -21,3 +27,28 @@ class TeacherDocument(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def update_to_chunking(self):
+        self.status = "Chunking"
+        self.is_chunking = True
+        self.save(update_fields=["status", "is_chunking"])
+
+    def update_to_success(self):
+        self.status = "Success"
+        self.is_chunking = False
+        self.generation_error = ""
+        self.save(update_fields=["status", "is_chunking", "generation_error"])
+    
+
+class SubStrandReference(models.Model):
+    strand = models.CharField(max_length=100)
+    sub_strand = models.CharField(max_length=100, unique=True)
+    reference_text = models.TextField(
+        help_text="Paste in sample questions, model answers, key facts, etc., aligned to this CBC sub-strand.")
+    created_from = models.ForeignKey(
+        TeacherDocument, null=True, blank=True, on_delete=models.SET_NULL, related_name='created_references')
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.strand} - {self.sub_strand}"

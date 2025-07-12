@@ -30,6 +30,9 @@ QUESTION_BRD_OUTPUT_FILE = os.path.join(
 ANSWERS_LIST_OUTPUT_FILE = os.path.join(
     BASE_DIR, "output", "answers_list.json")
 GRADES_LIST_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "grades_list.json")
+DOC_EXTRACT_OUTPUT_FILE = os.path.join(
+    BASE_DIR, "output", "doc_extract.json")
+
 
 JSS_SCIENCE_STRANDS = [
     {

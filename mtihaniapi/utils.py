@@ -97,3 +97,10 @@ EXAM_TYPES = [
     ("Standard", "Standard"),
     ("FollowUp", "FollowUp"),
 ]
+
+DOC_CHUNK_STATUSES = [
+    ("Unapproved", "Unapproved"),
+    ("Chunking", "Chunking"),
+    ("Success", "Success"),
+    ("Failed", "Failed"),
+]

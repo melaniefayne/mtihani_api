@@ -442,7 +442,8 @@ def generate_llm_sub_strand_corr_insights(
 
 
 CREATE_CLUSTER_FOLLOW_UP_QUIZ_LLM_PROMPT = PromptTemplate(
-    input_variables=["exam_questions", "cluster_performance", "question_count"],
+    input_variables=["exam_questions",
+                     "cluster_performance", "question_count"],
     template=CREATE_CLUSTER_FOLLOW_UP_QUIZ_PROMPT
 )
 
@@ -476,3 +477,87 @@ def generate_llm_follow_up_quiz(
     )
 
     return res
+
+
+# ================================================================== EXTRACT EXAM CONTEXT
+
+
+EXTRACT_SUB_STRAND_CONTEXT_LLM_PROMPT = PromptTemplate(
+    input_variables=["sub_strand", "strand", "description", "reference_text"],
+    template=EXTRACT_SUB_STRAND_CONTEXT_PROMPT
+)
+
+
+def generate_llm_sub_strand_q_samples(
+    sub_strand: str,
+    strand: str,
+    description: str,
+    reference_text: str,
+    is_debug: bool = False,
+    llm: Any = OPENAI_LLM_4O,
+) -> Union[List[List[Any]], Dict[str, Any]]:
+    prompt_template = EXTRACT_SUB_STRAND_CONTEXT_LLM_PROMPT
+    formatted_prompt = prompt_template.format(
+        sub_strand=sub_strand,
+        strand=strand,
+        description=description,
+        reference_text=reference_text,
+    )
+
+    invoke_param = {
+        "sub_strand": sub_strand,
+        "strand": strand,
+        "description": description,
+        "reference_text": reference_text,
+    }
+
+    res = run_llm_function(
+        invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
+
+    return res
+
+
+def generate_llm_strand_context_list(
+    cbc_data: List[List[str]],
+    reference_text: str,
+    is_debug: bool = False,
+    llm: Any = OPENAI_LLM_4O,
+    output_file: str = DOC_EXTRACT_OUTPUT_FILE,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    all_sub_strand_content = []
+
+    for strand, sub_strand, description in cbc_data:
+        if (is_debug):
+            print(f"\n{sub_strand} =========")
+
+        parsed_output = generate_llm_sub_strand_q_samples(
+            llm=llm,
+            sub_strand=sub_strand,
+            strand=strand,
+            description=description,
+            reference_text=reference_text,
+            is_debug=is_debug,
+        )
+
+        if not isinstance(parsed_output, list):
+            return parsed_output
+
+        all_sub_strand_content.append({
+            "sub_strand": sub_strand,
+            "strand": strand,
+            "samples": parsed_output,
+        })
+
+    if (is_debug):
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(all_sub_strand_content, f, ensure_ascii=False, indent=4)
+        print(
+            f"\n✅ Doc Extract written to {output_file}. Total: {len(all_sub_strand_content)}")
+
+    return all_sub_strand_content
+

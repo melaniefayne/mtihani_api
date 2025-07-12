@@ -29,6 +29,12 @@ python manage.py makemigrations exam && python manage.py migrate exam
 python manage.py makemigrations rag && python manage.py migrate rag   
 python manage.py createsuperuser
 
+
+rm db.sqlite3
+find . -path "*/migrations/*.pyc"  -delete
+python manage.py makemigrations
+python manage.py migrate
+
 # commands
 python manage.py export_exam_performance exam_id
 ```
