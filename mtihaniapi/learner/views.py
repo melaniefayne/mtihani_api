@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.status import *
 from learner.serializers import ClassroomDetailSerializer, ClassroomInputSerializer, StudentSerializer
 from permissions import IsStudent, IsTeacher, IsTeacherOrStudent
-from utils import GlobalPagination, get_avg_expectation_level
+from learner.utils import GlobalPagination, get_avg_expectation_level
 from learner.models import (
     LessonTime, Teacher, TermScore, Classroom, Student)
 from exam.models import (

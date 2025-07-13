@@ -1,6 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
-from utils import DOC_CHUNK_STATUSES
+
+DOC_CHUNK_STATUSES = [
+    ("Unapproved", "Unapproved"),
+    ("Chunking", "Chunking"),
+    ("Success", "Success"),
+    ("Failed", "Failed"),
+]
 
 class TeacherDocument(models.Model):
     title = models.CharField(max_length=255)

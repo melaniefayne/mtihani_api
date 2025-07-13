@@ -1,6 +1,6 @@
 # learner/serializers.py
 # make sure this is imported at the top
-from utils import WEEKDAYS, get_avg_expectation_level
+from learner.utils import WEEKDAYS, get_avg_expectation_level
 from rest_framework import serializers
 
 from learner.models import Classroom, LessonTime, Student, TermScore

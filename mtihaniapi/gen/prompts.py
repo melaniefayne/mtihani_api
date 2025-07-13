@@ -8,6 +8,11 @@ The questions should be based on the following learning outcomes:
 The questions should also assess the following skills:
 {skills_to_assess}
 
+Here are some sample questions and answers from past exams for "{sub_strand}" to use as reference:
+{sample_questions}
+
+Please use these as inspiration and reference when generating new questions, but do NOT copy them verbatim.
+
 Each question must relate meaningfully to at least one of the above learning outcomes and one of the assessed skills.
 
 You will receive a list of **skills to test**. For each skill, you must generate **EXACTLY ONE question-answer pair** that tests the given skill. You must generate exactly {question_count} pairs, matching the number of skills provided.
@@ -33,14 +38,15 @@ Note: Some skills may appear more than once in the list. Treat each repetition a
 - DO NOT skip any skill.
 - Each question and each answer must be **on a single line**, complete, concise, and logically sound.
 
+Here is the list of skills to test:
+{skills_to_test}
+
 Use this structure per skill:
 {{
   "question": "[your generated question here]",
   "expected_answer": "[concise but accurate answer here]"
 }}
 
-Here is the list of skills to test:
-{skills_to_test}
 
 Return ONLY the valid JSON array with `question` and `expected_answer` fields. No explanation, no markdown, and no commentary.
 """

@@ -71,7 +71,8 @@ def run_llm_function(
 
 CREATE_EXAM_LLM_PROMPT = PromptTemplate(
     input_variables=["strand", "sub_strand", "learning_outcomes",
-                     "skills_to_assess", "skills_to_test", "question_count"],
+                     "skills_to_assess", "skills_to_test", "question_count",
+                     "sample_questions"],
     template=CREATE_EXAM_PROMPT_TEXT
 )
 
@@ -90,7 +91,9 @@ def generate_llm_sub_strand_questions(
         skills_to_assess=sub_strand_data["skills_to_assess"],
         skills_to_test=sub_strand_data["skills_to_test"],
         question_count=sub_strand_data["question_count"],
+        sample_questions=sub_strand_data["sample_questions"],
     )
+
     invoke_param = {
         "strand": sub_strand_data["strand"],
         "sub_strand": sub_strand_data["sub_strand"],
@@ -98,6 +101,7 @@ def generate_llm_sub_strand_questions(
         "skills_to_assess": sub_strand_data["skills_to_assess"],
         "skills_to_test": sub_strand_data["skills_to_test"],
         "question_count": sub_strand_data["question_count"],
+        "sample_questions": sub_strand_data["sample_questions"],
     }
 
     res = run_llm_function(
@@ -124,6 +128,7 @@ def generate_llm_question_list(
         sub_strand = group["sub_strand"]
         learning_outcomes = "\n- " + "\n- ".join(group["learning_outcomes"])
         skills_to_assess = "\n- " + "\n- ".join(group["skills_to_assess"])
+        sample_questions = group["sample_questions"]
 
         # Step 1: Flatten all skills with their associated breakdown number
         numbered_skills = []
@@ -136,6 +141,7 @@ def generate_llm_question_list(
         skills_only = [entry["skill"] for entry in numbered_skills]
 
         # Step 3: Generate all questions in one LLM call
+    
         sub_strand_data = {
             "question_count": len(skills_only),
             "strand": strand,
@@ -143,6 +149,7 @@ def generate_llm_question_list(
             "learning_outcomes": learning_outcomes,
             "skills_to_assess": skills_to_assess,
             "skills_to_test": skills_only,
+            "sample_questions": sample_questions,
         }
 
         if (is_debug):
@@ -560,4 +567,3 @@ def generate_llm_strand_context_list(
             f"\n✅ Doc Extract written to {output_file}. Total: {len(all_sub_strand_content)}")
 
     return all_sub_strand_content
-

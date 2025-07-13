@@ -20,11 +20,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import *
 from django.db import transaction
 from learner.models import Classroom, Student, Teacher
+from rag.models import SubStrandReference
 from exam.models import *
 from exam.serializers import *
 from gen.curriculum import get_cbc_grouped_questions, get_rubrics_by_sub_strand, get_uncovered_strands_up_to_grade
 from gen.utils import *
-from utils import GlobalPagination
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
 from typing import Counter, Dict, Any, List, Optional, Tuple, Union
@@ -1106,9 +1106,15 @@ def get_llm_generated_exam(
             kwargs["bloom_skill_count"] = bloom_skill_count
 
         grouped_questions = get_cbc_grouped_questions(**kwargs)
+        new_grouped_questions = []
+        for group in grouped_questions:
+            sample_questions = get_reference_for_sub_strand(group['sub_strand'])
+            group["sample_questions"] = sample_questions
+            
+            new_grouped_questions.append(group)
 
         all_question_list = generate_llm_question_list(
-            grouped_question_data=grouped_questions,
+            grouped_question_data=new_grouped_questions,
         )
 
         if not isinstance(all_question_list, list):
@@ -1122,6 +1128,14 @@ def get_llm_generated_exam(
 
     except Exception as e:
         return {"error": f"LLM generation failed: {str(e)}"}
+
+
+def get_reference_for_sub_strand(sub_strand: str) -> str:
+    try:
+        ref = SubStrandReference.objects.get(sub_strand=sub_strand)
+        return ref.reference_text or ""
+    except SubStrandReference.DoesNotExist:
+        return ""
 
 
 def generate_exam_question_analysis(exam):

@@ -1,8 +1,7 @@
 from django.db import models
-from utils import EXAM_STATUSES, EXPECTATION_LEVELS, EXAM_TYPES, generate_unique_code, get_answer_expectation_level, get_avg_expectation_level
+from exam.utils import EXAM_STATUSES, EXPECTATION_LEVELS, EXAM_TYPES, generate_unique_code, get_answer_expectation_level, get_avg_expectation_level
 from learner.models import Classroom, Student, Teacher
 from django.utils import timezone
-
 
 class Exam(models.Model):
 
