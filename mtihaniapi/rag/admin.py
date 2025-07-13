@@ -28,7 +28,7 @@ class TeacherDocumentAdmin(admin.ModelAdmin):
 
 @admin.register(SubStrandReference)
 class SubStrandReferenceAdmin(admin.ModelAdmin):
-    list_display = ('sub_strand', 'strand', 'reference_text', 'created_at')
+    list_display = ('sub_strand', 'strand', 'reference_text', 'last_updated')
     list_filter = ('strand',)
     search_fields = ('strand', 'sub_strand', 'reference_text')
     readonly_fields = ('created_at', 'last_updated')

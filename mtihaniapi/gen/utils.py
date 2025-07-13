@@ -66,6 +66,24 @@ def run_llm_function(
         return {"error": f"Error: {e}"}
 
 
+def safe_parse_claude_llm_output(raw):
+    # If it's already a list, just return it
+    if isinstance(raw, list):
+        return raw
+    # If it's a string, try to parse as JSON
+    if isinstance(raw, str):
+        try:
+            cleaned = raw.strip()
+            # Sometimes LLMs wrap outputs in ``` or ```json code fences
+            if cleaned.startswith("```"):
+                cleaned = cleaned.lstrip("`").replace("json", "", 1).strip()
+            return json.loads(cleaned)
+        except Exception:
+            print("Warning: Could not parse LLM output as JSON.")
+            return []
+    # If it's something else, return empty list
+    return []
+
 # ================================================================== CREATE EXAM
 
 
@@ -115,6 +133,41 @@ def generate_llm_sub_strand_questions(
     return res
 
 
+CLAUDE_SONNET_4 = "claude-sonnet-4-20250514"
+CLAUDE_OPUS_4 = "claude-opus-4-20250514"
+
+
+def generate_claude_sub_strand_questions(
+    sub_strand_data: Dict[str, Any],
+    llm: str = CLAUDE_SONNET_4,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    try:
+        prompt_template = CREATE_EXAM_LLM_PROMPT
+        formatted_prompt = prompt_template.format(
+            strand=sub_strand_data["strand"],
+            sub_strand=sub_strand_data["sub_strand"],
+            learning_outcomes=sub_strand_data["learning_outcomes"],
+            skills_to_assess=sub_strand_data["skills_to_assess"],
+            skills_to_test=sub_strand_data["skills_to_test"],
+            question_count=sub_strand_data["question_count"],
+            sample_questions=sub_strand_data["sample_questions"],
+        )
+
+        response = client.messages.create(
+            model=llm,
+            max_tokens=10240,
+            temperature=0.1,
+            messages=[
+                {"role": "user", "content": formatted_prompt}
+            ]
+        )
+        # This works for non-streaming Claude calls:
+        res_str = "".join(block.text for block in response.content)
+        return safe_parse_claude_llm_output(res_str)
+    except Exception as e:
+        return {"error": f"Error: {e}"}
+
+
 def generate_llm_question_list(
     grouped_question_data: List[Dict[str, Any]],
     is_debug: bool = False,
@@ -141,7 +194,7 @@ def generate_llm_question_list(
         skills_only = [entry["skill"] for entry in numbered_skills]
 
         # Step 3: Generate all questions in one LLM call
-    
+
         sub_strand_data = {
             "question_count": len(skills_only),
             "strand": strand,
@@ -155,11 +208,19 @@ def generate_llm_question_list(
         if (is_debug):
             print(f"\n{sub_strand} =========")
 
-        parsed_output = generate_llm_sub_strand_questions(
-            llm=llm,
-            sub_strand_data=sub_strand_data,
-            is_debug=is_debug,
-        )
+        if (llm == OPENAI_LLM_4O):
+            parsed_output = generate_llm_sub_strand_questions(
+                llm=llm,
+                sub_strand_data=sub_strand_data,
+                is_debug=is_debug,
+            )
+        elif (llm == CLAUDE_SONNET_4):
+            parsed_output = generate_claude_sub_strand_questions(
+                llm=llm,
+                sub_strand_data=sub_strand_data,
+            )
+        else:
+            return {"error": f"Error: Invalid LLM Choice!"}
 
         if not isinstance(parsed_output, list):
             return parsed_output

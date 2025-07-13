@@ -71,10 +71,13 @@ def create_classroom_exam(request) -> Response:
         question_count = request.data.get("question_count", APP_QUESTION_COUNT)
         bloom_skill_count = request.data.get(
             "bloom_skill_count", APP_BLOOM_SKILL_COUNT)
+        llm =  request.data.get("llm", OPENAI_LLM_4O)
+        
         generation_config = {
             "strand_ids": strand_ids,
             "question_count": question_count,
-            "bloom_skill_count": bloom_skill_count
+            "bloom_skill_count": bloom_skill_count,
+            "llm": llm,
         }
 
         # Create the Exam
@@ -1056,7 +1059,8 @@ def generate_exam_content(exam_id, generation_config):
         exam_res = get_llm_generated_exam(
             strand_ids=generation_config['strand_ids'],
             question_count=generation_config['question_count'],
-            bloom_skill_count=generation_config['bloom_skill_count']
+            bloom_skill_count=generation_config['bloom_skill_count'],
+            llm=generation_config['llm'],
         )
 
         if not isinstance(exam_res, list):
@@ -1093,6 +1097,7 @@ def generate_exam_content(exam_id, generation_config):
 
 def get_llm_generated_exam(
         strand_ids: List[int],
+        llm: Any,
         question_count: Optional[int] = None,
         bloom_skill_count: Optional[int] = None) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     if not strand_ids:
@@ -1115,6 +1120,7 @@ def get_llm_generated_exam(
 
         all_question_list = generate_llm_question_list(
             grouped_question_data=new_grouped_questions,
+            llm=llm,
         )
 
         if not isinstance(all_question_list, list):
