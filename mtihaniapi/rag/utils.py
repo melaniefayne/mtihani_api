@@ -53,3 +53,12 @@ def deduplicate_by_question(text):
             deduped_blocks.append(block)
             seen_questions.add(question)
     return "\n\n".join(deduped_blocks)
+
+
+def chunk_text(text: str, chunk_size: int = 500) -> list:
+    words = text.split()
+    chunks = []
+    for i in range(0, len(words), chunk_size):
+        chunk = " ".join(words[i:i + chunk_size])
+        chunks.append(chunk)
+    return chunks

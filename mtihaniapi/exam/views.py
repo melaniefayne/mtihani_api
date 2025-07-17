@@ -9,7 +9,6 @@ import itertools
 
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.discriminant_analysis import StandardScaler
 from .models import StudentExamSessionPerformance
 from scipy.stats import pearsonr
 from collections import defaultdict
@@ -21,6 +20,7 @@ from rest_framework.status import *
 from django.db import transaction
 from learner.models import Classroom, Student, Teacher
 from rag.models import SubStrandReference
+from rag.utils import chunk_text
 from exam.models import *
 from exam.serializers import *
 from gen.curriculum import get_cbc_grouped_questions, get_rubrics_by_sub_strand, get_uncovered_strands_up_to_grade
@@ -1136,10 +1136,15 @@ def get_llm_generated_exam(
         return {"error": f"LLM generation failed: {str(e)}"}
 
 
-def get_reference_for_sub_strand(sub_strand: str) -> str:
+def get_reference_for_sub_strand(sub_strand: str, chunk_size: int = 500) -> str:
     try:
         ref = SubStrandReference.objects.get(sub_strand=sub_strand)
-        return ref.reference_text or ""
+        text = ref.reference_text or ""
+        if not text:
+            return ""
+        chunks = chunk_text(text, chunk_size=chunk_size)
+        # Pick a random chunk each time
+        return random.choice(chunks)
     except SubStrandReference.DoesNotExist:
         return ""
 
