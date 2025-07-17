@@ -3,14 +3,12 @@ from mtihaniapi import settings
 from .models import Exam, ExamQuestion
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.http import HttpResponse
 import math
 import itertools
 
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.discriminant_analysis import StandardScaler
 from .models import StudentExamSessionPerformance
 from scipy.stats import pearsonr
 from collections import defaultdict
@@ -21,11 +19,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import *
 from django.db import transaction
 from learner.models import Classroom, Student, Teacher
+from rag.models import SubStrandReference
+from rag.utils import chunk_text
 from exam.models import *
 from exam.serializers import *
 from gen.curriculum import get_cbc_grouped_questions, get_rubrics_by_sub_strand, get_uncovered_strands_up_to_grade
 from gen.utils import *
-from utils import GlobalPagination
 from permissions import IsAdmin, IsStudent, IsTeacher, IsTeacherOrStudent
 from rest_framework.response import Response
 from typing import Counter, Dict, Any, List, Optional, Tuple, Union
@@ -72,10 +71,13 @@ def create_classroom_exam(request) -> Response:
         question_count = request.data.get("question_count", APP_QUESTION_COUNT)
         bloom_skill_count = request.data.get(
             "bloom_skill_count", APP_BLOOM_SKILL_COUNT)
+        llm =  request.data.get("llm", OPENAI_LLM_4O)
+        
         generation_config = {
             "strand_ids": strand_ids,
             "question_count": question_count,
-            "bloom_skill_count": bloom_skill_count
+            "bloom_skill_count": bloom_skill_count,
+            "llm": llm,
         }
 
         # Create the Exam
@@ -1057,7 +1059,8 @@ def generate_exam_content(exam_id, generation_config):
         exam_res = get_llm_generated_exam(
             strand_ids=generation_config['strand_ids'],
             question_count=generation_config['question_count'],
-            bloom_skill_count=generation_config['bloom_skill_count']
+            bloom_skill_count=generation_config['bloom_skill_count'],
+            llm=generation_config['llm'],
         )
 
         if not isinstance(exam_res, list):
@@ -1094,6 +1097,7 @@ def generate_exam_content(exam_id, generation_config):
 
 def get_llm_generated_exam(
         strand_ids: List[int],
+        llm: Any,
         question_count: Optional[int] = None,
         bloom_skill_count: Optional[int] = None) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     if not strand_ids:
@@ -1107,9 +1111,16 @@ def get_llm_generated_exam(
             kwargs["bloom_skill_count"] = bloom_skill_count
 
         grouped_questions = get_cbc_grouped_questions(**kwargs)
+        new_grouped_questions = []
+        for group in grouped_questions:
+            sample_questions = get_reference_for_sub_strand(group['sub_strand'])
+            group["sample_questions"] = sample_questions
+            
+            new_grouped_questions.append(group)
 
         all_question_list = generate_llm_question_list(
-            grouped_question_data=grouped_questions,
+            grouped_question_data=new_grouped_questions,
+            llm=llm,
         )
 
         if not isinstance(all_question_list, list):
@@ -1123,6 +1134,19 @@ def get_llm_generated_exam(
 
     except Exception as e:
         return {"error": f"LLM generation failed: {str(e)}"}
+
+
+def get_reference_for_sub_strand(sub_strand: str, chunk_size: int = 500) -> str:
+    try:
+        ref = SubStrandReference.objects.get(sub_strand=sub_strand)
+        text = ref.reference_text or ""
+        if not text:
+            return ""
+        chunks = chunk_text(text, chunk_size=chunk_size)
+        # Pick a random chunk each time
+        return random.choice(chunks)
+    except SubStrandReference.DoesNotExist:
+        return ""
 
 
 def generate_exam_question_analysis(exam):

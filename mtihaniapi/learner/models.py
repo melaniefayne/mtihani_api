@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
-from utils import EXPECTATION_LEVELS, STUDENT_STATUSES, WEEKDAYS, generate_unique_code, get_avg_expectation_level
+from learner.utils import EXPECTATION_LEVELS, STUDENT_STATUSES, WEEKDAYS, generate_unique_code, get_avg_expectation_level
 
 
 class Teacher(models.Model):
@@ -68,7 +68,6 @@ class Student(models.Model):
         unique_together = ('classroom', 'code')
 
     def save(self, *args, **kwargs):
-        from utils import get_avg_expectation_level
         self.avg_expectation_level = get_avg_expectation_level(self.avg_score)
         super().save(*args, **kwargs)
 

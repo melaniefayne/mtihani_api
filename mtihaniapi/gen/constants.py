@@ -2,6 +2,7 @@ from langchain_openai import ChatOpenAI
 import os
 import dotenv
 dotenv.load_dotenv()
+from anthropic import Client
 
 APP_QUESTION_COUNT = 25
 APP_BLOOM_SKILL_COUNT = 3
@@ -17,6 +18,8 @@ OPENAI_LLM_4O = ChatOpenAI(
     openai_api_key=OPENAI_API_KEY,
 )
 
+client = Client(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
 FLOWISE_API_URL = "https://cloud.flowiseai.com/api/v1/prediction/68022f7f-b4f3-431b-a64e-0c4d61734800"
 FLOWISE_API_KEY = os.getenv("FLOWISE_MTIHANI_API_KEY")
 FLOWISE_HEADERS = {"Authorization": f"Bearer {FLOWISE_API_KEY}"}
@@ -30,6 +33,9 @@ QUESTION_BRD_OUTPUT_FILE = os.path.join(
 ANSWERS_LIST_OUTPUT_FILE = os.path.join(
     BASE_DIR, "output", "answers_list.json")
 GRADES_LIST_OUTPUT_FILE = os.path.join(BASE_DIR, "output", "grades_list.json")
+DOC_EXTRACT_OUTPUT_FILE = os.path.join(
+    BASE_DIR, "output", "doc_extract.json")
+
 
 JSS_SCIENCE_STRANDS = [
     {

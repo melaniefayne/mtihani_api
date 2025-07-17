@@ -66,12 +66,31 @@ def run_llm_function(
         return {"error": f"Error: {e}"}
 
 
+def safe_parse_claude_llm_output(raw):
+    # If it's already a list, just return it
+    if isinstance(raw, list):
+        return raw
+    # If it's a string, try to parse as JSON
+    if isinstance(raw, str):
+        try:
+            cleaned = raw.strip()
+            # Sometimes LLMs wrap outputs in ``` or ```json code fences
+            if cleaned.startswith("```"):
+                cleaned = cleaned.lstrip("`").replace("json", "", 1).strip()
+            return json.loads(cleaned)
+        except Exception:
+            print("Warning: Could not parse LLM output as JSON.")
+            return []
+    # If it's something else, return empty list
+    return []
+
 # ================================================================== CREATE EXAM
 
 
 CREATE_EXAM_LLM_PROMPT = PromptTemplate(
     input_variables=["strand", "sub_strand", "learning_outcomes",
-                     "skills_to_assess", "skills_to_test", "question_count"],
+                     "skills_to_assess", "skills_to_test", "question_count",
+                     "sample_questions"],
     template=CREATE_EXAM_PROMPT_TEXT
 )
 
@@ -90,7 +109,9 @@ def generate_llm_sub_strand_questions(
         skills_to_assess=sub_strand_data["skills_to_assess"],
         skills_to_test=sub_strand_data["skills_to_test"],
         question_count=sub_strand_data["question_count"],
+        sample_questions=sub_strand_data["sample_questions"],
     )
+
     invoke_param = {
         "strand": sub_strand_data["strand"],
         "sub_strand": sub_strand_data["sub_strand"],
@@ -98,6 +119,7 @@ def generate_llm_sub_strand_questions(
         "skills_to_assess": sub_strand_data["skills_to_assess"],
         "skills_to_test": sub_strand_data["skills_to_test"],
         "question_count": sub_strand_data["question_count"],
+        "sample_questions": sub_strand_data["sample_questions"],
     }
 
     res = run_llm_function(
@@ -109,6 +131,41 @@ def generate_llm_sub_strand_questions(
     )
 
     return res
+
+
+CLAUDE_SONNET_4 = "claude-sonnet-4-20250514"
+CLAUDE_OPUS_4 = "claude-opus-4-20250514"
+
+
+def generate_claude_sub_strand_questions(
+    sub_strand_data: Dict[str, Any],
+    llm: str = CLAUDE_SONNET_4,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    try:
+        prompt_template = CREATE_EXAM_LLM_PROMPT
+        formatted_prompt = prompt_template.format(
+            strand=sub_strand_data["strand"],
+            sub_strand=sub_strand_data["sub_strand"],
+            learning_outcomes=sub_strand_data["learning_outcomes"],
+            skills_to_assess=sub_strand_data["skills_to_assess"],
+            skills_to_test=sub_strand_data["skills_to_test"],
+            question_count=sub_strand_data["question_count"],
+            sample_questions=sub_strand_data["sample_questions"],
+        )
+
+        response = client.messages.create(
+            model=llm,
+            max_tokens=10240,
+            temperature=0.1,
+            messages=[
+                {"role": "user", "content": formatted_prompt}
+            ]
+        )
+        # This works for non-streaming Claude calls:
+        res_str = "".join(block.text for block in response.content)
+        return safe_parse_claude_llm_output(res_str)
+    except Exception as e:
+        return {"error": f"Error: {e}"}
 
 
 def generate_llm_question_list(
@@ -124,6 +181,7 @@ def generate_llm_question_list(
         sub_strand = group["sub_strand"]
         learning_outcomes = "\n- " + "\n- ".join(group["learning_outcomes"])
         skills_to_assess = "\n- " + "\n- ".join(group["skills_to_assess"])
+        sample_questions = group["sample_questions"]
 
         # Step 1: Flatten all skills with their associated breakdown number
         numbered_skills = []
@@ -136,6 +194,7 @@ def generate_llm_question_list(
         skills_only = [entry["skill"] for entry in numbered_skills]
 
         # Step 3: Generate all questions in one LLM call
+
         sub_strand_data = {
             "question_count": len(skills_only),
             "strand": strand,
@@ -143,16 +202,25 @@ def generate_llm_question_list(
             "learning_outcomes": learning_outcomes,
             "skills_to_assess": skills_to_assess,
             "skills_to_test": skills_only,
+            "sample_questions": sample_questions,
         }
 
         if (is_debug):
             print(f"\n{sub_strand} =========")
 
-        parsed_output = generate_llm_sub_strand_questions(
-            llm=llm,
-            sub_strand_data=sub_strand_data,
-            is_debug=is_debug,
-        )
+        if (llm == OPENAI_LLM_4O):
+            parsed_output = generate_llm_sub_strand_questions(
+                llm=llm,
+                sub_strand_data=sub_strand_data,
+                is_debug=is_debug,
+            )
+        elif (llm == CLAUDE_SONNET_4):
+            parsed_output = generate_claude_sub_strand_questions(
+                llm=llm,
+                sub_strand_data=sub_strand_data,
+            )
+        else:
+            return {"error": f"Error: Invalid LLM Choice!"}
 
         if not isinstance(parsed_output, list):
             return parsed_output
@@ -442,7 +510,8 @@ def generate_llm_sub_strand_corr_insights(
 
 
 CREATE_CLUSTER_FOLLOW_UP_QUIZ_LLM_PROMPT = PromptTemplate(
-    input_variables=["exam_questions", "cluster_performance", "question_count"],
+    input_variables=["exam_questions",
+                     "cluster_performance", "question_count"],
     template=CREATE_CLUSTER_FOLLOW_UP_QUIZ_PROMPT
 )
 
@@ -476,3 +545,86 @@ def generate_llm_follow_up_quiz(
     )
 
     return res
+
+
+# ================================================================== EXTRACT EXAM CONTEXT
+
+
+EXTRACT_SUB_STRAND_CONTEXT_LLM_PROMPT = PromptTemplate(
+    input_variables=["sub_strand", "strand", "description", "reference_text"],
+    template=EXTRACT_SUB_STRAND_CONTEXT_PROMPT
+)
+
+
+def generate_llm_sub_strand_q_samples(
+    sub_strand: str,
+    strand: str,
+    description: str,
+    reference_text: str,
+    is_debug: bool = False,
+    llm: Any = OPENAI_LLM_4O,
+) -> Union[List[List[Any]], Dict[str, Any]]:
+    prompt_template = EXTRACT_SUB_STRAND_CONTEXT_LLM_PROMPT
+    formatted_prompt = prompt_template.format(
+        sub_strand=sub_strand,
+        strand=strand,
+        description=description,
+        reference_text=reference_text,
+    )
+
+    invoke_param = {
+        "sub_strand": sub_strand,
+        "strand": strand,
+        "description": description,
+        "reference_text": reference_text,
+    }
+
+    res = run_llm_function(
+        invoke_param=invoke_param,
+        prompt_template=prompt_template,
+        formatted_prompt=formatted_prompt,
+        llm=llm,
+        is_debug=is_debug
+    )
+
+    return res
+
+
+def generate_llm_strand_context_list(
+    cbc_data: List[List[str]],
+    reference_text: str,
+    is_debug: bool = False,
+    llm: Any = OPENAI_LLM_4O,
+    output_file: str = DOC_EXTRACT_OUTPUT_FILE,
+) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
+    all_sub_strand_content = []
+
+    for strand, sub_strand, description in cbc_data:
+        if (is_debug):
+            print(f"\n{sub_strand} =========")
+
+        parsed_output = generate_llm_sub_strand_q_samples(
+            llm=llm,
+            sub_strand=sub_strand,
+            strand=strand,
+            description=description,
+            reference_text=reference_text,
+            is_debug=is_debug,
+        )
+
+        if not isinstance(parsed_output, list):
+            return parsed_output
+
+        all_sub_strand_content.append({
+            "sub_strand": sub_strand,
+            "strand": strand,
+            "samples": parsed_output,
+        })
+
+    if (is_debug):
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(all_sub_strand_content, f, ensure_ascii=False, indent=4)
+        print(
+            f"\n✅ Doc Extract written to {output_file}. Total: {len(all_sub_strand_content)}")
+
+    return all_sub_strand_content

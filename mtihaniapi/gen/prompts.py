@@ -8,6 +8,11 @@ The questions should be based on the following learning outcomes:
 The questions should also assess the following skills:
 {skills_to_assess}
 
+Here are some sample questions and answers from past exams for "{sub_strand}" to use as reference:
+{sample_questions}
+
+Please use these as inspiration and reference when generating new questions, but do NOT copy them verbatim.
+
 Each question must relate meaningfully to at least one of the above learning outcomes and one of the assessed skills.
 
 You will receive a list of **skills to test**. For each skill, you must generate **EXACTLY ONE question-answer pair** that tests the given skill. You must generate exactly {question_count} pairs, matching the number of skills provided.
@@ -33,14 +38,15 @@ Note: Some skills may appear more than once in the list. Treat each repetition a
 - DO NOT skip any skill.
 - Each question and each answer must be **on a single line**, complete, concise, and logically sound.
 
+Here is the list of skills to test:
+{skills_to_test}
+
 Use this structure per skill:
 {{
   "question": "[your generated question here]",
   "expected_answer": "[concise but accurate answer here]"
 }}
 
-Here is the list of skills to test:
-{skills_to_test}
 
 Return ONLY the valid JSON array with `question` and `expected_answer` fields. No explanation, no markdown, and no commentary.
 """
@@ -175,7 +181,6 @@ Now, provide general classroom performance insights for the following data:
 """
 
 
-
 STRAND_PERFORMANCE_INSIGHTS_PROMPT = """
 You are an education advisor helping a science teacher analyze exam performance data. For each strand, you are given a detailed summary, including:
 - The strand name and grade
@@ -262,4 +267,27 @@ A valid **JSON array**. Each item in the array must have the structure:
   "bloom_skill": "... the bloom skill the questions tests"
 }}
 
+"""
+
+
+EXTRACT_SUB_STRAND_CONTEXT_PROMPT= """
+You are an expert Integrated Science teacher for Junior Secondary in Kenya (Grades 7–9).
+Your task is to extract ONLY those questions that are *directly, specifically, and primarily* about the topic "{sub_strand}" under the strand "{strand}" from the provided document.
+- Do NOT include questions that are about other topics or only generally related.
+- Exclude questions that primarily address other sub-strands, even if they mention this one in passing.
+- If you are not certain a question is about this sub-strand, leave it out.
+
+Here is the topic description:
+{description}
+
+Here is the full text resource to extract from:
+{reference_text}
+
+Use this structure per skill:
+{{
+  "question": "[the extracted or created question here]",
+  "expected_answer": "[concise but accurate answer here]"
+}}
+
+Return ONLY the valid JSON array with `question` and `expected_answer` fields. No explanation, no markdown, and no commentary.
 """
