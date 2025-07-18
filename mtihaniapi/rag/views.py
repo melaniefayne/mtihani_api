@@ -13,7 +13,7 @@ from gen.utils import generate_llm_strand_context_list
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsTeacherOrAdmin])
+@permission_classes([IsAuthenticated])
 def upload_teacher_document(request):
     try:
         file = request.FILES.get('file')
@@ -38,7 +38,7 @@ def upload_teacher_document(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated, IsTeacherOrAdmin])
+@permission_classes([IsAuthenticated])
 def list_teacher_documents(request):
     try:
         mine = request.GET.get('mine') == 'true'
@@ -63,7 +63,7 @@ def list_teacher_documents(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsTeacherOrAdmin])
+@permission_classes([IsAuthenticated])
 def delete_teacher_document(request):
     try:
         doc_id = request.GET.get("doc_id")
@@ -88,7 +88,7 @@ def delete_teacher_document(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated, IsAdmin])
+@permission_classes([IsAuthenticated])
 def approve_teacher_document(request):
     doc_id = request.GET.get("doc_id")
 
